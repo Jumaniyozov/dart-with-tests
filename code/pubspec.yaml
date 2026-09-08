@@ -1,0 +1,11 @@
+name: _learn_dart_with_tests
+description: Workspace root for the runnable examples in "Learn Dart with Tests".
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+workspace:
+  - ch01_hello
+  - ch02_greeting
+  - ch03_variables

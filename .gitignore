@@ -1,4 +1,21 @@
+# editors
 .idea
 .vscode
-bin
+.zed
+.DS_Store
 
+# node / next
+node_modules/
+.next/
+out/
+.env*.local
+*.tsbuildinfo
+.source/
+
+# dart
+.dart_tool/
+build/
+pubspec.lock
+
+# tooling
+.playwright-mcp/

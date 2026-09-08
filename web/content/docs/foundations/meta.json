@@ -1,0 +1,8 @@
+{
+  "title": "Book I: Foundations",
+  "pages": [
+    "hello-dart",
+    "your-first-test",
+    "variables"
+  ]
+}

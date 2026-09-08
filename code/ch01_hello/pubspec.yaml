@@ -1,0 +1,10 @@
+name: ch01_hello
+description: Chapter 1 — your first Dart program.
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dev_dependencies:
+  lints: ^6.0.0

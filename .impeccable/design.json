@@ -1,0 +1,521 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-08T12:00:00Z",
+  "title": "Design System: Learn Dart with Tests",
+  "extensions": {
+    "colorMeta": {
+      "ground": {
+        "role": "neutral",
+        "displayName": "Manuscript White",
+        "canonical": "#F4F5F1",
+        "darkValue": "#131714",
+        "tonalRamp": [
+          "#22251F",
+          "#33372F",
+          "#4A4F45",
+          "#69705F",
+          "#8F9686",
+          "#B7BCAF",
+          "#D8DBD2",
+          "#F4F5F1"
+        ]
+      },
+      "plate-ink": {
+        "role": "neutral",
+        "displayName": "Plate Ink",
+        "canonical": "#101512",
+        "darkValue": "#E2E6DF",
+        "tonalRamp": [
+          "#080B09",
+          "#101512",
+          "#1C2420",
+          "#2C3831",
+          "#455650",
+          "#68807A",
+          "#9AB0A9",
+          "#D5DEDA"
+        ]
+      },
+      "rail-green": {
+        "role": "primary",
+        "displayName": "Peters Green (livery — identical in both themes)",
+        "canonical": "#1F4A3D",
+        "darkValue": "#1F4A3D",
+        "tonalRamp": [
+          "#0B1B16",
+          "#122C24",
+          "#183A30",
+          "#1F4A3D",
+          "#2E6C59",
+          "#469279",
+          "#7FC0A6",
+          "#C4E3D6"
+        ],
+        "darkInkValue": "#6FBF9F"
+      },
+      "green-ink": {
+        "role": "primary",
+        "displayName": "Green Ink",
+        "canonical": "#16352C",
+        "darkValue": "#8FD0B4",
+        "tonalRamp": [
+          "#08150F",
+          "#0E2219",
+          "#16352C",
+          "#1E483B",
+          "#2C6754",
+          "#428D74",
+          "#79BFA4",
+          "#BFE0D2"
+        ]
+      },
+      "correction-red": {
+        "role": "secondary",
+        "displayName": "Correction Red",
+        "canonical": "#C0392B",
+        "darkValue": "#E08175",
+        "tonalRamp": [
+          "#2C0B08",
+          "#4A140F",
+          "#6B1D16",
+          "#8F281E",
+          "#C0392B",
+          "#D46254",
+          "#E08175",
+          "#F3C4BD"
+        ]
+      },
+      "marked-ochre": {
+        "role": "secondary",
+        "displayName": "Marked Ochre (the reader's pencil)",
+        "canonical": "#F2D06B",
+        "darkValue": "#E8C264",
+        "tonalRamp": [
+          "#2E2510",
+          "#4B3C1B",
+          "#6B5527",
+          "#8D7134",
+          "#B08D42",
+          "#D2AC55",
+          "#F2D06B",
+          "#FAEAB8"
+        ]
+      },
+      "plate": {
+        "role": "neutral",
+        "displayName": "Code Plate",
+        "canonical": "#FBFBF7",
+        "darkValue": "#1C211D",
+        "tonalRamp": [
+          "#26261F",
+          "#3B3B31",
+          "#525245",
+          "#6D6D5D",
+          "#8F8F7E",
+          "#B5B5A6",
+          "#DCDCD1",
+          "#FBFBF7"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Rule",
+        "canonical": "#C9CEC6",
+        "darkValue": "#2C332D",
+        "tonalRamp": [
+          "#1E211D",
+          "#31352F",
+          "#474C44",
+          "#61675D",
+          "#7E857A",
+          "#9EA598",
+          "#C9CEC6",
+          "#E8EBE6"
+        ]
+      },
+      "grey": {
+        "role": "neutral",
+        "displayName": "Engraver's Grey",
+        "canonical": "#56605A",
+        "darkValue": "#96A099",
+        "tonalRamp": [
+          "#131715",
+          "#222823",
+          "#333B36",
+          "#45504A",
+          "#56605A",
+          "#77827B",
+          "#9FA9A1",
+          "#CFD5D0"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted Field",
+        "canonical": "#E7E9E1",
+        "darkValue": "#1C211D",
+        "tonalRamp": [
+          "#1F221B",
+          "#31352C",
+          "#464B40",
+          "#5F6558",
+          "#7D8474",
+          "#A2A897",
+          "#C6CBBE",
+          "#E7E9E1"
+        ]
+      },
+      "muted-ink": {
+        "role": "neutral",
+        "displayName": "Muted Ink",
+        "canonical": "#5C665E",
+        "darkValue": "#9AA49C",
+        "tonalRamp": [
+          "#151A17",
+          "#242B26",
+          "#353E38",
+          "#48534A",
+          "#5C665E",
+          "#7C867E",
+          "#A2ABA4",
+          "#D0D6D1"
+        ]
+      },
+      "console": {
+        "role": "neutral",
+        "displayName": "Console Slab",
+        "canonical": "#161B18",
+        "darkValue": "#080B09",
+        "tonalRamp": [
+          "#080A09",
+          "#0F1310",
+          "#161B18",
+          "#212925",
+          "#333E38",
+          "#4C5B53",
+          "#6D7F76",
+          "#A3B3AA"
+        ]
+      },
+      "console-ink": {
+        "role": "neutral",
+        "displayName": "Console Ink",
+        "canonical": "#CBD4CD",
+        "darkValue": "#C6D0C8",
+        "tonalRamp": [
+          "#1A201C",
+          "#2A322D",
+          "#3D4740",
+          "#535E56",
+          "#6E7A72",
+          "#8D9891",
+          "#ACB6AF",
+          "#CBD4CD"
+        ]
+      },
+      "rail-ink": {
+        "role": "neutral",
+        "displayName": "Rail Ink",
+        "canonical": "#E4EBE5",
+        "darkValue": "#E4EBE5",
+        "tonalRamp": [
+          "#1B211D",
+          "#2B342E",
+          "#3E4A42",
+          "#556359",
+          "#7C8C81",
+          "#A5B4AA",
+          "#C6D2C9",
+          "#E4EBE5"
+        ]
+      },
+      "rail-mute": {
+        "role": "neutral",
+        "displayName": "Rail Mute",
+        "canonical": "#A9C2B5",
+        "darkValue": "#A9C2B5",
+        "tonalRamp": [
+          "#151F1A",
+          "#233028",
+          "#334438",
+          "#465A4C",
+          "#5D7566",
+          "#7C9585",
+          "#A9C2B5",
+          "#D6E3DC"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Cover Display",
+        "purpose": "The cover masthead only. Archivo 700, negative tracking, set on the green field."
+      },
+      "numeral": {
+        "displayName": "Chapter Numeral",
+        "purpose": "The étude number beside the chapter title, in Peters green, tabular and baseline-aligned to the title."
+      },
+      "headline": {
+        "displayName": "Chapter Title",
+        "purpose": "The study title, over the double rule."
+      },
+      "title": {
+        "displayName": "Section Title",
+        "purpose": "Cover section headings."
+      },
+      "section-head": {
+        "displayName": "Section Head",
+        "purpose": "In-prose h2, set over the bar line — the chapter head's double rule restated at section scale."
+      },
+      "subsection-head": {
+        "displayName": "Subsection Head",
+        "purpose": "In-prose h3, set over a single hairline in the rule colour."
+      },
+      "subtitle": {
+        "displayName": "In-Prose Heading",
+        "purpose": "h4 inside a study and gloss titles; Archivo at -0.012em."
+      },
+      "body": {
+        "displayName": "Reading Voice",
+        "purpose": "All prose and lists, Literata, in a 68ch column."
+      },
+      "direction": {
+        "displayName": "Performance Direction",
+        "purpose": "Italic Literata instructions — prescriptions and per-drill directions. Reserved; never used for emphasis."
+      },
+      "code": {
+        "displayName": "Code",
+        "purpose": "Both code materials — the authored plate and the machine console."
+      },
+      "label": {
+        "displayName": "Engraved Label",
+        "purpose": "Filename bars, rail étude numbers, tabular spans. JetBrains Mono, tracked."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "draw-on",
+        "value": "stroke-dashoffset 34 → 0 over 460ms cubic-bezier(0.16, 1, 0.3, 1) both",
+        "purpose": "The only authored motion in the build: the pencil mark drawing itself in when a study is first marked worked. Disabled under prefers-reduced-motion, with the stroke resolved to its final state."
+      },
+      {
+        "name": "hover-opacity",
+        "value": "opacity 150ms",
+        "purpose": "The only other movement in the system — hover feedback on the worked toggle and the page-action row. Never animate colour."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "mobile-max",
+        "value": "767px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      }
+    ],
+    "measures": [
+      {
+        "name": "prose",
+        "value": "68ch"
+      },
+      {
+        "name": "prescription",
+        "value": "60ch"
+      },
+      {
+        "name": "cover-column",
+        "value": "56rem"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Chapter Head",
+      "kind": "custom",
+      "refersTo": "chapter-head",
+      "description": "The identity of a study: green numeral beside the title over a double rule. One per page.",
+      "html": "<header class=\"ds-head\"><div class=\"ds-head-row\"><span class=\"ds-head-no\">2</span><h1 class=\"ds-head-title\">Your first test</h1></div><div class=\"ds-head-underrule\"></div></header>",
+      "css": ".ds-head { margin-bottom: 20px; font-family: var(--font-display, Archivo, system-ui, sans-serif); } .ds-head-row { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 20px; align-items: end; padding-bottom: 10px; border-bottom: 2px solid #101512; } .ds-head-no { font-weight: 700; font-size: 3.4rem; line-height: 0.82; letter-spacing: -0.045em; font-variant-numeric: tabular-nums; color: #1F4A3D; } .ds-head-title { margin: 0; font-size: 1.72rem; font-weight: 600; line-height: 1.08; letter-spacing: -0.022em; color: #101512; text-wrap: balance; } .ds-head-underrule { border-bottom: 1px solid #101512; margin-top: 3px; }"
+    },
+    {
+      "name": "Prescription",
+      "kind": "custom",
+      "refersTo": "prescription",
+      "description": "The tempo marking under the head: how to work this study.",
+      "html": "<p class=\"ds-prescription\">Slowly, and read every failure message before you fix it.</p>",
+      "css": ".ds-prescription { font-family: var(--font-body, Literata, Georgia, serif); font-style: italic; font-size: 1rem; line-height: 1.5; max-width: 60ch; margin-top: 14px; color: #1F4A3D; }"
+    },
+    {
+      "name": "Section Head",
+      "kind": "custom",
+      "refersTo": "section-head",
+      "description": "An h2 inside a study: the chapter head's double rule restated as a bar line, so the world keeps going through the long middle of a chapter.",
+      "html": "<section class=\"ds-sect\"><h2 class=\"ds-sect-h2\">Three ways to name a value</h2><p class=\"ds-sect-p\">A variable is a name for a value.</p><h3 class=\"ds-sect-h3\">final</h3><p class=\"ds-sect-p\">Assigned once, when the line runs.</p></section>",
+      "css": ".ds-sect { font-family: var(--font-display, Archivo, system-ui, sans-serif); color: var(--color-fd-foreground, #101512); } .ds-sect-h2 { margin: 3.25rem 0 0; padding-top: 1.15rem; font-size: 1.28rem; font-weight: 600; letter-spacing: -0.012em; border-top: 2px solid var(--color-fd-foreground, #101512); box-shadow: 0 -5px 0 -4px var(--color-fd-foreground, #101512); } .ds-sect-h3 { margin: 2.4rem 0 0; padding-top: 0.7rem; font-size: 1.05rem; font-weight: 600; letter-spacing: -0.012em; border-top: 1px solid var(--etude-rule, #C9CEC6); } .ds-sect-p { font-family: var(--font-body, Literata, Georgia, serif); font-size: 1.02rem; line-height: 1.72; max-width: 68ch; margin: 0.9rem 0 0; }"
+    },
+    {
+      "name": "Drill",
+      "kind": "custom",
+      "refersTo": "chapter-numeral",
+      "description": "One step of a practice sequence: a mono index over a drawn repeat sign, bracketing the content.",
+      "html": "<div class=\"ds-drill\"><div class=\"ds-drill-gutter\"><span class=\"ds-drill-no\">1</span><span class=\"ds-repeat\"><span class=\"ds-repeat-thick\"></span><span class=\"ds-repeat-thin\"></span><svg class=\"ds-repeat-dots\" viewBox=\"0 0 5 14\" fill=\"currentColor\"><circle cx=\"2.5\" cy=\"3.4\" r=\"1.7\"/><circle cx=\"2.5\" cy=\"10.6\" r=\"1.7\"/></svg></span></div><div class=\"ds-drill-body\"><p class=\"ds-direction ds-direction-fail\">Nothing exists yet. This will not compile, and that is the point.</p></div></div>",
+      "css": ".ds-drill { display: grid; grid-template-columns: 26px minmax(0,1fr); gap: 14px; margin: 24px 0; } .ds-drill-gutter { display: flex; flex-direction: column; align-items: center; gap: 6px; padding-top: 4px; color: #1F4A3D; } .ds-drill-no { font-family: var(--font-mono, 'JetBrains Mono', monospace); font-size: 0.8rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; } .ds-repeat { position: relative; display: flex; align-items: stretch; gap: 2px; flex: 1; min-height: 2.25rem; width: 14px; } .ds-repeat-thick { width: 3px; background: currentColor; } .ds-repeat-thin { width: 1px; background: currentColor; } .ds-repeat-dots { position: absolute; top: 50%; right: 0; width: 5px; height: 14px; transform: translateY(-50%); } .ds-drill-body { min-width: 0; } .ds-direction { font-family: var(--font-body, Literata, Georgia, serif); font-style: italic; font-size: 0.95rem; line-height: 1.5; margin: 8px 0; } .ds-direction-fail { color: #C0392B; } .ds-direction-pass { color: #1F4A3D; }"
+    },
+    {
+      "name": "Gloss",
+      "kind": "card",
+      "refersTo": "gloss",
+      "description": "Hold here and read. Two hairlines and a red fermata — never a filled card.",
+      "html": "<aside class=\"ds-gloss\"><span class=\"ds-gloss-mark\"><svg viewBox=\"0 0 20 14\" width=\"17\" height=\"12\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"><path d=\"M1.5 12.5a8.5 8.5 0 0 1 17 0\"/><circle cx=\"10\" cy=\"8\" r=\"1.7\" fill=\"currentColor\" stroke=\"none\"/></svg></span><div><p class=\"ds-gloss-title\">Read the failure first</p><p class=\"ds-gloss-body\">A failure you have never seen is a test you cannot trust.</p></div></aside>",
+      "css": ".ds-gloss { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 12px; margin: 28px 0; padding: 14px 0; border-top: 1px solid #C9CEC6; border-bottom: 1px solid #C9CEC6; } .ds-gloss-mark { padding-top: 4px; color: #C0392B; display: block; } .ds-gloss-title { font-family: var(--font-display, Archivo, system-ui, sans-serif); font-weight: 600; font-size: 0.94rem; margin: 0 0 4px; color: #101512; } .ds-gloss-body { font-family: var(--font-body, Literata, Georgia, serif); font-size: 0.95rem; line-height: 1.62; margin: 0; color: #101512; }"
+    },
+    {
+      "name": "Code Plate (authored source)",
+      "kind": "custom",
+      "refersTo": "code-plate",
+      "description": "Source the reader types. Light plate, hairline border, scrolls horizontally — lines are never rewrapped.",
+      "html": "<figure class=\"ds-plate\"><div class=\"ds-plate-bar\">test/first_test.dart</div><pre class=\"ds-plate-pre\"><code><span class=\"ds-kw\">void</span> main() {\n  test(<span class=\"ds-str\">'greets by name'</span>, () { ... });\n}</code></pre></figure>",
+      "css": ".ds-plate { margin: 16px 0; background: #FBFBF7; border: 1px solid #C9CEC6; border-radius: 2px; box-shadow: none; overflow: hidden; } .ds-plate-bar { font-family: var(--font-mono, 'JetBrains Mono', monospace); font-size: 0.72rem; letter-spacing: 0.02em; padding: 8px 12px; border-bottom: 1px solid #C9CEC6; color: #56605A; } .ds-plate-pre { font-family: var(--font-mono, 'JetBrains Mono', monospace); font-size: 0.82rem; line-height: 1.7; margin: 0; padding: 12px; overflow-x: auto; white-space: pre; color: #2B322D; } .ds-kw { color: #1F4A3D; } .ds-str { color: #7A6420; }"
+    },
+    {
+      "name": "Console (machine output)",
+      "kind": "custom",
+      "refersTo": "code-console",
+      "description": "Verbatim terminal output. Dark slab, no syntax colour, wraps rather than clips.",
+      "html": "<figure class=\"ds-console\"><div class=\"ds-console-bar\">terminal</div><pre class=\"ds-console-pre\"><code>Error: Error when reading 'lib/greeting.dart': No such file or directory\ntest/first_test.dart:5:20: Error: Method not found: 'hello'.</code></pre></figure>",
+      "css": ".ds-console { margin: 16px 0; background: #161B18; border: 1px solid #161B18; border-radius: 2px; overflow: hidden; } .ds-console-bar { font-family: var(--font-mono, 'JetBrains Mono', monospace); font-size: 0.72rem; letter-spacing: 0.02em; padding: 8px 12px; color: rgba(203,212,205,0.62); border-bottom: 1px solid rgba(203,212,205,0.18); } .ds-console-pre { font-family: var(--font-mono, 'JetBrains Mono', monospace); font-size: 0.82rem; line-height: 1.7; margin: 0; padding: 12px; color: #CBD4CD; white-space: pre-wrap; overflow-wrap: anywhere; max-width: 100%; }"
+    },
+    {
+      "name": "Rail Entry",
+      "kind": "nav",
+      "refersTo": "rail-entry",
+      "description": "One étude in the green rail: number, name, and a pencil mark once worked.",
+      "html": "<nav class=\"ds-rail\"><a class=\"ds-rail-link\" href=\"#\"><span class=\"ds-entry\"><span class=\"ds-entry-no\">1</span><span class=\"ds-entry-name\">Hello, Dart</span><svg class=\"ds-entry-mark\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2.5 13.5l1-3 7.5-7.5 2 2L5.5 12.5z\"/><path d=\"M9.5 4.5l2 2\"/></svg></span></a><a class=\"ds-rail-link\" href=\"#\" data-active=\"true\"><span class=\"ds-entry\"><span class=\"ds-entry-no\">2</span><span class=\"ds-entry-name\">Your first test</span><span></span></span></a></nav>",
+      "css": ".ds-rail { background: #1F4A3D; padding: 12px 10px; font-family: var(--font-display, Archivo, system-ui, sans-serif); } .ds-rail-link { display: block; text-decoration: none; color: #E4EBE5; font-size: 0.88rem; padding: 6px 8px; border-radius: 2px; } .ds-rail-link:hover { background: color-mix(in srgb, #ffffff 9%, transparent); } .ds-rail-link:focus-visible { outline: 2px solid #F2D06B; outline-offset: 2px; } .ds-rail-link[data-active='true'] { color: #ffffff; font-weight: 600; background: color-mix(in srgb, #ffffff 9%, transparent); } .ds-entry { display: grid; grid-template-columns: 1.35rem minmax(0,1fr) 0.95rem; gap: 0.5rem; align-items: baseline; width: 100%; } .ds-entry-no { font-family: var(--font-mono, 'JetBrains Mono', monospace); font-size: 0.72rem; font-variant-numeric: tabular-nums; text-align: right; opacity: 0.6; } .ds-rail-link[data-active='true'] .ds-entry-no { opacity: 1; color: #F2D06B; } .ds-entry-name { min-width: 0; text-wrap: pretty; } .ds-entry-mark { width: 0.85rem; height: 0.85rem; align-self: center; color: #F2D06B; }"
+    },
+    {
+      "name": "Worked Toggle",
+      "kind": "button",
+      "refersTo": "worked-toggle",
+      "description": "The signature interaction. Marking a study worked draws its pencil mark and leaves it in the margin.",
+      "html": "<div class=\"ds-worked\"><button type=\"button\" class=\"ds-worked-btn\" aria-pressed=\"false\"><svg viewBox=\"0 0 16 16\" width=\"15\" height=\"15\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path class=\"ds-draw\" d=\"M2.5 13.5l1-3 7.5-7.5 2 2L5.5 12.5z\"/><path d=\"M9.5 4.5l2 2\"/></svg><span>Mark this study worked</span></button></div>",
+      "css": "@keyframes ds-draw-on { from { stroke-dashoffset: 34; } to { stroke-dashoffset: 0; } } .ds-worked { margin-top: 48px; padding-top: 14px; border-top: 2px solid #101512; } .ds-worked-btn { display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-display, Archivo, system-ui, sans-serif); font-size: 0.87rem; font-weight: 500; background: transparent; border: 0; padding: 0; cursor: pointer; color: #56605A; transition: opacity 150ms; } .ds-worked-btn:hover { opacity: 0.7; } .ds-worked-btn:focus-visible { outline: 2px solid #1F4A3D; outline-offset: 2px; } .ds-worked-btn[aria-pressed='true'] { color: #1F4A3D; } .ds-worked-btn svg { opacity: 0.45; } .ds-worked-btn[aria-pressed='true'] svg { opacity: 1; } .ds-worked-btn[aria-pressed='true'] .ds-draw { stroke-dasharray: 34; animation: ds-draw-on 460ms cubic-bezier(0.16,1,0.3,1) both; } @media (prefers-reduced-motion: reduce) { .ds-worked-btn[aria-pressed='true'] .ds-draw { animation: none; stroke-dashoffset: 0; } }"
+    },
+    {
+      "name": "Table of Contents",
+      "kind": "nav",
+      "refersTo": "toc-entry-active",
+      "description": "The reading position in the book's own hand: Archivo, active entry in Peters green. No rail, no indent bar, no fill.",
+      "html": "<nav class=\"ds-toc\"><p class=\"ds-toc-cap\">On this page</p><a class=\"ds-toc-a\" href=\"#\">Three ways to name a value</a><a class=\"ds-toc-a\" href=\"#\" data-active=\"true\">final is about the binding</a><a class=\"ds-toc-a\" href=\"#\">Challenges</a></nav>",
+      "css": ".ds-toc { font-family: var(--font-display, Archivo, system-ui, sans-serif); display: flex; flex-direction: column; gap: 0.55rem; } .ds-toc-cap { font-size: 0.78rem; font-weight: 600; color: var(--etude-grey, #56605A); margin: 0 0 0.35rem; } .ds-toc-a { font-size: 0.85rem; line-height: 1.4; color: var(--etude-grey, #56605A); text-decoration: none; } .ds-toc-a:hover { color: var(--color-fd-foreground, #101512); } .ds-toc-a:focus-visible { outline: 2px solid var(--etude-green, #1F4A3D); outline-offset: 2px; } .ds-toc-a[data-active='true'] { color: var(--etude-green, #1F4A3D); font-weight: 600; }"
+    },
+    {
+      "name": "Cover CTA",
+      "kind": "button",
+      "refersTo": "cta-primary",
+      "description": "The single filled button in the system: ochre field, green ink, fully square.",
+      "html": "<a class=\"ds-cta\" href=\"#\">Start study 1</a> <a class=\"ds-cta-link\" href=\"#\">How to use this book</a>",
+      "css": ".ds-cta { display: inline-block; font-family: var(--font-display, Archivo, system-ui, sans-serif); font-size: 0.94rem; font-weight: 600; padding: 12px 24px; background: #F2D06B; color: #16352C; border-radius: 0; text-decoration: none; transition: opacity 150ms; } .ds-cta:hover { opacity: 0.88; } .ds-cta:focus-visible { outline: 2px solid #1F4A3D; outline-offset: 2px; } .ds-cta-link { font-family: var(--font-display, Archivo, system-ui, sans-serif); font-size: 0.94rem; font-weight: 500; color: inherit; text-decoration: underline; text-underline-offset: 4px; margin-left: 16px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Étude Book",
+    "overview": "This is a practice manual in the livery of an engraved music edition, not a documentation site. The reader works with an editor and a terminal open and types along; the page is built for that posture. Each chapter is a numbered étude: a large green numeral beside the title over a double rule, an italic performance direction beneath it, then drills bracketed by drawn repeat signs. Nothing on the page is decorative — every mark is a music-engraving convention doing a job the reader can name.\n\nThe material vocabulary is deliberately narrow: Peters green owns the full-height rail and every chapter numeral, plate ink sits on manuscript white, and correction red appears only where something is failing. Depth is carried by rules and material change, never by shadow. The only images in the build are marks the code draws — SVG repeat dots, a fermata, a pencil — because a rasterized illustration would break the engraved surface.\n\nThe system refuses the default docs arrangement of neutral sidebar plus neutral column. It also refuses cards, colour bars, gradients, and shadowed elevation. Where a state matters, it is engraved: a numeral, a drawn mark, a rule weight, a word. Colour reinforces state but never carries it alone — PRODUCT.md's readers include red-green colour-blind readers, and the failing/passing drill directions must read without hue.",
+    "keyCharacteristics": [
+      "Peters green rail owning a whole region, never a stripe or an accent bar",
+      "Chapter numerals as display type, tabular and tight-tracked",
+      "Double-rule chapter head borrowed from a score's system break",
+      "Two distinct code materials: authored source on a plate, machine output on a console",
+      "Marks over colour for every state; one authored motion in the entire build",
+      "Flat surfaces, 2px corner engraving at most, no shadows anywhere"
+    ],
+    "rules": [
+      {
+        "name": "The Preserved-Relationships Rule",
+        "body": "Dark mode preserves the light-mode relationships, never the light-mode arithmetic. The plate is always a step lighter than the page ground and the console always darker than it, so the Two-Materials Rule reads in both themes. Audit test: in dark mode, if the plate and the console are the same near-black, or if either sits flush with the ground, the theme is wrong regardless of the individual values.",
+        "section": "colors"
+      },
+      {
+        "name": "The Same-Cloth Rule",
+        "body": "The livery does not change with the light. --etude-rail and its ink are identical in :root and .dark — book cloth is the same cloth under any lamp. A tinted or lightened dark-mode rail is a bug, not a refinement.",
+        "section": "colors"
+      },
+      {
+        "name": "The Whole-Region Rule",
+        "body": "Peters green owns an entire region — the rail, the mobile subnav, the cover masthead — or it appears as ink. It is never a 4px stripe, a chip fill, a badge, or a highlight bar.",
+        "section": "colors"
+      },
+      {
+        "name": "The Mark-Not-Hue Rule",
+        "body": "No state is carried by colour alone. A failing drill is red and says so in words; a worked study is ochre and carries a drawn pencil; the active rail entry is brighter and bolder and its numeral changes state. Audit test: greyscale the screen — if you can no longer tell pass from fail or worked from unworked, the treatment is wrong.",
+        "section": "colors"
+      },
+      {
+        "name": "The Correction-Red Rule",
+        "body": "Red means a thing is failing or a thing must not be skimmed. It is never used for emphasis, links, brand, or decoration, and never as a fill.",
+        "section": "colors"
+      },
+      {
+        "name": "The Remapped-Syntax Rule",
+        "body": "Syntax colour is not a Shiki theme. The build intercepts the emitted --shiki-light / --shiki-dark custom properties by attribute selector and remaps each github-light hex into this palette (keywords → green, strings → an ochre-brown, comments → grey). Swapping the Shiki theme, or letting the highlighter emit different hexes, silently reverts the code plate to GitHub's palette. Extend the remap table; do not replace it with a theme.",
+        "section": "colors"
+      },
+      {
+        "name": "The Three-Voice Rule",
+        "body": "Archivo announces, Literata explains, JetBrains Mono counts and executes. A number that orders something (étude number, drill index, book span) is always mono and tabular; a number that is the chapter's identity is Archivo display.",
+        "section": "typography"
+      },
+      {
+        "name": "The Instruction-Italic Rule",
+        "body": "Italic Literata is reserved for performance directions — how to work this drill. Never use it for emphasis inside prose; emphasis is a semantic <strong>.",
+        "section": "typography"
+      },
+      {
+        "name": "The No-Shadow Rule",
+        "body": "Nothing in this world casts a shadow — no cards, no popovers, no hover lift, no offset. If a surface needs to read as separate, change its material (plate, console) or draw a rule. A hard offset shadow would import a neobrutalist idiom this world does not speak.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Double-Rule Rule",
+        "body": "The double rule is the score's system break, and it exists at two scales and no others: the chapter head takes it full weight (2px with a 1px line 3px beneath, once per page), and an h2 takes the bar-line restatement of the same device (2px with a hairline 5px above). An h3 takes a single hairline in the rule colour. These are three steps of one device — a section head is not a new divider, and no fourth weight may be invented for a fourth level.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Two-Materials Rule",
+        "body": "Authored source and machine output are different materials and must stay different: source is a light plate that scrolls, output is a dark slab that wraps. This is a product principle — the reader must be able to tell at a glance what they type from what the machine said — not a style preference. Never render a transcript on a plate or source on the console.",
+        "section": "components"
+      },
+      {
+        "name": "The One-Motion Rule",
+        "body": "This build authors exactly one animation: etude-draw-on, a 34-unit stroke-dashoffset sweep over 460ms on cubic-bezier(0.16, 1, 0.3, 1), which draws the pencil mark in when a study is first marked worked. It is fully disabled under prefers-reduced-motion, with the stroke resolved to its final state. Everything else that moves is an opacity fade on hover. Do not add entrance animations, scroll reveals, or transitions on colour.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Do let Peters green own an entire region — rail, mobile subnav, cover masthead — or use it as ink on numerals, repeat signs and directions.",
+      "Do pair every colour state with a mark or a word (The Mark-Not-Hue Rule); the page must survive greyscale.",
+      "Do keep authored source on the light plate (scrolls) and machine output on the dark console (wraps).",
+      "Do draw marks as inline SVG with currentColor and 1.5–1.6 stroke weights.",
+      "Do extend the --shiki-light remap table when a new token colour appears in the emitted output, rather than swapping the Shiki theme.",
+      "Do re-declare --color-fd-* tokens inside any region that takes the green field, so no neutral surface colour leaks in.",
+      "Do define every new token in both :root and .dark, and set the dark value by the relationship it must preserve — plate above the ground, console below it, livery unchanged — not by inverting the light value.",
+      "Do open an h2 with the bar line and an h3 with a single hairline, so a long chapter keeps the world going after the head.",
+      "Do set numbers that order things in tabular mono, and the chapter's own number in Archivo display."
+    ],
+    "donts": [
+      "Don't add a box-shadow anywhere, including a hard offset shadow — this world has no light source and no neobrutalist idiom.",
+      "Don't introduce a card: no filled, rounded, bordered container for prose. Glosses use two hairlines and nothing else.",
+      "Don't add a kicker or eyebrow line above a heading. The chapter numeral is the label, and standing facts (the study count, the Dart version) belong in the opening sentence.",
+      "Don't invent a fourth rule weight or a new divider device for a heading level. The double rule has three steps: chapter head, h2 bar line, h3 hairline.",
+      "Don't let a dark-mode surface collapse onto its neighbour: the plate, the ground and the console must stay three distinguishable materials in both themes.",
+      "Don't use a glyph icon font or an icon package; every mark in this system is drawn SVG.",
+      "Don't use a system display face — Archivo, Literata and JetBrains Mono are self-hosted and are the only three faces.",
+      "Don't exceed 2px of corner radius on page geometry; buttons and regions are square.",
+      "Don't use correction red as a fill, a border, or an emphasis colour, or marked ochre for anything the reader did not do themselves.",
+      "Don't author a second animation. The 460ms draw-on is the only authored motion.",
+      "Don't ship a raster. This build contains no photographs, illustrations, textures or generated plates, and an imported image would break the engraved surface."
+    ]
+  }
+}

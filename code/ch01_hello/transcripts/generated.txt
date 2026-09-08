@@ -1,0 +1,2 @@
+$ dart run bin/generated.dart
+Hello world: 42!

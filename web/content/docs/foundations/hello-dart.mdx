@@ -1,0 +1,89 @@
+---
+title: Hello, Dart
+study: 1
+direction: Read the analyzer. It is talking to you, not at you.
+description: Install the SDK, make a project, run it, and meet the tool that will correct you for the rest of the book.
+---
+
+Dart is a language for writing programs that run on a phone, a server, or a browser. You
+write text in a file, a compiler turns it into something the machine executes, and the
+program runs. That is the whole idea.
+
+Before anything else, check the SDK is on your machine:
+
+```bash
+dart --version
+```
+
+You want 3.13 or later. This book uses features older versions do not have.
+
+## Make a project
+
+Dart makes projects for you. Ask for one:
+
+```bash
+dart create hello
+cd hello
+```
+
+You now have a `pubspec.yaml`, a `lib/` directory, a `bin/` directory holding one Dart
+file, and a `test/` directory. Run it:
+
+<Console>
+<include cwd lang="bash" meta='title="terminal"'>../code/ch01_hello/transcripts/generated.txt</include>
+</Console>
+
+Forty-two. Here is the program that printed it:
+
+<include cwd lang="dart" meta='title="bin/hello.dart"'>../code/ch01_hello/bin/generated.dart</include>
+
+`void main()` is where every Dart program starts. `void` says this function hands nothing
+back. `print` writes one line to the terminal. The semicolon ends the statement, and Dart
+insists on it.
+
+The rest is scaffolding you did not ask for: the generated project puts a `calculate`
+function in `lib/` and imports it. Replace the whole file with the smallest program that
+still runs.
+
+<include cwd lang="dart" meta='title="bin/hello.dart"'>../code/ch01_hello/bin/hello.dart</include>
+
+<Console>
+<include cwd lang="bash" meta='title="terminal"'>../code/ch01_hello/transcripts/hello.txt</include>
+</Console>
+
+## The analyzer is the other half of the language
+
+Open the project in your editor and delete the semicolon. Before you run anything, a red
+line appears. That is the **analyzer**, and it reads your code as you type.
+
+You can ask it directly too:
+
+```bash
+dart analyze
+```
+
+<Gloss title="Read the error, do not pattern-match it">
+Beginners learn to see a red line and start changing things until it goes away. That
+habit will cost you months. The analyzer names what is wrong and where. Read the sentence
+it wrote, decide whether you agree with it, then fix it. Every study in this book is
+practice at exactly that.
+</Gloss>
+
+## Formatting is not a matter of taste
+
+Dart ships a formatter, and the community uses it without argument:
+
+```bash
+dart format .
+```
+
+Run it before you save. There is no house style to learn and nothing to configure. This
+is one of the quiet pleasures of the language.
+
+## Wrapping up
+
+You installed the SDK, made a project with `dart create`, ran it with `dart run`, and met
+`dart analyze` and `dart format`. You also met `void main()`, `print`, and the semicolon.
+
+The next study writes the first test. From there the book has a rhythm: say what you
+want, watch it fail, make it pass, tidy up.

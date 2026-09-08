@@ -1,0 +1,130 @@
+---
+title: Your first test
+study: 2
+direction: Slowly, and read every failure message before you fix it.
+description: Write the test before the code, watch it fail for a reason you understand, then make it pass.
+---
+
+A test is a small program that runs your code and checks the answer. You do not need to
+finish this book to write one. You need a function and an expectation.
+
+Dart ships the runner as a package called `test`. Add it to your project:
+
+```bash
+dart pub add dev:test
+```
+
+`dev:` puts it under `dev_dependencies`, which means it ships with your source but not
+with your program. Tests live in a `test/` directory in files whose names end in
+`_test.dart`. That naming is not a convention you can ignore: the runner finds tests by
+it.
+
+## 2.1 Write the test first
+
+Writing the test first sounds backwards. It is not. The test states what you want in a
+form the machine can check, and from that moment the analyzer and the runner are working
+for you, telling you one step at a time what is missing.
+
+<Drill n={1}>
+
+<Direction>Nothing exists yet. This will not compile, and that is the point.</Direction>
+
+<include cwd lang="dart" meta='title="test/first_test.dart"'>../code/ch02_greeting/test/first_test.dart</include>
+
+`test` takes a description and a function. `expect` takes what you got and what you
+wanted, in that order. The description is not a comment: it is printed when the test
+fails, so write it as a sentence about behaviour.
+
+</Drill>
+
+<Drill n={2}>
+
+<Direction>Run it. A failure you have never seen is a test you cannot trust.</Direction>
+
+<Console>
+<include cwd lang="bash" meta='title="terminal"'>../code/ch02_greeting/transcripts/undefined.txt</include>
+</Console>
+
+Two errors, and both are useful. The first says the file `lib/greeting.dart` does not
+exist. The second says the method `hello` was not found, and points at the exact column.
+The runner never started, because the code never compiled.
+
+</Drill>
+
+<Drill n={3}>
+
+<Direction tone="pass">Write enough to pass, and no more.</Direction>
+
+Make `lib/greeting.dart`:
+
+<include cwd lang="dart" meta='title="lib/greeting.dart"'>../code/ch02_greeting/lib/v2.dart#hello</include>
+
+`String` before the name says this function hands back a string. `=>` is shorthand for a
+function whose whole body is one expression. `$name` inside a string is **interpolation**:
+Dart replaces it with the value of `name`.
+
+<Console>
+<include cwd lang="bash" meta='title="terminal"'>../code/ch02_greeting/transcripts/pass.txt</include>
+</Console>
+
+</Drill>
+
+<Drill n={4}>
+
+<Direction tone="pass">Now tidy up, with the test holding the behaviour still.</Direction>
+
+`'Hello, '` is a fact about English, not about this function. Give it a name:
+
+<include cwd lang="dart" meta='title="lib/greeting.dart"'>../code/ch02_greeting/lib/v3.dart#hello</include>
+
+`const` means the value is fixed when the program is compiled, not when it runs. Run the
+test again. It still passes, and that is the whole point of refactoring: you changed the
+shape of the code and the behaviour did not move.
+
+</Drill>
+
+## 2.2 Say it in another language
+
+The greeting works in English. Add Spanish and French, one failing test at a time. Here
+is where the study ends up:
+
+<include cwd lang="dart" meta='title="lib/greeting.dart"'>../code/ch02_greeting/lib/greeting.dart#hello</include>
+
+<include cwd lang="dart" meta='title="lib/greeting.dart"'>../code/ch02_greeting/lib/greeting.dart#prefix</include>
+
+`{String language = 'English'}` is a **named parameter with a default**: callers write
+`hello('Elodie', language: 'Spanish')`, and callers who do not care about language write
+nothing. `switch` used as an expression hands back a value; `_` is the case that matches
+anything else.
+
+<Gloss title="The language is the wrong type here">
+Nothing stops you writing `hello('Elodie', language: 'Klingon')`. It compiles, it runs,
+and it silently gives you English. A `String` accepts every string, and only three of
+them mean anything. Study 6 replaces this with an enum, which makes the mistake
+impossible instead of merely wrong. Notice the discomfort now; it is the feeling that
+tells you a type is too loose.
+</Gloss>
+
+<Console>
+<include cwd lang="bash" meta='title="terminal"'>../code/ch02_greeting/transcripts/all.txt</include>
+</Console>
+
+## Wrapping up
+
+You wrote a test before the code, read a compile error that named exactly what was
+missing, made it pass with the smallest thing that could work, and refactored with the
+test holding you steady. That loop is the rest of this book.
+
+Along the way: `test` and `expect`, `String`, `=>`, string interpolation, `const`, named
+parameters with defaults, and `switch` as an expression.
+
+## Challenges
+
+Three tests are already written and already failing. Make them pass one at a time. Do not
+edit the tests.
+
+<Console>
+<include cwd lang="bash" meta='title="terminal"'>../code/ch02_greeting/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch02_greeting/exercises/challenges.dart</include>

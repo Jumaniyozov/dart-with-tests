@@ -1,0 +1,11 @@
+name: ch03_variables
+description: Study 3 — var, final and const.
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.26.0

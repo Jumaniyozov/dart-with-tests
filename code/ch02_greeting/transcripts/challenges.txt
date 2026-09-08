@@ -1,0 +1,7 @@
+$ dart test exercises/
+00:00 +0: loading exercises/challenges_test.dart
+00:00 +0: exercises/challenges_test.dart: challenge 1 — goodbye says goodbye by name
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — goodbye says goodbye by name [E]
+  UnimplementedError: challenge 1
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — goodbye says goodbye to the world when the name is empty
+00:00 +0 -2: exercises/challenges_test.dart: challenge 1 — goodbye says goodbye to the world when the name is empty [E]

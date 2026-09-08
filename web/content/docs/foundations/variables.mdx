@@ -1,0 +1,110 @@
+---
+title: Variables
+study: 3
+direction: Reach for final first. Loosen only when the code makes you.
+description: var, final and const — three ways to name a value, and how to pick between them without thinking about it.
+---
+
+A variable is a name for a value. Dart gives you three ways to make one, and the
+difference between them is not style. It is a promise you make to the reader and to the
+compiler about whether the value will change.
+
+```dart
+var count = 0;          // may be reassigned
+final name = 'Islom';   // assigned once, when this line runs
+const pi = 3.14;        // fixed before the program even starts
+```
+
+You do not have to write the type. Dart reads it off the value: `count` is an `int`,
+`name` is a `String`. This is **inference**, not dynamic typing — the type is fixed and
+checked, you simply did not have to type it out. Write the type when it makes the code
+clearer and leave it out when it would only repeat what is obvious.
+
+## 3.1 Assign once by default
+
+<Drill n={1}>
+
+<Direction>Say what you want. `tags.dart` does not exist yet.</Direction>
+
+<include cwd lang="dart" meta='title="test/first_test.dart"'>../code/ch03_variables/test/first_test.dart</include>
+
+<Console>
+<include cwd lang="bash" meta='title="terminal"'>../code/ch03_variables/transcripts/undefined.txt</include>
+</Console>
+
+</Drill>
+
+<Drill n={2}>
+
+<Direction tone="pass">The smallest thing that passes.</Direction>
+
+<include cwd lang="dart" meta='title="lib/tags.dart"'>../code/ch03_variables/lib/v1.dart#tag</include>
+
+<Console>
+<include cwd lang="bash" meta='title="terminal"'>../code/ch03_variables/transcripts/pass.txt</include>
+</Console>
+
+</Drill>
+
+<Drill n={3}>
+
+<Direction tone="pass">Now clean the name, and let the keywords do the explaining.</Direction>
+
+<include cwd lang="dart" meta='title="lib/tags.dart"'>../code/ch03_variables/lib/v2.dart#tag</include>
+
+Two decisions in four lines.
+
+`hashPrefix` is `const`. Its value is known while the program is being compiled, so Dart
+can fold it into the machine code and it costs nothing at run time.
+
+`cleaned` is `final`. Its value is not known until `tag` runs and someone hands you a
+`name`, so `const` is impossible here. But it is assigned once and never changed, and
+`final` says exactly that. A reader who sees `final` knows they can stop tracking that
+name for the rest of the function.
+
+<Gloss title="final is about the binding, not the value">
+`final` stops you pointing the name at something else. It does not freeze what the name
+points at. With a list, `final` prevents `items = otherList`, but `items.add('x')` still
+works. `const` is the one that freezes the value itself. This distinction costs people
+hours later, so notice it now and meet it properly in Study 7.
+</Gloss>
+
+</Drill>
+
+## 3.2 A value you are not going to use
+
+Sometimes the language hands you something you do not want. Dart 3.7 made `_` a real
+**wildcard**: it binds nothing at all, so there is no name to read by accident and no
+analyzer warning about an unused variable.
+
+<include cwd lang="dart" meta='title="lib/tags.dart"'>../code/ch03_variables/lib/tags.dart#counting</include>
+
+Here `count` is `var` because it genuinely changes on every pass, and the loop variable is
+`_` because the characters do not matter — only how many there are. Using `var` for
+`count` is not laziness; it is the honest choice, and the contrast with `final` above is
+the whole point of this study.
+
+Here is where `tags.dart` ends up:
+
+<include cwd lang="dart" meta='title="lib/tags.dart"'>../code/ch03_variables/lib/tags.dart#tag</include>
+
+<Console>
+<include cwd lang="bash" meta='title="terminal"'>../code/ch03_variables/transcripts/all.txt</include>
+</Console>
+
+## Wrapping up
+
+`const` for values fixed before the program runs. `final` for values computed once and
+then left alone. `var` only when the value really does change. Written that way, the
+keyword tells the reader how much attention a name deserves, which is worth more than the
+handful of characters it costs.
+
+Also met: type inference, and `_` as a wildcard that binds nothing.
+
+## Challenges
+
+<Console>
+<include cwd lang="bash" meta='title="terminal"'>../code/ch03_variables/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch03_variables/exercises/challenges.dart</include>
