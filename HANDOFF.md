@@ -69,9 +69,8 @@ The reader is a beginner and not a native English speaker. Short sentences.
 
 - Studies 4–44.
 - A reference / cheatsheet section (planned, not started).
-- Favicon, OG metadata, 404 page, licence.
+- 404 page, licence.
 - Vercel deployment.
-- GitHub links are placeholders — there is no repo yet. Re-wire once there is one.
 - `.impeccable/surfaces/web-src-app-docs-slug-page-tsx.md` still describes the v1
   "Étude Book". Stale.
 - `.impeccable/design.json` (31 KB) is the v1 sidecar. Stale. Regenerate or delete.
