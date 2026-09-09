@@ -1,0 +1,170 @@
+---
+title: Lists
+study: 7
+direction: Decide what may change before you decide what it is called.
+description: Holding many values in order, and the difference between a name that cannot move and a value that cannot change.
+---
+
+Everything so far has held one thing. A basket holds many, in order, and Dart calls that a
+`List`.
+
+```dart
+final prices = [250, 180, 320];   // a List<int>, inferred from the values
+prices[0];                        // 250 — positions count from zero
+prices.length;                    // 3
+prices.add(99);                   // now four long
+```
+
+The type is written `List<int>`: a list **of** something. You rarely write it down, because
+Dart reads it off the values, exactly as it did for `int` and `String` in study 3.
+
+## 7.1 Adding up a basket
+
+<Drill n={1}>
+
+<Direction>Prices in pence, as study 4 insisted.</Direction>
+
+<include cwd lang="dart" meta='title="test/first_test.dart"'>../code/ch07_basket/test/first_test.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch07_basket/transcripts/undefined.txt</include>
+</Console>
+
+</Drill>
+
+<Drill n={2}>
+
+<Direction tone="pass">Walk the list and keep a running total.</Direction>
+
+<include cwd lang="dart" meta='title="lib/basket.dart"'>../code/ch07_basket/lib/v1.dart#total</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch07_basket/transcripts/pass.txt</include>
+</Console>
+
+`for (final price in prices)` visits each value in turn. `sum` is `var` because it changes
+on every pass — the honest choice study 3 argued for. There is a much shorter way to write
+this sum, and it needs closures, so it waits for Study 12.
+
+</Drill>
+
+## 7.2 What final actually promised
+
+Study 3 said `final` fixes the name, not the value, and promised this study would show what
+that means. Here it is.
+
+<include cwd lang="dart" meta='title="test/basket_test.dart"'>../code/ch07_basket/test/basket_test.dart#mutability</include>
+
+Three different things are going on, and mixing them up is the mistake this section exists
+to prevent:
+
+| | may the name be reassigned? | may the list be changed? |
+| --- | --- | --- |
+| `var prices = [...]` | yes | yes |
+| `final prices = [...]` | **no** | yes |
+| `const prices = [...]` | no | **no** |
+
+`final` is a promise about the **binding**. It says this name will not point at a different
+list later. It says nothing at all about the list, which is a separate object with a life
+of its own — and `add` changes that object, not the name.
+
+`const` is a promise about the **value**. The list is built while the program is compiled,
+stored inside the program, and cannot be modified by anybody.
+
+## 7.3 What a frozen list does when you push it
+
+`const` is not enforced by refusing to compile `add`. `standardPrices.add(999)` is a
+perfectly ordinary call to a method that exists on every list. The refusal happens later:
+
+<include cwd lang="dart" meta='title="bin/frozen.dart"'>../code/ch07_basket/bin/frozen.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch07_basket/transcripts/frozen.txt</include>
+</Console>
+
+Note where that happened. The print ran first. The program was **running** when it found
+out, which is a worse place to find out than the compiler. This is the one soft edge on
+`const`: it guarantees the value cannot change, but it catches the attempt at run time, not
+at build time.
+
+<Gloss title="A third kind of list that will not grow">
+`List.filled(2, 0)` makes a **fixed-length** list. Its values may be replaced but its
+length may not change, so `add` throws `Cannot add to a fixed-length list` — a different
+message from the `unmodifiable` one above, and worth recognising. Most Dart lists are
+growable and you will rarely ask for anything else, but the error message tells you which
+kind you were handed.
+</Gloss>
+
+## 7.4 One object, not two
+
+Study 3 promised that `const` values are **canonicalised**, and said the interesting part
+arrives with objects. A list is the first object you have met.
+
+```dart
+const a = [1, 2];
+const b = [1, 2];
+identical(a, b);   // true — one list, two names
+```
+
+Write the same `const` list in ten files and the finished program contains one list. Write
+the same list with `final` in two places and you get two lists that happen to be equal —
+and in fact not even equal, because an ordinary Dart list compares by identity:
+`[1, 2] == [1, 2]` is **false**.
+
+That is why the test above asserts `identical` for the `const` pair and `isFalse` for the
+`final` pair. Canonicalisation is not a tidy detail; it changes what `==` answers.
+
+## 7.5 Building a list out of other lists
+
+Three pieces of syntax let a list literal do work that would otherwise need a loop and a
+temporary variable.
+
+<include cwd lang="dart" meta='title="lib/basket.dart"'>../code/ch07_basket/lib/basket.dart#build</include>
+
+`...standardPrices` is a **spread**: it pours the elements of one list into another.
+`if (deluxe) 500` is a **collection-if** — the element exists only when the condition holds.
+There is no `else` needed and no empty slot left behind when the condition is false.
+
+<include cwd lang="dart" meta='title="lib/basket.dart"'>../code/ch07_basket/lib/basket.dart#raised</include>
+
+`for (final price in prices) ...` inside a literal is a **collection-for**: it produces one
+element per pass. Read it as "a new list, containing that expression for each price".
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch07_basket/transcripts/all.txt</include>
+</Console>
+
+<Practice source="Effective Dart — Usage" href="https://dart.dev/effective-dart/usage#do-use-collection-literals-when-possible">
+**DO use collection literals when possible.** Write `[]`, not `List()`. The lint is
+`prefer_collection_literals`, and Effective Dart's stated reason is exactly what this study
+just showed: a literal is the form that can take a spread and hold a collection-`if` or
+collection-`for`. A constructor call can do none of that. A literal is also the only form
+that can be `const`.
+
+The rule this book adds: decide mutability at the moment you declare the list, not later.
+`const` when the values are fixed before the program starts. `final` when the list is built
+while the program runs and then only read from and added to. `var` only when the name
+itself must point somewhere else. Reaching for `var` out of habit tells every later reader
+that the name might move, and they will keep watching it.
+</Practice>
+
+## Wrapping up
+
+A list holds many values in order and knows its own length. `final` stops the name moving;
+`const` stops the list changing and complains at run time when you try. Two identical
+`const` lists are one object, which is canonicalisation finally arriving somewhere you can
+see it.
+
+Also met: spreads, collection-`if`, collection-`for`, fixed-length lists, and the fact that
+ordinary lists compare by identity rather than by their contents.
+
+## Challenges
+
+Three tests are already written and already failing. Make them pass one at a time. Do not
+edit the tests. Challenge 2 checks that you did not change the list you were given.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch07_basket/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch07_basket/exercises/challenges.dart</include>

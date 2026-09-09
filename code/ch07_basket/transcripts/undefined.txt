@@ -1,0 +1,11 @@
+$ dart test test/first_test.dart
+00:00 +0: loading test/first_test.dart
+00:00 +0 -1: loading test/first_test.dart [E]
+  Failed to load "test/first_test.dart":
+  test/first_test.dart:1:8: Error: Error when reading 'lib/basket.dart': No such file or directory
+  import 'package:ch07_basket/basket.dart';
+         ^
+  test/first_test.dart:6:12: Error: Method not found: 'totalOf'.
+      expect(totalOf([250, 180, 320]), 750);
+             ^^^^^^^
+00:00 +0 -1: Some tests failed.

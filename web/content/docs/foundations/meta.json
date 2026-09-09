@@ -6,6 +6,7 @@
     "variables",
     "numbers",
     "strings",
-    "enums"
+    "enums",
+    "lists"
   ]
 }

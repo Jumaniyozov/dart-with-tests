@@ -1,0 +1,4 @@
+$ dart run bin/frozen.dart
+the standard prices: [250, 180, 320]
+Unhandled exception:
+Unsupported operation: Cannot add to an unmodifiable list

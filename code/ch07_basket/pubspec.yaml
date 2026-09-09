@@ -1,0 +1,11 @@
+name: ch07_basket
+description: Study 7 — lists, and the difference between a fixed name and a fixed value.
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.26.0
