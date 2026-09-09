@@ -413,6 +413,14 @@ existing transcripts and verified to reproduce.
 - **`dart format` must be clean across `code/`**, because study 1 tells the
   reader to format on save and two included files had drifted.
   `dart format --output=none --set-exit-if-changed .` is the check.
+- **The challenge intro states a count, so the count is a claim.** Every study
+  from 2 onward opens its Challenges with "Three challenges, N failing tests";
+  N must equal the `-N` on the last line of `dart test exercises/` in that
+  study's package. Studies 2-14 spent the whole of Book I saying "three tests"
+  when the real number was four to seven, which is the smallest possible
+  version of this book's central failure — a sentence written from an
+  expectation rather than from a run. Re-run the count whenever a challenge
+  test is added.
 - One `<Practice>` per study. When it carries an attribution it must be a real
   link the writer has opened: `<Practice source="Effective Dart — Usage"
   href="https://dart.dev/…">`. The candidate rules named above are starting
