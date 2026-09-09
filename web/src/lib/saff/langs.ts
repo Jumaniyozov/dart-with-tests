@@ -129,6 +129,28 @@ export const saffDart: Grammar = {
         '2': { name: 'entity.name.function.dart' },
       },
     },
+    {
+      // A member read: `person.adress`, `..name = x`. Anything followed by `(`
+      // or `<` is a call and is claimed by the rule above, so the lookahead is
+      // what keeps `.toString()` a function and `.adress` a field.
+      match: '(\\.)\\s*([$_]*[a-z][$\\w]*)\\b(?!\\s*[(<])',
+      captures: {
+        '1': { name: 'punctuation.dot.dart' },
+        '2': { name: 'saff.field.dart' },
+      },
+    },
+    {
+      // A named argument, inline: `Adress(street: 'x', city: 'y')`. Anchored to
+      // `(` or `,` so a ternary's `:` cannot drag the preceding word in with it.
+      match: '(?<=[(,])\\s*([$_]*[a-z][$\\w]*)\\s*(?=:)',
+      captures: { '1': { name: 'saff.field.dart' } },
+    },
+    {
+      // The same, written one per line — the style the book uses throughout.
+      // `default:` is the one label that would otherwise be caught here.
+      match: '^\\s*(?!default\\b)([$_]*[a-z][$\\w]*)\\s*(?=:)',
+      captures: { '1': { name: 'saff.field.dart' } },
+    },
     { match: '[{}()\\[\\],<>]', name: 'punctuation.bracket.dart' },
   ],
 };

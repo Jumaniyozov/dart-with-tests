@@ -215,6 +215,20 @@ Legibility was checked and is fine — worst chromatic slot is light yellow at
 4.85:1 on its ground, the rest 5–16:1. Slots 0 and 8 sit low in dark on purpose;
 that is what black and bright black are for.
 
+## Versioning
+
+`VERSION` in `generate.mjs` names the JAR, so bumping it writes a new file and
+the old one must be deleted from the IDE's plugin directory — two JARs declaring
+the same plugin id is not a state IntelliJ recovers from gracefully.
+
+```bash
+rm  ~/Library/Application\ Support/JetBrains/<IDE>/plugins/SAFF-theme-<old>.jar
+cp  editor-themes/SAFF-theme-<new>.jar ~/Library/Application\ Support/JetBrains/<IDE>/plugins/
+```
+
+Minor for a new role or a colour that moves, patch for key coverage and fixes.
+**1.1.0** added the `field` role.
+
 ## What the colours mean
 
 Eight roles, the same eight the book distinguishes:
@@ -237,6 +251,27 @@ else gets a colour, which is why the cards read quietly at length.
 
 Weakest contrast is 4.53:1 (light comment) and 5.21:1 (dark comment and
 interpolation), both above WCAG AA for body text.
+
+**Fields are the eleventh role, and the palette had no room for them.**
+The ten original roles all live between hue 29 and 172 — the brass-to-emerald
+arc — and 195 to 345 is empty, because SAFF has no blue, indigo or magenta. An
+eleventh role therefore either crowds the arc or introduces a hue the book has
+never had. `field` is `oklch(46% 0.090 85)` / `oklch(80% 0.085 95)`: brass, a
+step darker and more saturated than the obvious pick, because at lower chroma it
+measured 5.7 OKLab units from punctuation and read as a neutral. It now clears
+7.8 in light and 7.5 in dark, and sits 12.3 / 14.2 from identifier — which is
+the distinction that actually matters. It stays inside 8 of `type`, and that is
+accepted: a field and a type are both brass, and nothing else in the zone was
+further away.
+
+**TextMate cannot see fields.** Shiki's Dart grammar scopes `name`, `age` and
+`.adress` as bare `source.dart`, so the book carries three injection rules in
+`langs.ts` that invent `saff.field.dart` — one for member reads, excluding
+anything followed by `(` because that is a call, and two for named arguments,
+anchored to `(`/`,` or the start of a line so a ternary's `:` cannot drag the
+preceding word in. The IDE and Zed need none of it; their parsers already know
+what a member is. Check a grammar change with a token dump rather than by eye:
+`toString`, `case`, `default` and a ternary's operands are the four that break.
 
 **Light is tuned for salience, not darkness.** Every chromatic light role sits
 exactly on the sRGB gamut boundary for its lightness, so there is no saturation

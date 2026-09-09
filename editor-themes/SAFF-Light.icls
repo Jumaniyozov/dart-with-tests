@@ -1036,12 +1036,12 @@
     </option>
     <option name="DART_INSTANCE_FIELD_DECLARATION">
       <value>
-        <option name="FOREGROUND" value="2e493f" />
+        <option name="FOREGROUND" value="6f530a" />
       </value>
     </option>
     <option name="DART_INSTANCE_FIELD_REFERENCE">
       <value>
-        <option name="FOREGROUND" value="2e493f" />
+        <option name="FOREGROUND" value="6f530a" />
       </value>
     </option>
     <option name="DART_INSTANCE_METHOD_DECLARATION">
@@ -1123,7 +1123,7 @@
     </option>
     <option name="DART_STATIC_FIELD_DECLARATION">
       <value>
-        <option name="FOREGROUND" value="2e493f" />
+        <option name="FOREGROUND" value="6f530a" />
       </value>
     </option>
     <option name="DART_STATIC_METHOD_DECLARATION">
@@ -1183,7 +1183,7 @@
     </option>
     <option name="DART_UNRESOLVED_INSTANCE_MEMBER_REFERENCE">
       <value>
-        <option name="FOREGROUND" value="2e493f" />
+        <option name="FOREGROUND" value="6f530a" />
       </value>
     </option>
     <option name="DEBUGGER_INLINED_VALUES">
@@ -1318,7 +1318,7 @@
     </option>
     <option name="DEFAULT_INSTANCE_FIELD">
       <value>
-        <option name="FOREGROUND" value="2e493f" />
+        <option name="FOREGROUND" value="6f530a" />
       </value>
     </option>
     <option name="DEFAULT_INSTANCE_METHOD">
@@ -1406,7 +1406,7 @@
     </option>
     <option name="DEFAULT_STATIC_FIELD">
       <value>
-        <option name="FOREGROUND" value="2e493f" />
+        <option name="FOREGROUND" value="6f530a" />
       </value>
     </option>
     <option name="DEFAULT_STATIC_METHOD">
@@ -2200,7 +2200,7 @@
     </option>
     <option name="GO_STRUCT_EXPORTED_MEMBER">
       <value>
-        <option name="FOREGROUND" value="2e493f" />
+        <option name="FOREGROUND" value="6f530a" />
       </value>
     </option>
     <option name="GO_STRUCT_EXPORTED_MEMBER_CALL">
@@ -2210,7 +2210,7 @@
     </option>
     <option name="GO_STRUCT_LOCAL_MEMBER">
       <value>
-        <option name="FOREGROUND" value="2e493f" />
+        <option name="FOREGROUND" value="6f530a" />
       </value>
     </option>
     <option name="GO_STRUCT_LOCAL_MEMBER_CALL">
@@ -2954,7 +2954,7 @@
     </option>
     <option name="JSON.PROPERTY_KEY">
       <value>
-        <option name="FOREGROUND" value="2e493f" />
+        <option name="FOREGROUND" value="6f530a" />
       </value>
     </option>
     <option name="JSON.STRING">
@@ -3275,7 +3275,7 @@
     </option>
     <option name="MAGIC_MEMBER_ACCESS">
       <value>
-        <option name="FOREGROUND" value="2e493f" />
+        <option name="FOREGROUND" value="6f530a" />
       </value>
     </option>
     <option name="MAKEFILE_BAD_CHARACTER">
@@ -3798,7 +3798,7 @@
     </option>
     <option name="NG.PROPERTY_BINDING_ATTR_NAME">
       <value>
-        <option name="FOREGROUND" value="2e493f" />
+        <option name="FOREGROUND" value="6f530a" />
       </value>
     </option>
     <option name="NG.TEMPLATE_BINDINGS_ATTR_NAME">
@@ -3875,7 +3875,7 @@
     </option>
     <option name="OC.PROPERTY">
       <value>
-        <option name="FOREGROUND" value="2e493f" />
+        <option name="FOREGROUND" value="6f530a" />
       </value>
     </option>
     <option name="OC.PROPERTY_ATTRIBUTE">
@@ -3890,7 +3890,7 @@
     </option>
     <option name="OC.STRUCT_FIELD">
       <value>
-        <option name="FOREGROUND" value="936000" />
+        <option name="FOREGROUND" value="6f530a" />
       </value>
     </option>
     <option name="OC.STRUCT_LIKE">
@@ -3925,7 +3925,7 @@
     </option>
     <option name="PHP_INSTANCE_FIELD">
       <value>
-        <option name="FOREGROUND" value="2e493f" />
+        <option name="FOREGROUND" value="6f530a" />
       </value>
     </option>
     <option name="PHP_INTERFACE">
@@ -4427,7 +4427,7 @@
     </option>
     <option name="REST.FIELD">
       <value>
-        <option name="FOREGROUND" value="2e493f" />
+        <option name="FOREGROUND" value="6f530a" />
       </value>
     </option>
     <option name="REST.ITALIC">
@@ -4927,7 +4927,7 @@
     </option>
     <option name="TIL.PROPERTY_REFERENCE">
       <value>
-        <option name="FOREGROUND" value="2e493f" />
+        <option name="FOREGROUND" value="6f530a" />
       </value>
     </option>
     <option name="TIL.RESOURCE_INSTANCE_REFERENCE">
@@ -5058,7 +5058,7 @@
     </option>
     <option name="TS.INSTANCE_MEMBER_VARIABLE">
       <value>
-        <option name="FOREGROUND" value="2e493f" />
+        <option name="FOREGROUND" value="6f530a" />
       </value>
     </option>
     <option name="TS.INTERFACE">
@@ -5146,7 +5146,7 @@
     </option>
     <option name="TS.STATIC_MEMBER_VARIABLE">
       <value>
-        <option name="FOREGROUND" value="2e493f" />
+        <option name="FOREGROUND" value="6f530a" />
       </value>
     </option>
     <option name="TS.STRING">

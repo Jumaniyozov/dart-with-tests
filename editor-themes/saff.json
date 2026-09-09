@@ -615,27 +615,12 @@
             "font_style": null,
             "font_weight": null
           },
-          "variable.member": {
-            "color": "#2E493F",
-            "font_style": null,
-            "font_weight": null
-          },
           "variable.parameter": {
             "color": "#2E493F",
             "font_style": null,
             "font_weight": null
           },
           "parameter": {
-            "color": "#2E493F",
-            "font_style": null,
-            "font_weight": null
-          },
-          "property": {
-            "color": "#2E493F",
-            "font_style": null,
-            "font_weight": null
-          },
-          "field": {
             "color": "#2E493F",
             "font_style": null,
             "font_weight": null
@@ -662,6 +647,21 @@
           },
           "parent": {
             "color": "#2E493F",
+            "font_style": null,
+            "font_weight": null
+          },
+          "variable.member": {
+            "color": "#6F530A",
+            "font_style": null,
+            "font_weight": null
+          },
+          "property": {
+            "color": "#6F530A",
+            "font_style": null,
+            "font_weight": null
+          },
+          "field": {
+            "color": "#6F530A",
             "font_style": null,
             "font_weight": null
           },
@@ -1360,27 +1360,12 @@
             "font_style": null,
             "font_weight": null
           },
-          "variable.member": {
-            "color": "#DFE7E0",
-            "font_style": null,
-            "font_weight": null
-          },
           "variable.parameter": {
             "color": "#DFE7E0",
             "font_style": null,
             "font_weight": null
           },
           "parameter": {
-            "color": "#DFE7E0",
-            "font_style": null,
-            "font_weight": null
-          },
-          "property": {
-            "color": "#DFE7E0",
-            "font_style": null,
-            "font_weight": null
-          },
-          "field": {
             "color": "#DFE7E0",
             "font_style": null,
             "font_weight": null
@@ -1407,6 +1392,21 @@
           },
           "parent": {
             "color": "#DFE7E0",
+            "font_style": null,
+            "font_weight": null
+          },
+          "variable.member": {
+            "color": "#CFBE7E",
+            "font_style": null,
+            "font_weight": null
+          },
+          "property": {
+            "color": "#CFBE7E",
+            "font_style": null,
+            "font_weight": null
+          },
+          "field": {
+            "color": "#CFBE7E",
             "font_style": null,
             "font_weight": null
           },

@@ -69,6 +69,10 @@ function dartSettings(c: CardPalette): Setting[] {
       settings: { foreground: c.interpolation },
     },
     { scope: ['comment'], settings: { foreground: c.comment, fontStyle: 'italic' } },
+    // Members, from the injection grammar. TextMate cannot tell a field from a
+    // variable on its own, which is why these scopes have to be invented here;
+    // the IDE and Zed get the same distinction from a real parser.
+    { scope: ['saff.field.dart'], settings: { foreground: c.field, fontStyle: '' } },
     {
       scope: ['variable', 'other.source.dart'],
       settings: { foreground: c.identifier, fontStyle: '' },

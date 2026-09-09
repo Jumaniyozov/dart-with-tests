@@ -16,7 +16,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 
 // ── The syntax palette ───────────────────────────────────────────────────────
 // Mirrors web/src/lib/saff/palette.ts, which is asserted against below.
@@ -32,6 +32,7 @@ const SYNTAX = {
     interpolation: '#C10002', // oklch(51% 0.209 29)
     annotation: '#717500', //    oklch(54% 0.120 112)
     comment: '#587A6C', //       oklch(55% 0.045 167)
+    field: '#6F530A', //         oklch(46% 0.090 85)
     identifier: '#2E493F', //    oklch(38% 0.037 169)
     punctuation: '#5B6E67', //   oklch(52% 0.025 171)
   },
@@ -45,6 +46,7 @@ const SYNTAX = {
     interpolation: '#E57431', // oklch(68% 0.160 48)
     annotation: '#E1DC85', //    oklch(88% 0.110 106)
     comment: '#7C9A8E', //       oklch(66% 0.038 168)
+    field: '#CFBE7E', //         oklch(80% 0.085 95)
     identifier: '#DFE7E0', //    oklch(92% 0.012 150)
     punctuation: '#96A29A', //   oklch(70% 0.018 158)
   },
@@ -291,7 +293,7 @@ const KEYS = JSON.parse(readFileSync(join(HERE, 'intellij-keys.json'), 'utf8'));
 
 const SYNTAX_ROLES = new Set([
   'keyword', 'fn', 'type', 'string', 'number', 'interpolation',
-  'annotation', 'comment', 'identifier', 'punctuation',
+  'annotation', 'comment', 'field', 'identifier', 'punctuation',
 ]);
 
 function syntaxAttributes(mode) {
@@ -880,6 +882,7 @@ function zedSyntax(mode) {
   const id = plain(s.identifier);
   const punct = plain(s.punctuation);
   const comment = plain(s.comment, null, 'italic');
+  const fld = plain(s.field);
   return {
     keyword, 'keyword.conditional': keyword, 'keyword.conditional.ternary': keyword,
     'keyword.coroutine': keyword, 'keyword.definition': keyword, 'keyword.directive': keyword,
@@ -909,8 +912,12 @@ function zedSyntax(mode) {
     'comment.todo': plain(u.brassInk, 700, 'italic'),
     'comment.warn': plain(u.brassInk, null, 'italic'),
     'comment.warning': plain(u.brassInk, null, 'italic'),
-    variable: id, 'variable.member': id, 'variable.parameter': id, parameter: id,
-    property: id, field: id, label: id, text: id, primary: id, concept: id, parent: id,
+    variable: id, 'variable.parameter': id, parameter: id,
+    label: id, text: id, primary: id, concept: id, parent: id,
+    // A member belongs to something; a variable does not. Zed's Dart and Go
+    // parsers both know the difference, so this is the one surface where the
+    // distinction costs nothing to draw.
+    'variable.member': fld, property: fld, field: fld,
     title: plain(s.identifier, 700),
     punctuation: punct, 'punctuation.bracket': punct, 'punctuation.delimiter': punct,
     'punctuation.list_marker': punct, operator: punct, 'keyword.operator': punct,
