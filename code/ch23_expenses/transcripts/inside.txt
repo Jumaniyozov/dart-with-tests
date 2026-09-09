@@ -1,0 +1,3 @@
+$ dart run bin/inside.dart
+through the factory : 1250
+through the backdoor: -5

@@ -1,0 +1,5 @@
+$ dart test test/money_test.dart
+00:00 +0: loading test/money_test.dart
+00:00 +0 -1: loading test/money_test.dart [E]
+  Failed to load "test/money_test.dart":
+  test/money_test.dart:6:18: Error: Member not found: 'Money.fromPence'.

@@ -384,9 +384,14 @@ repeated.
 Seeds: every later study imports through the barrel. `lib/` against `lib/src/` returns
 in study 34 as the thing a version number makes a promise about.
 
-Practice: `implementation_imports` — importing another package's `lib/src/`. Verified
-present in `package:lints/recommended.yaml` 6.1.0, which
-`code/analysis_options.yaml` includes. Open the page before quoting it.
+Practice: *Effective Dart — Usage*, "DON'T import libraries that are inside the `src`
+directory of another package". **Verified** — page opened while writing study 23, anchor
+`#dont-import-libraries-that-are-inside-the-src-directory-of-another-package`. The
+matching lint, `implementation_imports`, is in `package:lints/recommended.yaml` 6.1.0,
+which `code/analysis_options.yaml` includes, so the book enforces what it quotes.
+
+Also verified on that page and used by ADR 0004: "PREFER relative import paths", which
+is why Book II's `lib/` imports carry no package name.
 
 Gloss: `library_private_types_in_public_api`, also enabled — a public API that mentions
 a private type. And `part` / `part of`: it exists, it is mostly for generated code, and

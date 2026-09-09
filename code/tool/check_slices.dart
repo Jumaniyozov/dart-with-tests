@@ -28,22 +28,24 @@ void main(List<String> args) {
   final root = Directory(args.isEmpty ? '.' : args.first);
   final packages = _snapshotPackages(root);
 
-  if (packages.length < 2) {
-    stdout.writeln(
-      'check_slices: ${packages.length} snapshot package(s) — '
-      'nothing to compare yet.',
-    );
+  if (packages.isEmpty) {
+    stdout.writeln('check_slices: no snapshot packages yet.');
     return;
   }
 
+  // The first study has no predecessor, so every one of its files is an
+  // addition and its SLICE must list all of them. Checking it against nothing
+  // keeps the rule uniform: in all twelve packages a file is either declared
+  // or unchanged. Eleven-of-twelve with an unexplained exception is how a
+  // check stops being believed.
   final problems = <String>[];
-  for (var i = 1; i < packages.length; i++) {
-    problems.addAll(_comparePair(packages[i - 1], packages[i]));
+  for (var i = 0; i < packages.length; i++) {
+    problems.addAll(_comparePair(i == 0 ? null : packages[i - 1], packages[i]));
   }
 
   if (problems.isEmpty) {
     stdout.writeln(
-      'check_slices: ${packages.length - 1} pair(s) agree with '
+      'check_slices: ${packages.length} package(s) agree with '
       'their SLICE manifests.',
     );
     return;
@@ -65,11 +67,13 @@ List<Directory> _snapshotPackages(Directory root) {
 }
 
 /// Everything wrong between one study and the next.
-List<String> _comparePair(Directory previous, Directory current) {
+List<String> _comparePair(Directory? previous, Directory current) {
   final declared = _readSlice(current);
-  final before = _sourceFiles(previous);
+  final before = previous == null ? <String, String>{} : _sourceFiles(previous);
   final after = _sourceFiles(current);
-  final label = '${_name(previous)} -> ${_name(current)}';
+  final label = previous == null
+      ? '(nothing) -> ${_name(current)}'
+      : '${_name(previous)} -> ${_name(current)}';
 
   if (declared == null) {
     return ['$label: ${_name(current)}/SLICE is missing.'];
@@ -98,7 +102,7 @@ List<String> _comparePair(Directory previous, Directory current) {
     // Normalise the package name so `bin/` and `test/` imports, which must use
     // `package:` and therefore carry the study number, do not read as changes.
     final same =
-        _normalise(before[path]!, _name(previous)) ==
+        _normalise(before[path]!, _name(previous!)) ==
         _normalise(after[path]!, _name(current));
 
     if (same && wasDeclared) {

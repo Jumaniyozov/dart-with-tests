@@ -1,4 +1,6 @@
 {
   "title": "Book II: Writing good Dart",
-  "pages": []
+  "pages": [
+    "libraries"
+  ]
 }

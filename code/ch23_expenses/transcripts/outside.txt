@@ -1,0 +1,6 @@
+$ dart analyze bin/walk.dart
+Analyzing walk.dart...
+
+  error - walk.dart:4:15 - The class 'Money' doesn't have a constructor named '_'. Try invoking a different constructor, or define a constructor named '_'. - new_with_undefined_constructor
+
+1 issue found.

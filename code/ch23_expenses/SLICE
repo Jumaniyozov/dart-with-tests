@@ -1,0 +1,14 @@
+# Study 23 — every file, because this is the first snapshot and nothing
+# precedes it. Later studies list only what they add or change.
+#
+# transcripts/ and exercises/ are per-study by design and are not compared.
+pubspec.yaml
+lib/expenses.dart
+lib/src/money.dart
+lib/src/crowded.dart
+lib/src/pence.dart
+bin/imports.dart
+bin/inside.dart
+bin/cast.dart
+test/money_test.dart
+test/privacy_test.dart

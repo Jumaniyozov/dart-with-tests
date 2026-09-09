@@ -1,0 +1,2 @@
+$ dart test test/money_test.dart
+00:00 +3: All tests passed!

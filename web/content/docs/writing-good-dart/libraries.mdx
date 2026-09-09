@@ -1,0 +1,242 @@
+---
+title: Libraries, imports and privacy
+study: 23
+direction: Find the edge of what the compiler will enforce, and stand on the right side of it.
+description: A file is a library, an underscore is a boundary around that file, and the whole expense tracker starts behind one.
+---
+
+Book I is twenty-two studies and twenty-two packages, and not one of them depends on
+another. That was deliberate, and it cost something. Study 20 had to write amounts as a
+plain `int` and say so out loud: study 19's `Pence` could not travel, because `import`
+had not opened yet.
+
+It opens now. This study starts the program the rest of Book II grows — an expense
+tracker — and the first thing it needs is somewhere for an amount to live.
+
+Study 19 also left a debt. It showed that `Pence(-150)` walks straight past a check, and
+it said *study 23 will show how to hide a constructor*. This is that study. The answer is
+smaller than it sounds and it does not reach as far as you would like, which is the
+interesting part.
+
+<include cwd lang="dart" meta='title="lib/src/money.dart"'>../code/ch23_expenses/lib/src/money.dart#money</include>
+
+The constructor is called `_`. That underscore is not a naming style. It is the whole
+mechanism, and 23.1 says what it is a boundary around.
+
+<Drill n={1}>
+
+<Direction>Write the test first. The door does not exist yet, and the analyzer says so before the tests do.</Direction>
+
+<include cwd lang="dart" meta='title="test/money_test.dart"'>../code/ch23_expenses/test/money_test.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch23_expenses/transcripts/undefined.txt</include>
+</Console>
+
+Read the error. It says `Member not found`. Not *private*, not *inaccessible* — not
+found. Add the factory and it passes.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch23_expenses/transcripts/pass.txt</include>
+</Console>
+
+</Drill>
+
+## 23.1 A file is a library
+
+In Dart, a **library** is a unit of code that shares one namespace. In almost every
+program you will write, a library is one file.
+
+That matters because `_` is a boundary around the **library**, not around the class. A
+name starting with `_` is visible everywhere inside its own file and nowhere outside it.
+
+People hear "private constructor" and picture a lock only the class itself can open. That
+is not what Dart does, and the difference is easy to measure. Here is the same class
+again, in a file that has company:
+
+<include cwd lang="dart" meta='title="lib/src/crowded.dart"'>../code/ch23_expenses/lib/src/crowded.dart#crowded</include>
+
+`Backdoor` is not related to `Amount`. It does not extend it, implement it, or know
+anything about it. It is in the same file, and that is the entire qualification.
+
+<include cwd lang="dart" meta='title="bin/inside.dart"'>../code/ch23_expenses/bin/inside.dart#inside</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch23_expenses/transcripts/inside.txt</include>
+</Console>
+
+`-5`. An amount the check exists to forbid, built by ordinary code, with `dart analyze`
+saying nothing at all.
+
+So the rule is not "the check cannot be walked past". The rule is: **the check cannot be
+walked past from another library.** Inside your own file, you are on your honour.
+
+That is not a weakness to work around. It is the reason `Money` sits alone in
+`lib/src/money.dart` with nothing else in it. The file is the boundary, so a small file
+is a small boundary — and a file holding one class holds a boundary with no room inside
+it for anyone to stand.
+
+<Gloss title="Why not one file per class, everywhere?">
+Because most classes have no invariant to protect, and a file per class costs you
+imports for nothing.
+
+The rule is narrower: a type that promises something gets its own file, so the promise
+has no company. Everything else can share.
+</Gloss>
+
+## 23.2 Bringing a library in
+
+`import` makes another library's names available in this one. Three words change what
+arrives.
+
+<include cwd lang="dart" meta='title="bin/imports.dart"'>../code/ch23_expenses/bin/imports.dart#imports</include>
+
+`as` gives every name from that library a prefix, so `math.max` cannot collide with a
+`max` of your own. `show` lets one name through and blocks the rest. `hide` does the
+opposite: everything except.
+
+None of the three changes what the other library *is*. They change what this file can
+see, and they are checked when the program is compiled.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch23_expenses/transcripts/imports.txt</include>
+</Console>
+
+## 23.3 The promise study 19 made
+
+Study 19 ended on a table with one honest row: an extension type cannot hold an invariant
+nothing can walk past. It named this study as the one that would show how to hide a
+constructor. Here is what hiding it buys.
+
+`Money._` is private to `lib/src/money.dart`. Write this in any other file:
+
+```dart title="bin/walk.dart"
+import 'package:ch23_expenses/expenses.dart';
+
+void main() {
+  print(Money._(-5).pence);
+}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch23_expenses/transcripts/outside.txt</include>
+</Console>
+
+Read what the analyzer said. Not "`_` is private". It says the class **doesn't have** a
+constructor named `_`.
+
+That wording is the mechanism, not a rough description of it. From outside the library,
+the private member is not part of the type at all. There is nothing to be refused
+access to, because as far as this file is concerned it was never declared.
+
+So every `Money` that exists anywhere else in the program came through `Money.fromPence`
+and was checked. Not by convention. By the compiler, before the program ran.
+
+<Gloss title="Where the check goes, and why you get no choice">
+`class const Money._(final int pence)` is a **primary constructor** — the parameter list
+is in the class header, so the field and the constructor are declared once instead of
+three times. Study 15 introduced this and drew the rule: a header has no initialiser
+list, so it cannot check anything.
+
+A class with a primary constructor may not have a second *generative* constructor
+beside it. Try one and the analyzer says
+`non_redirecting_generative_constructor_with_primary`. A **factory** is not generative,
+and it has a body. So the check goes in a factory, and the choice is the analyzer's
+rather than a matter of taste.
+</Gloss>
+
+## 23.4 What a lock does not close
+
+Give study 19's `Pence` the same private constructor and the same checking factory:
+
+<include cwd lang="dart" meta='title="lib/src/pence.dart"'>../code/ch23_expenses/lib/src/pence.dart#pence</include>
+
+Nothing has been left out. The door is as shut as `Money`'s.
+
+<include cwd lang="dart" meta='title="bin/cast.dart"'>../code/ch23_expenses/bin/cast.dart#cast</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch23_expenses/transcripts/cast.txt</include>
+</Console>
+
+`-1`, through a constructor nobody outside the library can call.
+
+An extension type is a compile-time name for a value that is really something else — here
+an `int`. A cast is checked against what the value **really is**, and `-1` really is an
+`int`. So the cast succeeds. There is no run-time check to fail, because at run time
+there is no `Pence`; that was the whole point of study 19.
+
+`Money` has no such hole. There is no `int` to cast from, because a `Money` is a real
+object that only `Money.fromPence` builds.
+
+This is what study 19 promised and what it warned. Privacy closes the constructor.
+Nothing closes the cast. If you need a promise the compiler will keep, the type has to be
+a class.
+
+## 23.5 One door in
+
+`lib/src/` is a convention with teeth. Files under `lib/` are what other packages may
+import; files under `lib/src/` are the package's own business.
+
+Which leaves the question of what this package offers. One file answers it:
+
+<include cwd lang="dart" meta='title="lib/expenses.dart"'>../code/ch23_expenses/lib/expenses.dart#barrel</include>
+
+`export` republishes another library's names as your own. Anyone importing
+`package:ch23_expenses/expenses.dart` gets `Money` and nothing else — not `Amount`, not
+`Backdoor`, not `Pence`. Those still exist, and this package still uses them. They are
+simply not on offer.
+
+The `library;` line is worth a second. A doc comment must be attached to something. Put
+one at the top of a file with no declaration under it and the analyzer reports
+`dangling_library_doc_comments` — a comment about a library, in a file that never said it
+was one. `library;` says it.
+
+<Practice source="Effective Dart — Usage" href="https://dart.dev/effective-dart/usage#dont-import-libraries-that-are-inside-the-src-directory-of-another-package">
+**DON'T import libraries that are inside the `src` directory of another package.**
+
+The `implementation_imports` lint enforces this, and it is switched on for every package
+in this book through `code/analysis_options.yaml`.
+
+Note what it does and does not cover. It stops *you* reaching into somebody else's
+`lib/src/`. Reaching into your own is fine and this study's tests do it, because within
+one package `lib/src/` is not a wall — it is a statement about what you are willing to
+support.
+
+The same page carries **PREFER relative import paths**, which is why the imports inside
+this package's own `lib/` name no package.
+</Practice>
+
+## Wrapping up
+
+A library is a unit of code sharing one namespace, and in practice it is a file. `_`
+makes a name visible inside that library and invisible outside it — so from another
+library the member is not hidden, it is absent, and the analyzer says `doesn't have`
+rather than `is private`.
+
+That boundary is real and it stops at the file's edge. `Backdoor` proved it: unrelated
+code in the same file built an `Amount` of `-5` and nothing complained. A type that
+promises something gets a file to itself, because the file is the promise's edge.
+
+A primary constructor has no body to check in and cannot sit beside a generative one, so
+a checking factory is where the check goes. And privacy is not enough on its own: a
+private constructor on an extension type is walked past by a cast, because a cast is
+checked against the representation type. Study 19 said nothing would ever close that.
+Nothing does.
+
+Also met: `import` with `show`, `hide` and `as`, `export` and the barrel file, `lib/src/`,
+`library;`, and `dangling_library_doc_comments`.
+
+Study 24 gives this package a `main` and a terminal to run it from.
+
+## Challenges
+
+Three challenges, five failing tests. Make them pass one at a time. Do not edit the tests.
+The first two ask you to build a door; the third cannot be solved with `_` at all, because
+the code that needs stopping is already inside.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch23_expenses/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch23_expenses/exercises/challenges.dart</include>

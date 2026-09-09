@@ -1,0 +1,3 @@
+$ dart run bin/cast.dart
+through the factory: 1250
+through the cast   : -1

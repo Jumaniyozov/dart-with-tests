@@ -44,6 +44,14 @@ snapshots by the package name alone. The check below normalises it.
 Verified by copying a package and renaming `ch23_expenses` to `ch24_expenses`: every
 file under `lib/` byte-identical, `bin/expenses.dart` differing by one line.
 
+**This was chosen for a mechanical reason and turns out to be the published advice.**
+Effective Dart's *Usage* page carries "PREFER relative import paths"
+(`dart.dev/effective-dart/usage#prefer-relative-import-paths`), checked while writing
+study 23. So the layout does not ask the reader to learn a convention invented for this
+book's build; it asks them to do the recommended thing, which happens also to make the
+snapshots comparable. Had the two disagreed, the book would have followed the guideline
+and the check would have had to normalise more.
+
 ## The check that keeps the copies honest
 
 Each package carries a `SLICE` file naming the files that study adds or changes.
