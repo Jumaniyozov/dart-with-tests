@@ -1,0 +1,6 @@
+$ dart analyze lib/tally.dart
+Analyzing tally.dart...
+
+  error - tally.dart:4:33 - The operator '+' can't be unconditionally invoked because the receiver can be 'null'. Try adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+
+1 issue found.

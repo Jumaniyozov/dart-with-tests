@@ -1,0 +1,11 @@
+name: ch08_tally
+description: Study 8 — maps, sets, and the first value Dart refuses to hand you.
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.26.0

@@ -1,0 +1,213 @@
+---
+title: Maps and sets
+study: 8
+direction: When the analyzer refuses, read what it refused. It is the next study, arriving early.
+description: Looking values up by key, keeping a collection with no duplicates, and meeting the first type Dart will not let you use without asking.
+---
+
+A list finds things by position. A **map** finds them by whatever you like — usually a
+string — and a **set** holds each value only once.
+
+```dart
+final counts = <String, int>{'red': 2, 'blue': 1};
+counts['red'];              // 2
+counts['red'] = 3;          // replaces
+counts.length;              // 2 — pairs, not values
+
+final seen = <String>{'red', 'blue', 'red'};
+seen.length;                // 2 — the duplicate never went in
+```
+
+`Map<String, int>` reads as "a map from `String` to `int`": the **key** type first, then
+the **value** type.
+
+<Gloss title="`{}` is an empty map, not an empty set">
+Both use curly braces, and the map got there first, so a bare `{}` is a `Map`. When you
+want an empty set you must say so, either by the type on the left or the type argument on
+the right: `Set<String> seen = {}` or `final seen = <String>{}`. A set literal with
+something in it, `{'red'}`, is unambiguous and needs no help.
+</Gloss>
+
+## 8.1 Counting words
+
+Count how often each word appears. The plan is obvious: for each word, look up its count
+and add one.
+
+<Drill n={1}>
+
+<Direction>Say what a tally is, before worrying about how to build one.</Direction>
+
+<include cwd lang="dart" meta='title="test/first_test.dart"'>../code/ch08_tally/test/first_test.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch08_tally/transcripts/undefined.txt</include>
+</Console>
+
+</Drill>
+
+<Drill n={2}>
+
+<Direction>Write the obvious loop. It will not compile, and the reason is worth the study.</Direction>
+
+```dart title="lib/tally.dart"
+Map<String, int> tally(List<String> words) {
+  final counts = <String, int>{};
+  for (final word in words) {
+    counts[word] = counts[word] + 1;
+  }
+  return counts;
+}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch08_tally/transcripts/naive.txt</include>
+</Console>
+
+> The operator '+' can't be unconditionally invoked because the receiver can be 'null'.
+
+This is new. Every type you have met so far always had a value. `counts[word]` might not.
+The word may not be in the map yet, and Dart will not invent a number for you — so the
+answer to "what is the count for this word" is not `int`. It is **`int?`**: an `int`, or
+nothing.
+
+The question mark is part of the type. `int` and `int?` are different types, and the
+analyzer tracks which one you have. You cannot add one to nothing, so it stops you.
+
+</Drill>
+
+<Drill n={3}>
+
+<Direction>Ask whether the key is there first. This is the obvious fix, and it also fails.</Direction>
+
+```dart title="lib/tally.dart"
+Map<String, int> tally(List<String> words) {
+  final counts = <String, int>{};
+  for (final word in words) {
+    if (counts.containsKey(word)) {
+      counts[word] = counts[word] + 1;
+    } else {
+      counts[word] = 1;
+    }
+  }
+  return counts;
+}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch08_tally/transcripts/containskey.txt</include>
+</Console>
+
+The same error, one line further down. You checked. It did not help.
+
+The analyzer can prove things about a **variable** — if you test it and find it is not
+nothing, it knows that for the rest of the block. It cannot prove anything about
+`counts[word]`, because that is a method call, and nothing stops a map from changing
+between the check and the read. Two lookups of the same key are two separate questions, and
+the answer to the first is not a promise about the second.
+
+</Drill>
+
+<Drill n={4}>
+
+<Direction tone="pass">Say what should happen when there is nothing, in the same breath as asking.</Direction>
+
+<include cwd lang="dart" meta='title="lib/tally.dart"'>../code/ch08_tally/lib/tally.dart#tally</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch08_tally/transcripts/pass.txt</include>
+</Console>
+
+`??` reads as "or". `counts[word] ?? 0` is "the count for this word, or zero if there is
+none". It takes an `int?` on the left and hands back a plain `int`, which `+ 1` will accept.
+
+That is a loan from the next study, and it is the only piece of it you need today.
+**Study 9 is about that question mark** — where it comes from, what `??` and `!` and `?.`
+do with it, and why the analyzer could not help you in drill 3.
+
+</Drill>
+
+## 8.2 Asking without reading
+
+Two different questions, two different answers:
+
+<include cwd lang="dart" meta='title="test/tally_test.dart"'>../code/ch08_tally/test/tally_test.dart#lookup</include>
+
+A missing key is not an error. It is `null` — the value that means "nothing here" — and
+this is the first time in the book that a perfectly correct program has produced one.
+`containsKey` asks the question without reading the value, which is what you want when the
+value itself might legitimately be nothing.
+
+Maps keep their keys in the order you first inserted them. That is a guarantee in Dart, not
+an accident, so a tally printed back reads in the order the words were first seen.
+
+## 8.3 Sets
+
+A set holds each value once. Adding a value that is already there does nothing and is not
+an error.
+
+<include cwd lang="dart" meta='title="lib/tally.dart"'>../code/ch08_tally/lib/tally.dart#unique</include>
+
+`{...words}` spreads a list into a set literal, and the duplicates simply do not arrive.
+
+Sets answer questions about membership, and combine with three operations:
+
+<include cwd lang="dart" meta='title="lib/tally.dart"'>../code/ch08_tally/lib/tally.dart#sets</include>
+
+<include cwd lang="dart" meta='title="test/tally_test.dart"'>../code/ch08_tally/test/tally_test.dart#sets</include>
+
+`union` is everything in either. `intersection` is what is in both. `difference` is what is
+in the first and not the second. `exclusive` above builds the fourth combination out of
+those: in one or the other, but not both.
+
+Note the last test. Two sets with the same members are equal whatever order you wrote them
+in, which is not true of lists — study 7 showed `[1, 2] == [1, 2]` is `false`.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch08_tally/transcripts/all.txt</include>
+</Console>
+
+<Practice source="Effective Dart — Design" href="https://dart.dev/effective-dart/design#avoid-returning-nullable-future-stream-and-collection-types">
+**AVOID returning nullable `Future`, `Stream`, and collection types.** Effective Dart puts
+the reason in terms of what the caller expects: "When an API returns a container type, it
+has two ways to indicate the absence of data: It can return an empty container or it can
+return `null`. Users generally assume and prefer that you use an empty container to
+indicate 'no data'."
+
+`tally([])` follows this. It hands back an empty map, not nothing. The caller can ask it
+for its `length`, walk it, add to it — all without checking anything first. Had it returned
+`null`, every caller would need to handle the empty case before they could even ask a
+question, and this whole study has just shown you how easy that is to get wrong.
+
+Notice the shape of the trade. Inside the map, `counts[word]` is honestly `int?`, because a
+missing key really is a different fact from a count of zero. At the boundary, the function
+returns a plain `Map` and never `null`. Push nothing-ness inward where it means something
+and keep it out of your return types, and callers spend their attention on your data
+instead of on your absences.
+
+Then choose the collection that makes the wrong state impossible: a `Set` when duplicates
+would be a bug, a `Map` when things are found by name, a `List` when order is the meaning.
+Writing `if (!seen.contains(x))` over a list is a set, spelled out longhand.
+</Practice>
+
+## Wrapping up
+
+A map finds values by key and keeps insertion order. A set holds each value once and
+compares by membership rather than order. Reading a key that is not there gives `null`, so
+`counts[word]` is an `int?` and not an `int` — and checking with `containsKey` first does
+not change that, because the analyzer cannot make promises about a method call.
+
+Also met: `??`, map and set literals, `keys`, `values`, `entries`, `containsKey`, and
+`union` / `intersection` / `difference`.
+
+The next study is the one this study kept pointing at.
+
+## Challenges
+
+Three tests are already written and already failing. Make them pass one at a time. Do not
+edit the tests. Challenge 3 checks that you did not change either map you were given.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch08_tally/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch08_tally/exercises/challenges.dart</include>
