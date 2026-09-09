@@ -1,0 +1,6 @@
+$ dart analyze lib/src/command.dart
+Analyzing command.dart...
+
+  error - command.dart:64:5 - The type 'Reading' isn't exhaustively matched by the switch cases since it doesn't match the pattern 'Ignored()'. Try adding a wildcard pattern or cases that match 'Ignored()'. - non_exhaustive_switch_expression
+
+1 issue found.

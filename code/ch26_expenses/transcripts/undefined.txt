@@ -1,0 +1,5 @@
+$ dart test test/reading_test.dart
+00:00 +0: loading test/reading_test.dart
+00:00 +0 -1: loading test/reading_test.dart [E]
+  Failed to load "test/reading_test.dart":
+  test/reading_test.dart:5:17: Error: Type 'Reading' not found.

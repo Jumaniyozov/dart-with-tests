@@ -3,6 +3,7 @@
   "pages": [
     "libraries",
     "a-program-that-runs",
-    "values-and-entities"
+    "values-and-entities",
+    "errors-by-design"
   ]
 }

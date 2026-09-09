@@ -1,0 +1,12 @@
+# Study 26 — what changed since study 25.
+#
+# Added — a result type, and an assert to run four ways
+lib/src/reading.dart
+lib/src/asserting.dart
+bin/asserting.dart
+test/reading_test.dart
+# Changed — penceFrom is gone; _add switches over a sealed Reading
+lib/expenses.dart
+lib/src/command.dart
+test/command_test.dart
+pubspec.yaml

@@ -482,7 +482,15 @@ Gloss: `Day` arrives here as `Expense`'s date because a `DateTime` cannot be tru
 a domain — the four measurements are in study 30, and this Gloss forward-references
 them rather than restating them.
 
-### 26 — Errors: thrown or returned · `errors-by-design` · `ch26_expenses`
+### 26 — Errors: thrown or returned · `errors-by-design` · `ch26_expenses` — **WRITTEN**
+
+Shipped: 34 green, 3 challenges at 6 failing, 8 transcripts. Two things measured that the
+entry did not predict. A `sealed` base needs its own `const` constructor
+(`sealed class const Reading();`) or every `const` subclass fails — found on the first
+attempt. And study 10's Gloss is weaker than it sounds: **`dart run` does not enable
+asserts either**, nor does a `dart compile exe` binary. Asserts fire under `dart test` and
+under `dart run --enable-asserts`, and nowhere else, which is the study's sharpest
+transcript.
 
 Teaches the design decision study 20 left open: which failures throw and which are
 returned as data. `ArgumentError` against a domain result type, `Object?`-free error
@@ -504,10 +512,14 @@ failures are data, bugs are exceptions* — and apply it out loud for the rest o
 
 Pays: study 20 taught the machinery of throwing; this is the study that decides when to.
 
-Practice: `empty_catches` — a `catch` that does nothing hides the failure it caught.
-Verified present in `package:lints/core.yaml` 6.1.0. It is the negative form of this
-study's rule: if a failure is not worth handling it was not worth catching, so it should
-have been thrown.
+Practice: **the planned `empty_catches` citation was a duplicate** — study 20 already
+cites it, along with `use_rethrow_when_possible` and `control_flow_in_finally`, under
+*dart.dev — Error handling*. Study 26 cites *Effective Dart — Usage*, "DO throw objects
+that implement `Error` only for programmatic errors", with its companion "DON'T explicitly
+catch `Error` or types that implement it". Verified on the live page. That pair is the
+rule that decides whether to reach for study 20's machinery at all, and it changed the
+code: `readMoney` checks the sign itself rather than catching `Money.fromPence`'s
+`ArgumentError`, and `lib/` now contains no `catch` at all.
 
 Gloss: `Error` against `Exception` in `dart:core`, and why `ArgumentError` is an `Error`.
 
@@ -920,6 +932,16 @@ existing transcripts and verified to reproduce.
   `dart run tool/check_regions.dart` enforces it and normalises the package name first.
   It found the file-scoped version's four true misses in study 25 and cleared its three
   false alarms.
+- **A transcript must carry no absolute path.** A `Failed assertion` raised from `bin/`
+  prints a `file:///Users/…` URI naming the author's machine, which no reader can
+  reproduce. The same assert raised from `lib/` prints `package:chNN_name/…`, which
+  everyone can. Book I's only assertion transcript (`ch10_ledger`) is the package form,
+  and study 26 had to move `half` out of `bin/` and into `lib/` to match it. Grep new
+  transcripts for `/Users/` before committing.
+- **The `<Practice>` a study plans is not the one it should cite.** Twice now the outline
+  named a guideline an earlier study had already used — study 15's `hashCode` rule for
+  study 25, study 20's `empty_catches` for study 26. Before writing a Practice, grep every
+  `.mdx` for the candidate `href`. A duplicate citation is a study that found nothing new.
 - **`int.tryParse` is more generous than the sentence you are about to write.** It reads
   `0x10` as 16 and accepts a sign wherever it is handed one. The studies 19-22 audit found
   this in study 20's shipped parser; study 24 shipped it again, and `penceFrom('5.-1')`

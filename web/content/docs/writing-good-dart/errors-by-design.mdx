@@ -1,0 +1,210 @@
+---
+title: Errors — thrown or returned
+study: 26
+direction: Before you decide how to report a failure, decide whose fault it is. The answer picks the mechanism for you.
+description: A sealed result type at the program's edge, why an Error must not be caught, and what an assert is actually worth when the program runs.
+---
+
+Study 20 taught the machinery of failure: `throw`, `try`, `on`, `catch`, `rethrow`, and the
+difference between an `Error` and an `Exception`. This study is about the decision that comes
+before any of it.
+
+Study 24 left the evidence. `penceFrom` answered `null`, and the program could only say
+`'abc' is not an amount` — the same eight words whether you typed letters, three dots, or one
+digit of pence. The function knew which it was. It had no way to say so.
+
+<Drill n={1}>
+
+<Direction>A failure the caller has to look at. The compiler makes sure they do.</Direction>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch26_expenses/transcripts/undefined.txt</include>
+</Console>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch26_expenses/transcripts/pass.txt</include>
+</Console>
+
+</Drill>
+
+## 26.1 Decide whose fault it is
+
+Every failure in a program belongs to one of two people.
+
+**The world is awkward.** Someone typed `12.5`, a file is missing, a network is down. Nothing
+is wrong with your program — this is the ordinary weather it was written to work in. Failures
+like these are **expected**, and something has to do the expecting.
+
+**Your program is wrong.** A negative length, an index past the end, a state that should have
+been impossible. Nothing sensible can be done at run time because the mistake was made earlier,
+by a programmer.
+
+The rule this study is built on: **expected failures are values; bugs are exceptions.** A value
+has to be looked at — the compiler can insist on it. An exception is easy to ignore all the way
+up to a stack trace, which is exactly right for a bug and exactly wrong for a typo.
+
+## 26.2 A type that lists its outcomes
+
+<include cwd lang="dart" meta='title="lib/src/reading.dart"'>../code/ch26_expenses/lib/src/reading.dart#reading</include>
+
+`sealed` means this file lists every case there will ever be. That is study 16's rule doing real
+work: a `switch` over a `Reading` is checked for completeness when the program is compiled, not
+when it runs.
+
+Add a fourth case and see what happens to the code that does not know about it:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch26_expenses/transcripts/exhaustive.txt</include>
+</Console>
+
+That is the whole argument for a sealed result over a nullable one. `null` gives the caller a
+choice about whether to check. A sealed type gives them a compile error.
+
+<Gloss title="Why the base has a constructor">
+`sealed class const Reading();` looks like it does nothing, and it is load-bearing.
+
+`Understood` and `Unreadable` are `const` classes, and a constant constructor may only call
+another constant constructor. Write the base as a bare `sealed class Reading {}` and its
+implicit constructor is not `const`, so every subclass fails with *"A constant constructor can't
+call a non-constant super constructor"*. Measured while writing this study, on the first
+attempt.
+</Gloss>
+
+## 26.3 Reading at the edge
+
+<include cwd lang="dart" meta='title="lib/src/reading.dart"'>../code/ch26_expenses/lib/src/reading.dart#read</include>
+
+Three outcomes, and the third is the interesting one.
+
+`Unreadable` is text that is not an amount. `Refused` is text that **is** an amount and that this
+program will not hold — `-5.00` is perfectly readable, and money in this tracker is never
+negative. Those are different facts about different things, and study 24 already gave them
+different exit codes. Folding them into one case would have thrown that away.
+
+Notice what is **not** here: a `try`. `Money.fromPence` throws an `ArgumentError` for a negative
+amount, and this function checks the sign itself rather than catching it. 26.5 says why that is
+not a stylistic preference.
+
+<include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch26_expenses/lib/src/command.dart#run</include>
+
+`_add` is now a switch with three arms and no `default`, which means adding a fourth `Reading`
+breaks this function until someone decides what exit code it deserves. That is the compiler
+being made responsible for a decision a person would otherwise forget.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch26_expenses/transcripts/reasons.txt</include>
+</Console>
+
+Three failures, three different sentences. Study 24 had one sentence for all three.
+
+<include cwd lang="dart" meta='title="lib/expenses.dart"'>../code/ch26_expenses/lib/expenses.dart#barrel</include>
+
+## 26.4 What an assert is actually worth
+
+Study 10 said `assert` is stripped from release builds and is for catching your own bugs, never
+for validating input. Both halves are true, and the first is weaker than it sounds.
+
+<include cwd lang="dart" meta='title="lib/src/asserting.dart"'>../code/ch26_expenses/lib/src/asserting.dart#asserting</include>
+
+<include cwd lang="dart" meta='title="bin/asserting.dart"'>../code/ch26_expenses/bin/asserting.dart#running</include>
+
+Run it three ways:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch26_expenses/transcripts/asserts.txt</include>
+</Console>
+
+Read the first block again. **`dart run` does not enable asserts.** Neither does the binary from
+`dart compile exe`. `half(7)` answered `3` twice, quietly, in the two ways you actually run a
+program.
+
+The assert fires in exactly two places: under `dart test`, and under `dart run --enable-asserts`
+if you ask for it by name.
+
+So an `assert` is not a weak check. It is a **message to yourself while you are testing**, and
+it is absent from the program you ship. That is why `Money.fromPence` throws and does not
+assert, and why the check on what a person typed lives in `readMoney` where it will still be
+there tomorrow.
+
+<Gloss title="Then what is an assert for?">
+Stating something you believe cannot happen, so that a test proves you right.
+
+`Day`'s month check throws, because a wrong month can arrive from a file. But a private helper
+that has already been handed a validated month can `assert` it — the assert documents the
+assumption, `dart test` enforces it, and nothing is paid for at run time.
+
+If a check must survive into the shipped program, it is not an assert. It is an `if` and a
+`throw`, or a value like `Unreadable`.
+</Gloss>
+
+## 26.5 The one you must not catch
+
+`Money.fromPence` throws an `ArgumentError`. `ArgumentError` implements `Error`, and that word
+is a claim: **an `Error` means the program is wrong.**
+
+So catching one is a contradiction. You would be saying *the code that got here is broken, and I
+will now carry on*. Effective Dart puts it plainly, and it is why `readMoney` asks about the sign
+itself rather than wrapping the constructor in a `try`.
+
+The version that catches would have worked. Every test would have passed. It would also have
+taught the reader that an `ArgumentError` is something you handle, and the next `ArgumentError`
+they meet will be a real bug being swallowed.
+
+<Practice source="Effective Dart — Usage" href="https://dart.dev/effective-dart/usage#do-throw-objects-that-implement-error-only-for-programmatic-errors">
+**DO throw objects that implement `Error` only for programmatic errors** — and its companion,
+**DON'T explicitly catch `Error` or types that implement it**: *"Since an `Error` indicates a bug
+in your code, it should unwind the entire callstack, halt the program, and print a stack trace so
+you can locate and fix the bug."*
+
+That pair decides the shape of this whole study. If a failure can be caught and handled, it was
+never a bug, so it should have been an `Exception` or a value in the first place. If it really is
+a bug, catching it hides the one thing that would have told you where it is.
+
+Grep this package for `catch` and there is none in `lib/`. Every failure is either a case of
+`Reading` that the caller must handle, or an `Error` nobody has any business handling.
+
+Study 20's Practice covers the lints that police the machinery — `empty_catches`,
+`use_rethrow_when_possible`, `control_flow_in_finally`. This is the rule that decides whether you
+should be reaching for that machinery at all.
+</Practice>
+
+The whole study, run at once:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch26_expenses/transcripts/all.txt</include>
+</Console>
+
+## Wrapping up
+
+Decide whose fault a failure is before you decide how to report it. The world being awkward is
+expected and belongs in the return type; the program being wrong is a bug and belongs in an
+exception that nobody catches.
+
+A `sealed` result type makes the caller handle every case, because the switch stops compiling
+when a case is added. A nullable answer leaves that to their memory, and it cannot carry a
+reason — which is the difference between `'abc' is not an amount` and
+`pence are two digits, and "5" is 1`.
+
+An `assert` does not run in the program you ship, and — measured, not assumed — it does not run
+under `dart run` either. It fires under `dart test` and under `dart run --enable-asserts`, and
+nowhere else. Treat it as a note to yourself that tests enforce, never as a guard.
+
+Do not catch an `Error`. If catching it was reasonable, it should not have been an `Error`.
+
+Also met: `sealed` with a `const` base constructor, exhaustive switching over a result,
+`dart compile exe`, `--enable-asserts`, and a `lib/` with no `catch` in it.
+
+Study 27 takes the two lines this study left alone — the injected `Store` and
+`Day.on(DateTime.now())` — and turns them into a seam.
+
+## Challenges
+
+Three challenges, six failing tests. Make them pass one at a time. Do not edit the tests. Each
+asks the same question about a different failure, and the second is the one where the answer is
+an exception rather than a value.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch26_expenses/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch26_expenses/exercises/challenges.dart</include>

@@ -1,0 +1,6 @@
+$ dart run bin/expenses.dart add 12.5 food coffee
+pence are two digits, and "5" is 1
+$ dart run bin/expenses.dart add 1.2.3 food coffee
+an amount has one dot, not 2
+$ dart run bin/expenses.dart add -5.00 food coffee
+money is never negative
