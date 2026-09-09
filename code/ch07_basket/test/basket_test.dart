@@ -22,10 +22,7 @@ void main() {
     });
 
     test('const freezes the list itself, and says so at run time', () {
-      expect(
-        () => standardPrices.add(999),
-        throwsA(isA<UnsupportedError>()),
-      );
+      expect(() => standardPrices.add(999), throwsA(isA<UnsupportedError>()));
     });
 
     test('two identical const lists are one object, not two', () {

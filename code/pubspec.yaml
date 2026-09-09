@@ -15,3 +15,4 @@ workspace:
   - ch07_basket
   - ch08_tally
   - ch09_lookup
+  - ch10_ledger

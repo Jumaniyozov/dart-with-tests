@@ -1,0 +1,6 @@
+$ dart analyze lib/truthy.dart
+Analyzing truthy.dart...
+
+  error - truthy.dart:2:7 - Conditions must have a static type of 'bool'. Try changing the condition. - non_bool_condition
+
+1 issue found.

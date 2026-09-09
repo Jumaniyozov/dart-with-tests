@@ -9,6 +9,7 @@
     "enums",
     "lists",
     "maps-and-sets",
-    "null-safety"
+    "null-safety",
+    "control-flow"
   ]
 }

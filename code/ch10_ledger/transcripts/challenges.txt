@@ -1,0 +1,6 @@
+$ dart test exercises/
+00:00 +0: loading exercises/challenges_test.dart
+00:00 +0: exercises/challenges_test.dart: challenge 1 — the balance after each entry reports the balance line by line
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — the balance after each entry reports the balance line by line [E]
+  UnimplementedError: challenge 1
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — the balance after each entry an empty ledger has no history

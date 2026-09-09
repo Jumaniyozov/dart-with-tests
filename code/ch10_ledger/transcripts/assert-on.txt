@@ -1,0 +1,4 @@
+$ dart run --enable-asserts bin/checked.dart
+250 needs a column 3 wide
+Unhandled exception:
+'package:ch10_ledger/ledger.dart': Failed assertion: line 106 pos 10: 'pence >= 0': a negative amount has no column width

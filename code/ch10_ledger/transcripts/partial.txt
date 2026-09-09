@@ -1,0 +1,6 @@
+$ dart analyze lib/partial.dart
+Analyzing partial.dart...
+
+  error - partial.dart:4:3 - The type 'Kind' isn't exhaustively matched by the switch cases since it doesn't match the pattern 'Kind.nothing'. Try adding a default case or cases that match 'Kind.nothing'. - non_exhaustive_switch_statement
+
+1 issue found.

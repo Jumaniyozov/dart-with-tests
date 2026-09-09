@@ -1,0 +1,247 @@
+---
+title: Control flow
+study: 10
+direction: Write the loop the long way. Study 12 will take it away, and you should know what it is taking.
+description: The branches and loops this book has been using since study 6, named properly — and the one loop that must run before it can ask whether it should.
+---
+
+You have already written an `if`, a `switch` and a `for-in`. Study 6 switched on an enum and
+study 7 built a list with a collection-`for`, neither stopping to say what the shape was —
+there was a noun to teach and the flow was scaffolding. This study is the one that stops.
+
+A ledger is a list of amounts in pence: money in is positive, money out is negative.
+
+<include cwd lang="dart" meta='title="lib/ledger.dart"'>../code/ch10_ledger/lib/ledger.dart#kind</include>
+
+<Drill n={1}>
+
+<Direction>Add up a day. Nothing here is new; that is the point.</Direction>
+
+<include cwd lang="dart" meta='title="test/first_test.dart"'>../code/ch10_ledger/test/first_test.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch10_ledger/transcripts/pass.txt</include>
+</Console>
+
+</Drill>
+
+## 10.1 Deciding
+
+`if (condition) { … } else if (…) { … } else { … }` is `kindOf` above, and there is one rule
+in it worth stating plainly, because it is not true in most languages the reader may have
+seen: **the condition must be a `bool`.** Not something bool-ish. A `bool`.
+
+```dart title="lib/truthy.dart"
+String describe(String? name) {
+  if (name) {
+    return 'somebody';
+  }
+  return 'nobody';
+}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch10_ledger/transcripts/truthy.txt</include>
+</Console>
+
+In a language with truthiness, `if (name)` quietly means "not empty **and** not null", and
+those two conditions travel together whether you wanted them to or not. `if (name != null)`
+and `if (name.isNotEmpty)` are different questions, and Dart will not guess which you meant.
+
+When both branches produce a value rather than doing something, there is a shorter form:
+
+```dart
+final heading = pence > 0 ? 'in' : 'out';
+```
+
+`condition ? a : b` is an **expression** — it has a value, so it can go where a value goes,
+which the collection-`if` in study 7 was already relying on. Produce a value or do something:
+that split comes back in 10.5.
+
+## 10.2 Walking a list
+
+Two loops, one answer.
+
+<include cwd lang="dart" meta='title="lib/ledger.dart"'>../code/ch10_ledger/lib/ledger.dart#total</include>
+
+<include cwd lang="dart" meta='title="lib/ledger.dart"'>../code/ch10_ledger/lib/ledger.dart#totalin</include>
+
+The first is the C-style `for`: three parts separated by semicolons — set up a counter, test
+it before every pass, change it after. It walks positions and reaches entries through
+`entries[i]`.
+
+The second walks the entries. There is no `i`, so there is no chance of starting at `1`,
+stopping at `length`, or reading `entries[i]` after you moved `i` on. Prefer it. Use the
+indexed form when you genuinely need the position — reporting *which* entry, or walking two
+lists in step.
+
+<include cwd lang="dart" meta='title="test/ledger_test.dart"'>../code/ch10_ledger/test/ledger_test.dart#walking</include>
+
+Say the quiet part now: both are the long way round. `totalIn` is six lines meaning "add these
+up", and study 12 replaces the body with `entries.fold(0, …)`. Write it out anyway. A `fold`
+you reached for because it was shorter is a habit; a `fold` you reached for knowing exactly
+which part of the loop is being folded away is understanding.
+
+## 10.3 Leaving early
+
+`break` leaves the loop. `continue` skips the rest of this pass and starts the next one.
+
+<include cwd lang="dart" meta='title="lib/ledger.dart"'>../code/ch10_ledger/lib/ledger.dart#overdraft</include>
+
+<include cwd lang="dart" meta='title="lib/ledger.dart"'>../code/ch10_ledger/lib/ledger.dart#credits</include>
+
+Two honest notes. `firstOverdraft` would be shorter with `return i;` where the `break` is —
+`break` earns its keep only when there is work left after the loop, and here there is none. And
+`creditsIn` could have written `if (entry > 0) balance += entry;` instead of skipping.
+`continue` pays off when several conditions decide the skip, or when the body below is long
+enough that another level of indentation hurts. Neither is true here. Both are written the
+long way so you can see the shape.
+
+When loops are nested, `break` leaves only the inner one. A **label** lets you say which:
+
+<include cwd lang="dart" meta='title="lib/ledger.dart"'>../code/ch10_ledger/lib/ledger.dart#shared</include>
+
+`outer:` names the outer loop and `break outer;` leaves both. Without the label the inner
+`break` would end only the inner pass, the outer loop would carry on, and `shared` would end up
+holding the *last* match rather than the first.
+
+<include cwd lang="dart" meta='title="test/ledger_test.dart"'>../code/ch10_ledger/test/ledger_test.dart#leaving</include>
+
+Labels are rare. Two loops deep with an early exit is about where they stop looking clever and
+start being the clearest thing available.
+
+## 10.4 A loop that must run before it can ask
+
+To line a ledger up in a column you need to know how wide the widest amount is. Here is the
+obvious way to count the digits in an amount:
+
+<include cwd lang="dart" meta='title="lib/v1.dart"'>../code/ch10_ledger/lib/v1.dart#digits</include>
+
+`while` tests before every pass, including the first, so `digitsIn(0)` never enters the loop
+and answers `0` — an amount needing no space at all to write down. Zero is written `0`. It
+needs one column.
+
+`do { … } while (…)` tests **after** the body, so the body always runs at least once:
+
+<include cwd lang="dart" meta='title="lib/ledger.dart"'>../code/ch10_ledger/lib/ledger.dart#digits</include>
+
+<include cwd lang="dart" meta='title="test/ledger_test.dart"'>../code/ch10_ledger/test/ledger_test.dart#width</include>
+
+That is the whole difference, and the whole reason `do-while` exists. You will not reach for it
+often — only when the question you are testing can be answered solely by work the body does.
+
+Now the `assert` on the top line. A negative amount does not merely give a wrong width, it
+gives a *believable* one. Study 4's `~/` truncates towards zero, so `-250 ~/ 10` is `-25`,
+still negative, and the loop stops after one pass and reports a width of `1`.
+
+<include cwd lang="dart" meta='title="bin/checked.dart"'>../code/ch10_ledger/bin/checked.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch10_ledger/transcripts/assert-off.txt</include>
+</Console>
+
+A three-digit amount reported as one column wide, with no complaint. Now with checking on:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch10_ledger/transcripts/assert-on.txt</include>
+</Console>
+
+<Gloss title="assert is off unless you turn it on">
+`assert(condition, 'message')` throws when the condition is false and costs nothing when it is
+true, because in a program built without assertions the whole statement is not there.
+
+Where people go wrong is *when* it is there. `dart run` does not enable assertions — the two
+transcripts above are one program run twice, differing only by `--enable-asserts` — and
+`dart compile exe` strips them as well. What does switch them on is `dart test`, which is why
+the assertion is a green test in this study while the plain run sails past it.
+
+So an `assert` is a note to yourself, checked while you work and gone when you ship. Never put
+one where a user's mistake could trip it: bad input is a run-time fact needing a run-time
+answer — a fallback, or an error, which study 20 covers. `assert` catches the mistakes only a
+programmer can make.
+</Gloss>
+
+## 10.5 `switch`, doing rather than producing
+
+Study 6 used `switch` as an expression: every branch produces a value and the whole thing *is*
+that value.
+
+<include cwd lang="dart" meta='title="lib/ledger.dart"'>../code/ch10_ledger/lib/ledger.dart#label</include>
+
+Now the other form. Counting each kind means changing three different variables, and there is
+no single value for the `switch` to be:
+
+<include cwd lang="dart" meta='title="lib/ledger.dart"'>../code/ch10_ledger/lib/ledger.dart#count</include>
+
+Same keyword, same enum, different job: the expression when every branch produces one thing,
+the statement when they *do* different things. Two pieces of machinery are worth naming.
+
+**Cases do not fall through.** In C and Java a `case` without a `break` runs on into the next,
+and forgetting it is a classic bug. Dart ends each case at the next `case` — no `break` to
+forget, and none in the code above.
+
+**The statement form is checked for exhaustiveness too.** This surprises people who expect the
+guarantee to belong to expressions:
+
+```dart title="lib/partial.dart"
+void report(int pence) {
+  switch (kindOf(pence)) {
+    case Kind.credit:
+      print('in');
+    case Kind.debit:
+      print('out');
+  }
+}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch10_ledger/transcripts/partial.txt</include>
+</Console>
+
+Same promise study 6 made, in a form that returns nothing. Add a fourth `Kind` and every
+`switch` not told about it stops compiling, statements included. A `default:` case silences
+that, which is exactly why you should not write one over an enum you own.
+
+<include cwd lang="dart" meta='title="test/ledger_test.dart"'>../code/ch10_ledger/test/ledger_test.dart#kinds</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch10_ledger/transcripts/all.txt</include>
+</Console>
+
+<Practice source="Effective Dart — Style" href="https://dart.dev/effective-dart/style#do-use-curly-braces-for-all-flow-control-statements">
+**DO use curly braces for all flow control statements** — the reason given is the dangling
+else problem: without braces, which `if` an `else` belongs to is decided by a rule rather than
+by what you can see.
+
+One exception is allowed: an `if` with no `else` whose whole statement fits on one line.
+`if (entry <= 0) continue;` in `creditsIn` is that exception. If the body wraps, brace it.
+
+This is not advice you have to remember. `curly_braces_in_flow_control_structures` ships in
+`package:lints/core.yaml`, `recommended.yaml` includes `core.yaml`, and this book's
+`analysis_options.yaml` includes `recommended.yaml` — so it is already on in every package
+here, and the analyzer will tell you before a reviewer does.
+</Practice>
+
+## Wrapping up
+
+`if` needs a real `bool`; `? :` is its expression form. The indexed `for` walks positions and
+`for-in` walks entries — prefer the second unless you need the position. `break` leaves a loop,
+`continue` skips a pass, a label says which loop you meant. `while` tests first and `do-while`
+tests last, which is the only reason to pick the second. `switch` produces a value as an
+expression and does work as a statement, and both are checked for exhaustiveness.
+
+Also met: `assert`, and the fact that it is switched off until something switches it on.
+
+Every loop in this study is the long form on purpose. Study 11 names the functions the book has
+been writing since study 2, and study 12 uses them to delete most of what you just wrote.
+
+## Challenges
+
+Three tests are already written and already failing. Make them pass one at a time. Do not edit
+the tests. Each one wants a loop — write it out, so that study 12 can take it away from you.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch10_ledger/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch10_ledger/exercises/challenges.dart</include>

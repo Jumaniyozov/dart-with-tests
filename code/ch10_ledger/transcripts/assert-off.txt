@@ -1,0 +1,3 @@
+$ dart run bin/checked.dart
+250 needs a column 3 wide
+-250 needs a column 1 wide
