@@ -146,14 +146,25 @@ A three-digit amount reported as one column wide, with no complaint. Now with ch
 <include cwd lang="saff-console" meta='title="terminal"'>../code/ch10_ledger/transcripts/assert-on.txt</include>
 </Console>
 
+Same source, same command, one extra flag. Compile the same file for release and the check is
+gone again:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch10_ledger/transcripts/assert-compiled.txt</include>
+</Console>
+
+The one place it is on without being asked is the test runner, which is where you want it:
+
+<include cwd lang="dart" meta='title="test/ledger_test.dart"'>../code/ch10_ledger/test/ledger_test.dart#guard</include>
+
 <Gloss title="assert is off unless you turn it on">
 `assert(condition, 'message')` throws when the condition is false and costs nothing when it is
 true, because in a program built without assertions the whole statement is not there.
 
-Where people go wrong is *when* it is there. `dart run` does not enable assertions — the two
-transcripts above are one program run twice, differing only by `--enable-asserts` — and
-`dart compile exe` strips them as well. What does switch them on is `dart test`, which is why
-the assertion is a green test in this study while the plain run sails past it.
+Where people go wrong is *when* it is there. Three runs of one program are above: `dart run`
+does not enable assertions, `--enable-asserts` does, and `dart compile exe` strips them again.
+The only one that switches them on without being asked is `dart test` — which is why the same
+assertion is a green test in this study and a shrug at the command line.
 
 So an `assert` is a note to yourself, checked while you work and gone when you ship. Never put
 one where a user's mistake could trip it: bad input is a run-time fact needing a run-time
@@ -199,8 +210,27 @@ void report(int pence) {
 </Console>
 
 Same promise study 6 made, in a form that returns nothing. Add a fourth `Kind` and every
-`switch` not told about it stops compiling, statements included. A `default:` case silences
-that, which is exactly why you should not write one over an enum you own.
+`switch` not told about it stops compiling, statements included.
+
+A `default:` case switches the guarantee off:
+
+```dart title="lib/defaulted.dart"
+String labelFor(int pence) {
+  switch (kindOf(pence)) {
+    case Kind.credit:
+      return 'in';
+    default:
+      return 'not in';
+  }
+}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch10_ledger/transcripts/defaulted.txt</include>
+</Console>
+
+No issues found, and no protection either. That is exactly why you should not write a `default`
+over an enum you own: the case you add next year will compile, run, and quietly be "not in".
 
 <include cwd lang="dart" meta='title="test/ledger_test.dart"'>../code/ch10_ledger/test/ledger_test.dart#kinds</include>
 

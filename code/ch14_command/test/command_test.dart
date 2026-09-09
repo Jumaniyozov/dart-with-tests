@@ -55,7 +55,7 @@ void main() {
       expect(numberIn('fly'), isNull);
     });
 
-    test('a rest element matches whatever is left', () {
+    test('empty and non-empty are between them every list there is', () {
       expect(verbOf('remove 3'), 'remove');
       expect(verbOf('  add   250  '), 'add');
       expect(verbOf('fly me to the moon'), 'fly');

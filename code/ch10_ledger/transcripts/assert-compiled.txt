@@ -1,0 +1,4 @@
+$ dart compile exe bin/checked.dart -o checked && ./checked
+Generated: checked
+250 needs a column 3 wide
+-250 needs a column 1 wide

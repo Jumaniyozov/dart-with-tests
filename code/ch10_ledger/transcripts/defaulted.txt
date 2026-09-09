@@ -1,0 +1,3 @@
+$ dart analyze lib/defaulted.dart
+Analyzing defaulted.dart...
+No issues found!

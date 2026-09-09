@@ -26,11 +26,16 @@ Iterable<String> lines(List<int> entries) => entries.map(describe);
 // #endregion lines
 
 // #region shared
-/// The first amount in [mine] that also appears in [theirs], or `-1`.
+/// The first amount in [mine] that also appears in [theirs], or nothing.
 ///
-/// Study 10 needed two nested loops and a label for this.
-int firstShared(List<int> mine, List<int> theirs) =>
-    mine.firstWhere(theirs.contains, orElse: () => -1);
+/// Study 10 needed two nested loops and a label for this. `firstWhere` would
+/// do it in one line, but its `orElse` has to hand back an `int` — there is no
+/// spare `int` that is not also a real amount of money — so the answer arrives
+/// in two steps instead.
+int? firstShared(List<int> mine, List<int> theirs) {
+  final shared = mine.where(theirs.contains);
+  return shared.isEmpty ? null : shared.first;
+}
 // #endregion shared
 
 // #region flatten

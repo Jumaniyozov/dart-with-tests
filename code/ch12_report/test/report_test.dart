@@ -47,11 +47,27 @@ void main() {
 
   // #region asking
   group('asking a list a question', () {
-    test('any and every stop as soon as they know', () {
+    test('any and every answer yes or no', () {
       expect(hasDebit(day), isTrue);
       expect(hasDebit([1, 2]), isFalse);
       expect(allUsed(day), isFalse);
       expect(allUsed([1, -2]), isTrue);
+    });
+
+    test('and both stop the moment the answer cannot change', () {
+      var asked = 0;
+      [1, 2, 3, 4].any((n) {
+        asked++;
+        return n > 1;
+      });
+      expect(asked, 2);
+
+      asked = 0;
+      [1, 2, 3, 4].every((n) {
+        asked++;
+        return n < 2;
+      });
+      expect(asked, 2);
     });
 
     test('an empty list is true for every and false for any', () {
@@ -59,9 +75,9 @@ void main() {
       expect(allUsed([]), isTrue);
     });
 
-    test('firstWhere replaces study 10 nested loops and its label', () {
+    test('where replaces study 10 nested loops and its label', () {
       expect(firstShared([30, 10], [99, 10, 30]), 30);
-      expect(firstShared([1, 2], [3, 4]), -1);
+      expect(firstShared([1, 2], [3, 4]), isNull);
     });
   });
   // #endregion asking
@@ -97,6 +113,55 @@ void main() {
       expect(calls, 3);
       doubled.toList();
       expect(calls, 6);
+    });
+
+    test('expand and skip defer as well', () {
+      var expanded = 0;
+      [
+        [1],
+        [2],
+      ].expand((day) {
+        expanded++;
+        return day;
+      });
+      expect(expanded, 0);
+
+      var skipped = 0;
+      [1, 2, 3]
+          .map((n) {
+            skipped++;
+            return n;
+          })
+          .skip(1);
+      expect(skipped, 0);
+    });
+
+    test('anything that is not an Iterable has to walk to answer', () {
+      var asked = 0;
+      Iterable<int> chain() => [1, 2, 3].map((n) {
+        asked++;
+        return n;
+      });
+
+      asked = 0;
+      chain().fold(0, (a, b) => a + b);
+      expect(asked, 3);
+
+      asked = 0;
+      chain().reduce((a, b) => a + b);
+      expect(asked, 3);
+
+      asked = 0;
+      chain().any((n) => n > 99);
+      expect(asked, 3);
+
+      asked = 0;
+      chain().every((n) => n > 0);
+      expect(asked, 3);
+
+      asked = 0;
+      chain().toSet();
+      expect(asked, 3);
     });
 
     test('take and skip defer too, and stop as soon as they have enough', () {

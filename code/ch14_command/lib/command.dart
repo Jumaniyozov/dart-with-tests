@@ -48,8 +48,8 @@ String? verbOf(String line) {
   final words = line.split(' ').where((word) => word.isNotEmpty).toList();
 
   return switch (words) {
+    [] => null,
     [final first, ...] => first,
-    _ => null,
   };
 }
 // #endregion rest

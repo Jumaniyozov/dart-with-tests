@@ -17,6 +17,10 @@ type, and then refuse to let you ignore it.
 `int` and `int?` are two different types. The first always holds a number. The second holds
 a number **or** `null`, the value that means nothing is there.
 
+Here is the directory the rest of this study asks questions of, and the first question:
+
+<include cwd lang="dart" meta='title="lib/lookup.dart"'>../code/ch09_lookup/lib/lookup.dart#directory</include>
+
 <include cwd lang="dart" meta='title="lib/lookup.dart"'>../code/ch09_lookup/lib/lookup.dart#find</include>
 
 <Drill n={1}>
@@ -61,6 +65,10 @@ So the checking costs nothing while the program runs. It costs you answering one
 while you write.
 
 ## 9.2 Four ways to answer "or what?"
+
+The tests below also search the other way round, so here is that one too:
+
+<include cwd lang="dart" meta='title="lib/lookup.dart"'>../code/ch09_lookup/lib/lookup.dart#nameat</include>
 
 <include cwd lang="dart" meta='title="test/lookup_test.dart"'>../code/ch09_lookup/test/lookup_test.dart#answers</include>
 

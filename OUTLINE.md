@@ -55,6 +55,24 @@ the reader, not suggestions.
   study later — Study 15"*. Originally said Study 7, which was impossible:
   `const` constructors need classes. Corrected in the source.
 
+Studies 4-14 added more. These are the ones **not yet paid**, gathered by
+grepping every study for a reference to a later one. Read this list before
+writing 15, 16 or 20; each is a sentence a reader has already been given.
+
+| Owed by | Made in | The reader was promised |
+| --- | --- | --- |
+| 15 | `variables.mdx` | `const` constructors get their own study |
+| 15 | `records.mdx` (×2) | a class supplies the three things a record cannot: a name, methods, and invariants |
+| 15 | `patterns.mdx` | study 16 "needs study 15 first" — so 15 must land classes before 16 can seal them |
+| 16 | `enums.mdx` | enums carrying fields and methods of their own |
+| 16 | `patterns.mdx` | `sealed` lets a family of classes be switched over exhaustively, the way an enum is |
+| 20 | `control-flow.mdx` | errors as the run-time answer to bad input, against `assert` for programmer mistakes |
+
+Paid and verified: 2→6 (enum kills the stringly-typed parameter), 3→7
+(`final` list vs `const` list), 7→12 (the shorter way to sum, needing
+closures), 8→9 (the question mark), 10→11 and 10→12 (functions named, then
+the loops deleted), 12→13 and 12→14, 13→14.
+
 ---
 
 ## To write

@@ -49,8 +49,10 @@ nothing — without a single comparison of `.length` anywhere.
 
 <include cwd lang="dart" meta='title="test/command_test.dart"'>../code/ch14_command/test/command_test.dart#parsing</include>
 
-`_` at the end is the **wildcard**: a pattern that matches anything and binds nothing. Lists
-have no fixed set of shapes, so a switch over one always needs it.
+`_` at the end is the **wildcard**: a pattern that matches anything and binds nothing. It is
+needed here because the three cases above it describe three particular shapes and say nothing
+about the rest — not because a list can never be matched completely. Section 14.4 shows one
+that is.
 
 ## 14.2 A pattern that decides
 
@@ -140,7 +142,12 @@ A list pattern can also say "and then whatever":
 <include cwd lang="dart" meta='title="lib/command.dart"'>../code/ch14_command/lib/command.dart#rest</include>
 
 `[final first, ...]` is a **rest element**: at least one element, name the first, ignore the
-rest. And because `if-case` is an `if`, it works inside a collection literal, next to the
+rest. Notice what is *not* in that switch — there is no `_`, and it still compiles. Every list
+is either empty or has a first element, so `[]` and `[final first, ...]` between them cover all
+of them, and the analyzer can see it. A list switch needs a wildcard when its cases leave a gap,
+which is the same rule as everywhere else.
+
+And because `if-case` is an `if`, it works inside a collection literal, next to the
 collection-`if` from study 7:
 
 <include cwd lang="dart" meta='title="lib/command.dart"'>../code/ch14_command/lib/command.dart#every</include>

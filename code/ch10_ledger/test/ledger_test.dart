@@ -40,6 +40,24 @@ void main() {
       expect(firstShared([30, 10], [99, 10, 30]), 30);
       expect(firstShared([1, 2], [3, 4]), isNull);
     });
+
+    test(
+      'without the label the outer loop runs on and keeps the last match',
+      () {
+        int? shared;
+        for (final entry in [30, 10]) {
+          for (final other in [99, 10, 30]) {
+            if (entry == other) {
+              shared = entry;
+              break;
+            }
+          }
+        }
+
+        expect(shared, 10);
+        expect(shared, isNot(firstShared([30, 10], [99, 10, 30])));
+      },
+    );
   });
   // #endregion leaving
 
@@ -85,6 +103,14 @@ void main() {
         Kind.debit: 2,
         Kind.nothing: 1,
       });
+    });
+
+    test('a case does not run on into the next one', () {
+      // Five entries, and each is counted exactly once. Under C-style
+      // fall-through a credit would land in all three totals and these
+      // would add up to fifteen.
+      final counted = countByKind(day);
+      expect(counted.values.fold(0, (a, b) => a + b), day.length);
     });
   });
   // #endregion kinds

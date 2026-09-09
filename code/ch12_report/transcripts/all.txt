@@ -1,2 +1,2 @@
 $ dart test test/
-00:00 +16: All tests passed!
+00:00 +19: All tests passed!

@@ -35,6 +35,18 @@ void main() {
     test('a map looks a record up by its fields', () {
       expect(tallySplits([1234, 1234, 7]), {(12, 34): 2, (0, 7): 1});
     });
+
+    test('the same map keyed by a list misses every single lookup', () {
+      final byList = {
+        [1, 2]: 'a',
+      };
+      expect(byList[[1, 2]], isNull);
+      expect(byList, hasLength(1));
+    });
+
+    test('and the type is worked out from the fields, not declared', () {
+      expect((1, 2).runtimeType.toString(), '(int, int)');
+    });
   });
   // #endregion key
 

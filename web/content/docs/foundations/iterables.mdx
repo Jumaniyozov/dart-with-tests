@@ -87,14 +87,22 @@ for more than there is.
 
 <include cwd lang="dart" meta='title="lib/report.dart"'>../code/ch12_report/lib/report.dart#asking</include>
 
-`firstWhere` finds one element. Its `orElse` is a named parameter that takes a function — study
-11's machinery, doing real work — and it is what saves this from throwing when nothing matches:
+`firstWhere` finds one element, and throws when nothing matches unless you give it an `orElse`
+— a named parameter that takes a function, which is study 11's machinery doing real work. It is
+also where this study meets its first genuine limit:
 
 <include cwd lang="dart" meta='title="lib/report.dart"'>../code/ch12_report/lib/report.dart#shared</include>
 
-Compare that with study 10's version of the same question: two nested loops, a label, a
-`break outer;` and a variable to carry the answer out. `theirs.contains` is a tear-off, so the
-whole search is one line and nothing in it is about looping.
+`orElse` has to return the element type. The elements are `int`, so it has to produce an `int`,
+and there is no `int` here that is not also a real amount of money — `-1` is a debit of one
+penny. Study 10's version of this returned `int?` and this one must too, so the answer arrives
+in two steps rather than one.
+
+They are two *cheap* steps, for the reason section 12.4 is about to give: both `isEmpty` and
+`first` stop at the first match, so neither walks the whole list. Compare the pair with study
+10's version of the same question — two nested loops, a label, a `break outer;` and a variable
+to carry the answer out. And `theirs.contains` is a tear-off, so nothing in either line is about
+looping.
 
 <include cwd lang="dart" meta='title="test/report_test.dart"'>../code/ch12_report/test/report_test.dart#asking</include>
 
