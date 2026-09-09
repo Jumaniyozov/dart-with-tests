@@ -1,0 +1,209 @@
+---
+title: Patterns and switch
+study: 14
+direction: One line can check the shape and take it apart. Stop doing those separately.
+description: List and record patterns, guards, if-case, and an exhaustiveness check that tells you exactly which case you forgot.
+---
+
+Study 13 ended on a line that did two things at once:
+
+```dart
+final (pounds, pence) = splitPence(amount);
+```
+
+That is a **pattern**. It describes a shape — a record of two fields — and names the parts, in
+the place where a variable name would normally go. dart.dev puts it this way: a pattern can
+match a value, destructure a value, or both.
+
+This study is about the both. The toy is a tiny command language for the ledger: three verbs,
+typed as a line of text.
+
+<include cwd lang="dart" meta='title="lib/command.dart"'>../code/ch14_command/lib/command.dart#verb</include>
+
+<Drill n={1}>
+
+<Direction>A line of text in, a typed command out — or nothing.</Direction>
+
+<include cwd lang="dart" meta='title="test/first_test.dart"'>../code/ch14_command/test/first_test.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch14_command/transcripts/pass.txt</include>
+</Console>
+
+</Drill>
+
+## 14.1 A pattern that describes a shape
+
+Here is the parser. There is no indexing, no length check, and no `if`:
+
+<include cwd lang="dart" meta='title="lib/command.dart"'>../code/ch14_command/lib/command.dart#parse</include>
+
+`['add', final amount]` is a **list pattern**, and it says three things in eleven characters:
+this list has exactly two elements, the first of them is the string `'add'`, and call the
+second one `amount`. Any of those failing means the case does not match and the next one is
+tried.
+
+The length check is the part people miss. `['add', final amount]` will not match a list of one
+or three, so `add` on its own and `add 250 more` both fall through to `_` and come back as
+nothing — without a single comparison of `.length` anywhere.
+
+<include cwd lang="dart" meta='title="test/command_test.dart"'>../code/ch14_command/test/command_test.dart#parsing</include>
+
+`_` at the end is the **wildcard**: a pattern that matches anything and binds nothing. Lists
+have no fixed set of shapes, so a switch over one always needs it.
+
+## 14.2 A pattern that decides
+
+`Command` is a record, so a **record pattern** can take a command apart and choose what to do
+in the same breath:
+
+<include cwd lang="dart" meta='title="lib/command.dart"'>../code/ch14_command/lib/command.dart#run</include>
+
+Read the cases one at a time; there are four separate ideas in six lines.
+
+**`(Verb.total, _)`** matches the total verb and ignores the number. The wildcard says "there is
+a field here and I do not care about it", which is different from there being no field.
+
+**`(Verb.add, final int amount)`** is the one worth stopping on. The field's type is `int?`. The
+pattern says `int`, so it matches only when there is a number — and inside the case, `amount` is
+a plain `int`. The null check from study 9 has not gone away; it has moved into the pattern,
+where it also does the destructuring.
+
+**`when amount > 0`** is a **guard**. It is an extra condition on a case that has already
+matched, and if it fails the switch keeps looking. That is how `add 250` and `add 0` reach two
+different answers from the same shape.
+
+**`(Verb.add, null)`** matches the missing number. `null` in a pattern is a constant to compare
+against, exactly like `'add'` was in the list pattern.
+
+<include cwd lang="dart" meta='title="test/command_test.dart"'>../code/ch14_command/test/command_test.dart#running</include>
+
+## 14.3 What the analyzer can prove
+
+`run` has no `default` and does not need one. Study 6 earned that guarantee for an enum and
+study 10 showed it holds for the statement form too. It also holds for a **record** of things
+the compiler can enumerate — here, three verbs against "a number or nothing".
+
+Take one case away:
+
+```dart title="lib/incomplete.dart"
+String run(Command command) => switch (command) {
+  (Verb.total, _) => 'the balance',
+  (Verb.add, final int amount) => 'add $amount pence',
+  (Verb.add, null) => 'add needs an amount',
+  (Verb.remove, final int position) => 'remove entry $position',
+};
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch14_command/transcripts/incomplete.txt</include>
+</Console>
+
+Read what it said. Not "add a default". It worked out the combination you left out and wrote it
+down: `(Verb.remove, null)`. The analyzer has been a character in this book since study 1, and
+this is the most useful sentence it has said yet.
+
+There is a catch, and it is easy to trip over. **A guarded case does not count towards
+exhaustiveness.** Replace the second `add` case with a guarded one and the switch stops being
+complete:
+
+```dart title="lib/guarded.dart"
+String run(Command command) => switch (command) {
+  (Verb.total, _) => 'the balance',
+  (Verb.add, final int amount) when amount > 0 => 'add $amount pence',
+  (Verb.add, null) => 'add needs an amount',
+  (Verb.remove, _) => 'remove',
+};
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch14_command/transcripts/guarded.txt</include>
+</Console>
+
+`(Verb.add, int())` is still missing, because nothing tells the compiler that `amount > 0` is
+ever true. A guard is an arbitrary expression; the exhaustiveness check works on shapes it can
+reason about, and it will not pretend to reason about yours. Which is why `run` pairs every
+guarded case with an unguarded one covering the same shape.
+
+## 14.4 Matching without a switch
+
+A switch is not the only place a pattern fits. `if (value case pattern)` matches once, and binds
+for the body when it does:
+
+<include cwd lang="dart" meta='title="lib/command.dart"'>../code/ch14_command/lib/command.dart#ifcase</include>
+
+`parse(line)` may be `null`, and the pattern `(_, final int number)` rejects that along with any
+command carrying no number — one condition instead of three.
+
+A list pattern can also say "and then whatever":
+
+<include cwd lang="dart" meta='title="lib/command.dart"'>../code/ch14_command/lib/command.dart#rest</include>
+
+`[final first, ...]` is a **rest element**: at least one element, name the first, ignore the
+rest. And because `if-case` is an `if`, it works inside a collection literal, next to the
+collection-`if` from study 7:
+
+<include cwd lang="dart" meta='title="lib/command.dart"'>../code/ch14_command/lib/command.dart#every</include>
+
+<include cwd lang="dart" meta='title="test/command_test.dart"'>../code/ch14_command/test/command_test.dart#matching</include>
+
+That last one is worth reading twice. It filters, converts and drops the failures in three
+lines, and there is no `null` anywhere in the result type — the lines that did not parse simply
+did not produce an element.
+
+<Gloss title="The two jobs of _">
+Study 3 met `_` as a name for a variable you are obliged to declare but will not use. Here it is
+a pattern that matches anything and binds nothing. They look identical and they are the same
+idea seen from two sides: `_` means *there is something here and it is not my business*.
+
+The difference is only where it sits. In a pattern position it is matching; anywhere else it is
+naming. You never have to decide which — the compiler knows from the position, which is why the
+same character could be given both jobs.
+</Gloss>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch14_command/transcripts/all.txt</include>
+</Console>
+
+<Practice source="dart.dev — Patterns" href="https://dart.dev/language/patterns#what-patterns-do">
+dart.dev's own summary is the rule worth keeping: "a pattern can **match** a value,
+**destructure** a value, or both, depending on the context and shape of the pattern".
+
+The habit that follows is to notice when you have written those two steps separately. A check
+that a list has two elements, followed by two lines reading `list[0]` and `list[1]`. An
+`if (x != null)` followed by using a field of `x`. A `switch` on one field of a record, followed
+by pulling out another. Each of those is a pattern spelled out longhand, and each of them can
+drift — the check and the use are two places that have to agree.
+
+The limit is worth naming too. A guard is an ordinary expression, so anything you push into one
+is invisible to the exhaustiveness check. Keep guards for narrowing between cases that are
+already covered, not for the coverage itself.
+</Practice>
+
+## Wrapping up
+
+A pattern describes a shape and names its parts at the same time. List patterns match by length
+and position, with `...` for "and the rest". Record patterns match by shape, and a typed field
+pattern like `final int amount` does study 9's null check as part of the match. `when` adds a
+condition to a case that already matched. `_` matches anything and keeps nothing.
+
+Exhaustiveness now covers enums, records of them, and the statement form as well as the
+expression form — and when a case is missing the analyzer names it rather than shrugging. A
+guarded case does not count towards it.
+
+Also met: `if-case`, rest elements, and patterns inside a collection literal.
+
+That is everything Book I can say about matching without classes. Study 16 adds `sealed`, which
+lets a family of classes be exhaustively switched over the same way an enum is — the last piece
+of this machinery, and it needs study 15 first.
+
+## Challenges
+
+Three tests are already written and already failing. Make them pass one at a time. Do not edit
+the tests. Each one is a pattern; if you are counting positions by hand, there is a shorter way.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch14_command/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch14_command/exercises/challenges.dart</include>

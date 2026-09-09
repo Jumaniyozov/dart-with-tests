@@ -1,0 +1,6 @@
+$ dart analyze lib/guarded.dart
+Analyzing guarded.dart...
+
+  error - guarded.dart:3:32 - The type 'Command' isn't exhaustively matched by the switch cases since it doesn't match the pattern '(Verb.add, int())'. Try adding a wildcard pattern or cases that match '(Verb.add, int())'. - non_exhaustive_switch_expression
+
+1 issue found.

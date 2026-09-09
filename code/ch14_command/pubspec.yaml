@@ -1,0 +1,11 @@
+name: ch14_command
+description: Study 14 — taking a value apart and deciding at the same time.
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.26.0

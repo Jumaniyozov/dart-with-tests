@@ -19,3 +19,4 @@ workspace:
   - ch11_pipeline
   - ch12_report
   - ch13_split
+  - ch14_command

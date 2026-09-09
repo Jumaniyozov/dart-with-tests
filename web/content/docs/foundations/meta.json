@@ -13,6 +13,7 @@
     "control-flow",
     "functions",
     "iterables",
-    "records"
+    "records",
+    "patterns"
   ]
 }

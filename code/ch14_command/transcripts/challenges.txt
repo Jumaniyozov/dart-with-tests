@@ -1,0 +1,6 @@
+$ dart test exercises/
+00:00 +0: loading exercises/challenges_test.dart
+00:00 +0: exercises/challenges_test.dart: challenge 1 — reading a range reads two numbers with a dash between them
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — reading a range reads two numbers with a dash between them [E]
+  UnimplementedError: challenge 1
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — reading a range anything else is nothing
