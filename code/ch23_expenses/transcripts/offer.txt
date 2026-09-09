@@ -1,0 +1,6 @@
+$ dart analyze bin/offer.dart
+Analyzing offer.dart...
+
+  error - offer.dart:5:9 - Undefined name 'Amount'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+
+1 issue found.

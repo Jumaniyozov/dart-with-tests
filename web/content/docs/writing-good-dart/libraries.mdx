@@ -139,10 +139,18 @@ three times. Study 15 introduced this and drew the rule: a header has no initial
 list, so it cannot check anything.
 
 A class with a primary constructor may not have a second *generative* constructor
-beside it. Try one and the analyzer says
-`non_redirecting_generative_constructor_with_primary`. A **factory** is not generative,
-and it has a body. So the check goes in a factory, and the choice is the analyzer's
-rather than a matter of taste.
+beside it. Try one:
+
+```dart title="lib/src/money.dart"
+Money.checked(int amount) : assert(amount >= 0), pence = amount;
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch23_expenses/transcripts/generative.txt</include>
+</Console>
+
+A **factory** is not generative, and it has a body. So the check goes in a factory, and
+the choice is the analyzer's rather than a matter of taste.
 </Gloss>
 
 ## 23.4 What a lock does not close
@@ -183,14 +191,42 @@ Which leaves the question of what this package offers. One file answers it:
 <include cwd lang="dart" meta='title="lib/expenses.dart"'>../code/ch23_expenses/lib/expenses.dart#barrel</include>
 
 `export` republishes another library's names as your own. Anyone importing
-`package:ch23_expenses/expenses.dart` gets `Money` and nothing else — not `Amount`, not
-`Backdoor`, not `Pence`. Those still exist, and this package still uses them. They are
-simply not on offer.
+`package:ch23_expenses/expenses.dart` gets `Money` and nothing else. Reach for anything
+past it:
+
+```dart title="bin/offer.dart"
+import 'package:ch23_expenses/expenses.dart';
+
+void main() {
+  print(Money.fromPence(1250).asText);
+  print(Amount.fromPence(500).pence);
+}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch23_expenses/transcripts/offer.txt</include>
+</Console>
+
+`Undefined name`. `Amount` still exists, and this package still uses it. It is simply not
+on offer, and the same is true of `Backdoor` and `Pence`.
 
 The `library;` line is worth a second. A doc comment must be attached to something. Put
 one at the top of a file with no declaration under it and the analyzer reports
 `dangling_library_doc_comments` — a comment about a library, in a file that never said it
 was one. `library;` says it.
+
+<Gloss title="What about part and part of?">
+`part` splits one library across several files. The parts share the main file's
+namespace, so a `_` name in one part is visible in the others — they are one library
+wearing several filenames.
+
+This book does not use it. Its main job today is generated code: a build tool writes
+`something.g.dart` and your file declares it as a `part`, which is how the generated code
+reaches your private members. Book IV's study on code generation is where that arrives.
+
+Until then, `import` and `export` do everything this program needs, and a `part` would
+only make the boundary from 23.1 larger.
+</Gloss>
 
 <Practice source="Effective Dart — Usage" href="https://dart.dev/effective-dart/usage#dont-import-libraries-that-are-inside-the-src-directory-of-another-package">
 **DON'T import libraries that are inside the `src` directory of another package.**
@@ -206,6 +242,12 @@ support.
 The same page carries **PREFER relative import paths**, which is why the imports inside
 this package's own `lib/` name no package.
 </Practice>
+
+The whole study, run at once:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch23_expenses/transcripts/all.txt</include>
+</Console>
 
 ## Wrapping up
 
@@ -225,7 +267,7 @@ checked against the representation type. Study 19 said nothing would ever close 
 Nothing does.
 
 Also met: `import` with `show`, `hide` and `as`, `export` and the barrel file, `lib/src/`,
-`library;`, and `dangling_library_doc_comments`.
+`library;`, `dangling_library_doc_comments`, and `part` named but not used.
 
 Study 24 gives this package a `main` and a terminal to run it from.
 

@@ -75,10 +75,10 @@ writing 15, 16 or 20; each is a sentence a reader has already been given.
 
 | Owed by | Made in | The reader was promised |
 | --- | --- | --- |
-| 23 | `extension-types.mdx` | how to hide a constructor, so an invariant cannot be walked past |
-
-That row is the last one outstanding, and Book II's study-23 entry below is where
-it is discharged. It is still listed as unpaid because no prose exists yet.
+**Paid.** Study 23 is written, and it settled the row above: `Money._` is refused from
+another library (`new_with_undefined_constructor`), reached freely from inside its own
+file, and an extension type with the same private constructor is still walked past by
+`-1 as Pence`. Book I's promise table is now empty.
 
 Also paid since: 15→16 (a family that shares behaviour), 16→17 (sharing
 without a family), 17→18 (same behaviour, different type), 18→19 (a type that
@@ -358,7 +358,13 @@ before it is written as prose.
 | `dart pub add args` | Resolves to **2.7.0**. |
 | `avoid_slow_async_io` | **Not** in this book's lint set, and argues the opposite for `exists`/`stat`. |
 
-### 23 — Libraries, imports and privacy · `libraries` · `ch23_expenses`
+### 23 — Libraries, imports and privacy · `libraries` · `ch23_expenses` — **WRITTEN**
+
+Shipped: 7 green, 3 challenges at 5 failing, 8 transcripts. Two things the writing found
+that this entry did not predict. The barrel would not analyze clean — a `///` above an
+`export` trips `dangling_library_doc_comments`, so `library;` is in the study. And
+`crowded.dart` and `pence.dart` are **demonstration files, not tracker code**: study 24's
+SLICE must delete them, or eleven later snapshots carry code the program never calls.
 
 **Pays the study-19 promise**, the only debt Book I leaves unpaid. Teaches: a file is a
 library; `import` with `show`, `hide` and `as`; `_` privacy; `lib/src/`; `export` and the
@@ -405,6 +411,12 @@ records.
 
 Toy: `bin/expenses.dart` and `lib/src/command.dart` — `expenses add 12.50 coffee` works
 from a terminal.
+
+First job, before any of that: **delete study 23's demonstration files.**
+`lib/src/crowded.dart`, `lib/src/pence.dart`, `bin/inside.dart`, `bin/cast.dart` and
+`bin/imports.dart` exist to make study 23's argument and are not part of the tracker.
+Study 24's SLICE declares the removals, and `check_slices` fails if it does not. This is
+the first snapshot with a predecessor and so the first real test of that check.
 
 The mechanism to name: a CLI's return value is not what it prints. It is the **exit
 code**, and the shell is the caller reading it. `print` goes to stdout, which is the

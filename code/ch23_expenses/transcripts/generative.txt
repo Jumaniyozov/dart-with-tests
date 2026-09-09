@@ -1,0 +1,6 @@
+$ dart analyze lib/src/money.dart
+Analyzing money.dart...
+
+  error - money.dart:20:3 - Classes with primary constructors can't have non-redirecting generative constructors. Try making the constructor redirect to the primary constructor, or remove the primary constructor. - non_redirecting_generative_constructor_with_primary
+
+1 issue found.
