@@ -1,0 +1,6 @@
+$ dart analyze lib/ordered.dart
+Analyzing ordered.dart...
+
+warning - ordered.dart:8:5 - Dead code: This on-catch block won't be executed because 'BadLine' is a subtype of 'Exception' and hence will have been caught already. Try reordering the catch clauses so that this block can be reached, or removing the unreachable catch clause. - dead_code_on_catch_subtype
+
+1 issue found.

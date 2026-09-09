@@ -1,0 +1,273 @@
+---
+title: Errors and exceptions
+study: 20
+direction: Decide who is wrong — the program or the world — before you decide what to throw.
+description: Refusing bad input at run time, the difference between an Error and an Exception, and the two ways a catch clause can destroy the evidence.
+---
+
+Study 9 gave you `int.tryParse`, which answers `null` when the text is not a number. That is
+the right answer when *no answer* is a fine answer. Often it is not: `null` cannot say what was
+wrong, it cannot carry the text that caused it, and it cannot stop a caller who forgets to look.
+
+Study 10 said an `assert` is no use here either. An assert catches a mistake **you** made, and
+it is not there in a released build. Text a person typed is a fact about the world, arriving at
+run time, and it needs an answer that arrives at run time too.
+
+<include cwd lang="dart" meta='title="lib/till.dart"'>../code/ch20_till/lib/till.dart#parse</include>
+
+<Drill n={1}>
+
+<Direction>Two tests. One says what the function does, the other says what it refuses.</Direction>
+
+<include cwd lang="dart" meta='title="test/first_test.dart"'>../code/ch20_till/test/first_test.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch20_till/transcripts/pass.txt</include>
+</Console>
+
+</Drill>
+
+## 20.1 Throwing
+
+`throw` takes an object and leaves. Two things about it are worth naming now, because both are
+already on the page above.
+
+**`throw` is an expression.** dart.dev is explicit: "you can throw exceptions in `=>`
+statements, as well as anywhere else that allows expressions." That is why the last arm of
+`penceFrom`'s switch can *be* a `throw` — a switch expression needs every arm to produce a
+value, and an arm that never produces one is allowed because it never finishes.
+
+**`Never` is the type of that.** `noAmount` says it in its signature: it takes a string and has
+no return type in the ordinary sense, because it does not return. `Never` sits below every
+type in the language, so a call to it fits wherever any value is wanted — which is how
+`value == null || value < 0 ? noAmount(typed) : value` type-checks as an `int`.
+
+<include cwd lang="dart" meta='title="test/till_test.dart"'>../code/ch20_till/test/till_test.dart#refusing</include>
+
+`FormatException` takes a message *and the source that caused it*, and the test above reads
+that source back. An exception that only says "bad input" makes the caller go and find the
+input again.
+
+<Gloss title="int.tryParse is more forgiving than it looks">
+`penceFrom` refuses `'twelve'` because `int.tryParse` refused it first. It is worth knowing
+exactly how much `tryParse` lets through before you lean on it as a validator:
+
+<include cwd lang="dart" meta='title="test/till_test.dart"'>../code/ch20_till/test/till_test.dart#lenient</include>
+
+Surrounding spaces are trimmed and a leading `+` is accepted, so `penceFrom(' +12 ')` is twelve
+pounds. For a till that is harmless. For a field where the exact characters matter it is not,
+and the answer is to check the text yourself before parsing it — which is challenge 2.
+</Gloss>
+
+## 20.2 Which of `Error` and `Exception` you mean
+
+You can throw any non-null object in Dart. Do not. dart.dev's rule is one line —
+"production-quality code usually throws types that implement `Error` or `Exception`" — and the
+choice between those two is the real decision.
+
+**An `Error` means the program is wrong.** `ArgumentError`, `StateError`, `RangeError`: someone
+called something with what it plainly said it would not take. The fix is to change the code, so
+catching one is nearly always a mistake — you would be papering over a bug.
+
+**An `Exception` means the world is wrong.** The text was not a number, the file is not there,
+the connection dropped. The code is fine and the situation is not. These are meant to be
+caught.
+
+The two are separate hierarchies, not one inside the other:
+
+<include cwd lang="dart" meta='title="test/till_test.dart"'>../code/ch20_till/test/till_test.dart#kinds</include>
+
+`ArgumentError` is not an `Exception`, and `FormatException` is not an `Error`. So `on
+Exception` really does mean "the situations I expected", and it will not quietly swallow a bug.
+
+Most of the time the type you want already exists. `FormatException` says "this text is wrong"
+better than anything you would write. Define your own when the caller needs to catch *this*
+failure and not others, or needs data off it that no existing type carries:
+
+<include cwd lang="dart" meta='title="lib/till.dart"'>../code/ch20_till/lib/till.dart#badline</include>
+
+That is the whole justification, and it is a smaller one than most codebases act on. A
+`BadLine` exists because "which line" is a fact `FormatException` has nowhere to put.
+
+## 20.3 Catching
+
+`try` runs the risky part. `on` filters by type. `catch` gives you the object, and a second
+parameter gives you the stack trace. `on FormatException { … }` with no `catch` is the form to
+reach for when you do not need the object — it says you handled a kind of failure, not that you
+looked at one.
+
+Here is the same failure answered two ways:
+
+<include cwd lang="dart" meta='title="lib/till.dart"'>../code/ch20_till/lib/till.dart#total</include>
+
+<include cwd lang="dart" meta='title="lib/till.dart"'>../code/ch20_till/lib/till.dart#skipping</include>
+
+<include cwd lang="dart" meta='title="test/till_test.dart"'>../code/ch20_till/test/till_test.dart#answers</include>
+
+Neither is the correct one. Stopping is right for a till, where a wrong total is worse than no
+total; skipping is right for a log file you are summarising. What the language gives you is the
+choice, stated in the code where a reader can see it.
+
+**Order matters, because the first clause that matches wins.** dart.dev: "the first `catch`
+clause that matches the thrown object's type handles the exception." Put the general one first
+and the specific one below it is unreachable:
+
+```dart title="lib/ordered.dart"
+import 'till.dart';
+
+int total(List<String> lines) {
+  try {
+    return totalOf(lines);
+  } on Exception {
+    return 0;
+  } on BadLine {
+    return -1;
+  }
+}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch20_till/transcripts/ordered.txt</include>
+</Console>
+
+Specific first, general last. This one the analyzer catches for you; the next two it also
+catches, and the section after that is about why people switch them off anyway.
+
+And when nobody catches it at all, the exception walks out of `main` and takes the program with
+it:
+
+<include cwd lang="dart" meta='title="bin/unread.dart"'>../code/ch20_till/bin/unread.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch20_till/transcripts/unread.txt</include>
+</Console>
+
+The first roll printed. The second stopped the program, and the line it printed is `BadLine`'s
+own `toString` — which is why an exception type is worth giving one.
+
+## 20.4 `finally`, `rethrow`, and two ways to lose the evidence
+
+`finally` runs on the way out, whichever way out that is.
+
+<include cwd lang="dart" meta='title="lib/till.dart"'>../code/ch20_till/lib/till.dart#logged</include>
+
+<include cwd lang="dart" meta='title="test/till_test.dart"'>../code/ch20_till/test/till_test.dart#order</include>
+
+Read the second test. The exception still reaches the caller — `finally` does not handle
+anything, it just runs — and `'done twelve'` is in the log before the caller ever hears about
+the failure. That is what `finally` is for: closing the thing you opened, on both paths, without
+pretending to have fixed anything.
+
+Now the third test, which is the one to be afraid of. A `return` inside `finally` does not just
+leave early: it **replaces the exception with a return value**, and the failure is gone. Not
+handled, not logged, not rethrown. Gone.
+
+```dart title="lib/swallowed.dart"
+import 'till.dart';
+
+int hidden(String typed) {
+  try {
+    return penceFrom(typed);
+  } catch (error) {}
+  return 0;
+}
+
+int lost(String typed) {
+  try {
+    return penceFrom(typed);
+  } finally {
+    return 0;
+  }
+}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch20_till/transcripts/swallowed.txt</include>
+</Console>
+
+Both are on in this book, and both are pointing at the same habit: making a failure stop being
+visible is not the same as dealing with it.
+
+The second way to lose evidence is quieter, because the code looks like it is doing the right
+thing:
+
+```dart title="lib/copied.dart"
+import 'till.dart';
+
+int logged(String typed, List<String> log) {
+  try {
+    return penceFrom(typed);
+  } on FormatException catch (error) {
+    log.add('refused $typed');
+    throw error;
+  }
+}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch20_till/transcripts/copied.txt</include>
+</Console>
+
+`throw error` throws the same object — and a *new* stack trace, starting here. Everything about
+where the failure actually came from is discarded. `rethrow` sends on the exception **and** the
+trace it arrived with. Here are both, measured:
+
+<include cwd lang="dart" meta='title="lib/v1.dart"'>../code/ch20_till/lib/v1.dart#copied</include>
+
+<include cwd lang="dart" meta='title="test/till_test.dart"'>../code/ch20_till/test/till_test.dart#trace</include>
+
+`penceFrom` and `noAmount` are the two frames that say where the text was refused. After
+`rethrow` they are still there. After `throw error` they are not — the trace begins at the
+handler, which is the one place you already knew about.
+
+<include cwd lang="dart" meta='title="lib/v1.dart"'>../code/ch20_till/lib/v1.dart#lost</include>
+
+<Practice source="dart.dev — Error handling" href="https://dart.dev/language/error-handling">
+Three of this study's rules are lints, and all three ship in `package:lints` and are therefore
+already on in every package in this book — `empty_catches` from `core.yaml`,
+`control_flow_in_finally` and `use_rethrow_when_possible` from `recommended.yaml`. You do not
+have to remember them. You have to not switch them off.
+
+The rule that is not a lint is the one worth carrying: **decide who is wrong before you decide
+what to throw.** If the caller could not have avoided it, it is an `Exception` and somebody
+should catch it. If the caller broke a rule you wrote down, it is an `Error` and nobody should
+catch it — the failure is the point, because it makes a bug loud in development instead of
+quiet in production.
+
+And catch the narrowest type you can name. `on FormatException` says what you were expecting.
+A bare `catch` says you were expecting anything, which includes the `Error` that means your own
+code is broken, and turns it into a shrug.
+</Practice>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch20_till/transcripts/all.txt</include>
+</Console>
+
+## Wrapping up
+
+`throw` is an expression, so it fits in a `=>` body or a switch arm, and `Never` is the type of
+a function that only ever throws. An `Error` says the program is wrong and should not be
+caught; an `Exception` says the world is wrong and should be. `try` / `on` / `catch` /
+`finally` decides what happens next, first matching clause wins, and `finally` runs both ways
+out without handling anything.
+
+Two habits destroy the information you will need at three in the morning: a `catch` that does
+nothing, and `throw error` where `rethrow` belonged. The analyzer names both. Believe it.
+
+Also met: `FormatException`, `ArgumentError`, `StateError`, defining an exception type, and the
+stack trace as a value you can read.
+
+Studies 21 and 22 ask the same questions again about work that has not finished yet — where the
+failure arrives after the function that caused it has already returned.
+
+## Challenges
+
+Three tests are already written and already failing. Make them pass one at a time. Do not edit
+the tests. One of the three cannot be passed by catching the exception; it has to be sent on
+the right way.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch20_till/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch20_till/exercises/challenges.dart</include>

@@ -19,6 +19,7 @@
     "inheritance",
     "mixins",
     "generics",
-    "extension-types"
+    "extension-types",
+    "errors"
   ]
 }

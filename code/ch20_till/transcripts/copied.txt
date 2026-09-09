@@ -1,0 +1,6 @@
+$ dart analyze lib/copied.dart
+Analyzing copied.dart...
+
+   info - copied.dart:8:5 - Use 'rethrow' to rethrow a caught exception. Try replacing the 'throw' with a 'rethrow'. - use_rethrow_when_possible
+
+1 issue found.

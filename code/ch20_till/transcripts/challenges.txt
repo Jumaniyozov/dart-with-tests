@@ -1,0 +1,6 @@
+$ dart test exercises/
+00:00 +0: loading exercises/challenges_test.dart
+00:00 +0: exercises/challenges_test.dart: challenge 1 — add up, or say which entry stopped you adds up a list that is all numbers
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — add up, or say which entry stopped you adds up a list that is all numbers [E]
+  UnimplementedError: challenge 1
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — add up, or say which entry stopped you and names the first entry that is not

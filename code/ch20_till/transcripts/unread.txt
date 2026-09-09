@@ -1,0 +1,4 @@
+$ dart run bin/unread.dart
+1284
+Unhandled exception:
+BadLine: line 2, "twelve" is not an amount

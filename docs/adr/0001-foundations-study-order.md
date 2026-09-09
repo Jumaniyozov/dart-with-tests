@@ -96,6 +96,17 @@ Study 19 also makes the first forward reference into Book II: hiding a
 constructor needs privacy, which opens at study 23. That is recorded as a debt
 rather than paid, because nothing in Book I can pay it.
 
+Study 20 has since been written and paid three promises at once — from 10, 15
+and 19 — which were all the same promise made three times: bad input is a
+run-time fact and needs a run-time answer. That they converged is a point in
+the spine's favour. It also confirmed the dependency the outline recorded, but
+by a route the outline did not guess: study 20 needs 15 not only to define an
+exception type but because its own toy is built out of study 14's switch, study
+13's record and study 9's `tryParse`, and the interesting sentence in the study
+is that `tryParse`'s `null` and a thrown `FormatException` are the same
+decision made two ways. A study 20 placed before 9 would have had nothing to
+compare against.
+
 Reordering after several of these studies are written is expensive, because the
 studies carry forward references to each other by number — a published Gloss
 that says "Study 7" is a contract with the reader. One such promise was already

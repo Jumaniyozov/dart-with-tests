@@ -1,0 +1,7 @@
+$ dart analyze lib/swallowed.dart
+Analyzing swallowed.dart...
+
+   info - swallowed.dart:6:19 - Empty catch block. Try adding statements to the block, adding a comment to the block, or removing the 'catch' clause. - empty_catches
+   info - swallowed.dart:14:5 - Use of 'return' in a 'finally' clause. Try restructuring the code. - control_flow_in_finally
+
+2 issues found.

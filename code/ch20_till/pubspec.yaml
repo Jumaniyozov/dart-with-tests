@@ -1,0 +1,11 @@
+name: ch20_till
+description: Study 20 — what to do when the text a person typed is not an amount.
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.26.0
