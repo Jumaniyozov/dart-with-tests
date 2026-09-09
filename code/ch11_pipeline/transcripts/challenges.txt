@@ -1,0 +1,6 @@
+$ dart test exercises/
+00:00 +0: loading exercises/challenges_test.dart
+00:00 +0: exercises/challenges_test.dart: challenge 1 — a step with a ceiling holds an amount down to the ceiling
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — a step with a ceiling holds an amount down to the ceiling [E]
+  UnimplementedError: challenge 1
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — a step with a ceiling leaves anything under the ceiling alone

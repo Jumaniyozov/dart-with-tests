@@ -180,9 +180,12 @@ Teaches positional, optional positional and named parameters, defaults,
 
 Toy: `pipeline.dart` — a list of transformations applied in order.
 
-The mechanism to name: a closure captures the variable, not its value. Show the
-classic loop-capture surprise in a test, then show why `for (final x in …)`
-gives a fresh binding per iteration and a C-style `for (var i = …)` does not.
+The mechanism to name: a closure captures the variable, not its value.
+**Measured, and it corrects what this outline first said:** a C-style
+`for (var i = 0; …)` in Dart *does* give a fresh binding per iteration, exactly
+like `for (final x in …)` — both produce `[0, 1, 2]`, not `[3, 3, 3]`. Dart does
+not have JavaScript's `var` trap. The rule still bites when the variable is
+declared *outside* the loop, and that is where the study demonstrates it.
 
 This study finally names machinery the reader has used since study 2 — say that
 explicitly, it is satisfying.

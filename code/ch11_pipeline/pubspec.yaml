@@ -1,0 +1,11 @@
+name: ch11_pipeline
+description: Study 11 — the functions this book has been writing since study 2.
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.26.0

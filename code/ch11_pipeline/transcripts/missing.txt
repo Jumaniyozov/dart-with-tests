@@ -1,0 +1,6 @@
+$ dart analyze lib/missing.dart
+Analyzing missing.dart...
+
+  error - missing.dart:3:20 - The named parameter 'pence' is required, but there's no corresponding argument. Try adding the required argument. - missing_required_argument
+
+1 issue found.

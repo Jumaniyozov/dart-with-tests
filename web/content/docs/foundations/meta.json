@@ -10,6 +10,7 @@
     "lists",
     "maps-and-sets",
     "null-safety",
-    "control-flow"
+    "control-flow",
+    "functions"
   ]
 }

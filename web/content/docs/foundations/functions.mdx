@@ -1,0 +1,211 @@
+---
+title: Functions and closures
+study: 11
+direction: You have written a hundred of these. This study is about what you were writing.
+description: Positional, optional and named parameters; functions as values; and what a closure actually keeps hold of.
+---
+
+Every study so far has written functions. `hello` in study 2, `format` in study 4, `truncate`
+in study 5, `runPipeline` below. The book has been leaning on them without ever stopping to
+say what the parts are called or what they can do.
+
+This study stops. The toy is a price **pipeline**: a list of small transformations applied to
+an amount in pence, one after another.
+
+<include cwd lang="dart" meta='title="lib/pipeline.dart"'>../code/ch11_pipeline/lib/pipeline.dart#run</include>
+
+<Drill n={1}>
+
+<Direction>Two steps, then none. The empty case is where the shape shows.</Direction>
+
+<include cwd lang="dart" meta='title="test/first_test.dart"'>../code/ch11_pipeline/test/first_test.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch11_pipeline/transcripts/pass.txt</include>
+</Console>
+
+</Drill>
+
+## 11.1 Saying what a function takes
+
+Dart gives you three kinds of parameter, and choosing between them is a readability decision
+you make for whoever calls the function.
+
+**Positional and required** is the plain kind: `runPipeline(pence, steps)`. Position carries
+the meaning, so keep the count small and the order obvious.
+
+**Positional and optional** goes in square brackets, with a default:
+
+<include cwd lang="dart" meta='title="lib/pipeline.dart"'>../code/ch11_pipeline/lib/pipeline.dart#optional</include>
+
+`repeat(100, addFee(10))` runs the step once; `repeat(100, addFee(10), 3)` runs it three
+times. This works because there is exactly one optional value and its meaning is clear from
+where it sits. A second one would not be — `repeat(100, step, 3, true)` tells the reader
+nothing.
+
+**Named** is the answer to that. Braces, and each argument carries its name to the call site:
+
+<include cwd lang="dart" meta='title="lib/pipeline.dart"'>../code/ch11_pipeline/lib/pipeline.dart#line</include>
+
+Named parameters are optional by default, which is why `width` and `note` have to cope with
+being left out — `width` by having a default, `note` by being nullable. `pence` is marked
+`required`, and that is not a comment. Leave it out:
+
+```dart title="lib/missing.dart"
+String report() => line('jam');
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch11_pipeline/transcripts/missing.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="test/pipeline_test.dart"'>../code/ch11_pipeline/test/pipeline_test.dart#params</include>
+
+The rule of thumb: if a caller reading the line back would have to look up what an argument
+means, name it. A bare `true` or a bare number almost always fails that test.
+
+## 11.2 A function as a value
+
+A function is a value in Dart. It has a type, it can sit in a variable, it can be an element
+of a list, and it can be passed to and returned from other functions. That is what
+`List<Step>` in `runPipeline` was, and here is what `Step` is:
+
+<include cwd lang="dart" meta='title="lib/pipeline.dart"'>../code/ch11_pipeline/lib/pipeline.dart#step</include>
+
+`int Function(int)` is the type of "a function taking one `int`, giving back an `int`".
+`typedef` gives that type a name so the rest of the file can say `Step` and mean it.
+
+There are two ways to produce one. Write it out on the spot as an **anonymous function** —
+`(pence) => pence + 50` — or hand over a function that already has a name:
+
+<include cwd lang="dart" meta='title="lib/pipeline.dart"'>../code/ch11_pipeline/lib/pipeline.dart#named</include>
+
+`runPipeline(254, [roundToTenPence])` passes the function itself, not its result. There are no
+parentheses, so nothing is called; the name evaluates to the function. That is a **tear-off**,
+and it is both shorter and clearer than `(pence) => roundToTenPence(pence)`, which is the same
+function with a layer of paperwork around it.
+
+<include cwd lang="dart" meta='title="test/pipeline_test.dart"'>../code/ch11_pipeline/test/pipeline_test.dart#order</include>
+
+Note the second pair of expectations in the first test. `addFee` then `discount` is not
+`discount` then `addFee` — a pipeline is a list, and lists have an order.
+
+## 11.3 A function that remembers
+
+`addFee(50)` is not a step. It is a function that *builds* a step:
+
+<include cwd lang="dart" meta='title="lib/pipeline.dart"'>../code/ch11_pipeline/lib/pipeline.dart#made</include>
+
+Read `Step addFee(int fee) => (pence) => pence + fee;` from the outside in. `addFee` takes a
+fee and returns a function. That returned function takes an amount and mentions `fee` — which
+belongs to a call that has already finished.
+
+A function that refers to a variable from the scope it was written in is a **closure**, and
+the variable does not disappear when that scope ends. It stays alive for as long as the
+closure does.
+
+<include cwd lang="dart" meta='title="lib/pipeline.dart"'>../code/ch11_pipeline/lib/pipeline.dart#counter</include>
+
+<include cwd lang="dart" meta='title="test/pipeline_test.dart"'>../code/ch11_pipeline/test/pipeline_test.dart#closure</include>
+
+Three calls to the same counter give `1`, `2`, `3`, so `count` is not being reset — the
+closure kept it. Two counters give `1`, `2` and `1`, so they are not sharing it either. Each
+call to `counter()` made a new `count`, and each returned function kept its own.
+
+## 11.4 The variable, not the value
+
+That last sentence is the mechanism, and it is worth being exact: **a closure captures the
+variable, not the value the variable held.** If the variable changes later, the closure sees
+the change.
+
+Which raises the obvious worry about building closures in a loop. Here is `feeSteps`, one step
+per fee:
+
+<include cwd lang="dart" meta='title="lib/pipeline.dart"'>../code/ch11_pipeline/lib/pipeline.dart#capture</include>
+
+If all three closures shared one `fee`, they would all end up adding the last one. They do
+not, and neither does the indexed form:
+
+<include cwd lang="dart" meta='title="test/pipeline_test.dart"'>../code/ch11_pipeline/test/pipeline_test.dart#loops</include>
+
+**Both Dart loops give each pass its own variable.** This is worth saying loudly to anyone
+arriving from JavaScript, where `for (var i = …)` shares one `i` across every pass and the
+closures all report the final value. Dart does not have that trap. `for (final fee in fees)`
+and `for (var i = 0; …)` both hand each iteration a fresh binding, and closures built inside
+them capture the one belonging to their own pass.
+
+The rule has not changed, though — only where the variable lives. Declare it outside the loop
+and there is only one, exactly as the rule says:
+
+<include cwd lang="dart" meta='title="lib/v1.dart"'>../code/ch11_pipeline/lib/v1.dart#capture</include>
+
+<include cwd lang="dart" meta='title="bin/shared.dart"'>../code/ch11_pipeline/bin/shared.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch11_pipeline/transcripts/shared.txt</include>
+</Console>
+
+Read the order again. Both steps were built. Nothing was wrong until one of them was
+*called* — and by then `i` was `2`, because it is the same `i` the loop finished with, and
+`fees[2]` is off the end of a two-element list. The closures were never holding `0` and `1`.
+They were holding `i`.
+
+<Gloss title="A closure is not free">
+Keeping a variable alive costs memory. A closure holds on to what it mentions for as long as
+something holds on to the closure, so a long-lived callback that mentions one field of a large
+object can keep that whole object from being collected.
+
+This almost never matters at the scale of this book, and it is worth knowing the shape of
+before it does. A closure is an object with the captured variables inside it, not a bare
+pointer to some code.
+</Gloss>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch11_pipeline/transcripts/all.txt</include>
+</Console>
+
+<Practice source="Effective Dart — Usage" href="https://dart.dev/effective-dart/usage#dont-create-a-lambda-when-a-tear-off-will-do">
+**DON'T create a lambda when a tear-off will do.** Effective Dart's definition is the one this
+study used: referring to a function without parentheses creates a tear-off, "a closure that
+takes the same parameters as the function and invokes the underlying function when you call
+it". So `(pence) => roundToTenPence(pence)` is a hand-written copy of something the language
+will give you by writing `roundToTenPence`.
+
+Two neighbouring rules are already enforced here, both shipping in
+`package:lints/recommended.yaml`, which this book includes:
+
+- `prefer_function_declarations_over_variables` — **DO use a function declaration to bind a
+  function to a name.** Write `int double(int x) => x * 2;`, not
+  `final double = (int x) => x * 2;`.
+- `use_function_type_syntax_for_parameters` — write a function-typed parameter as
+  `int Function(int) step`, not the older `int step(int pence)` form nested in the parameter
+  list.
+
+The habit underneath all three: when the language has a spelling for what you mean, use it
+rather than building the same thing by hand.
+</Practice>
+
+## Wrapping up
+
+Parameters come in three kinds — positional required, positional optional in `[]` with a
+default, and named in `{}`, optional unless marked `required`. A function is a value with a
+type, `typedef` names that type, and a tear-off hands one over without the paperwork of a
+wrapper. A closure keeps the variables it mentions alive, and it keeps the *variables* — both
+Dart loop forms happen to give every pass a fresh one, so the classic trap only appears when
+you declare the variable outside the loop yourself.
+
+Also met: anonymous functions, functions that return functions, and `int Function(int)`.
+
+The next study uses all of this. `map`, `where` and `fold` are ordinary methods that take a
+function, and they are about to delete most of the loops from study 10.
+
+## Challenges
+
+Three tests are already written and already failing. Make them pass one at a time. Do not edit
+the tests. All three hand a function back.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch11_pipeline/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch11_pipeline/exercises/challenges.dart</include>

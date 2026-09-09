@@ -1,0 +1,4 @@
+$ dart run bin/shared.dart
+built 2 steps
+Unhandled exception:
+RangeError (length): Invalid value: Not in inclusive range 0..1: 2

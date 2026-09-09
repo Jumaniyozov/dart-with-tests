@@ -16,3 +16,4 @@ workspace:
   - ch08_tally
   - ch09_lookup
   - ch10_ledger
+  - ch11_pipeline
