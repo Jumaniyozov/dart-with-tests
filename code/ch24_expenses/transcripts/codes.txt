@@ -1,0 +1,8 @@
+$ dart run bin/expenses.dart add 12.50 coffee
+£12.50  coffee
+$ echo $?
+0
+$ dart run bin/expenses.dart add abc coffee
+'abc' is not an amount
+$ echo $?
+2

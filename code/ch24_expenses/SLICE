@@ -1,0 +1,18 @@
+# Study 24 — what changed since study 23.
+#
+# Added
+lib/src/command.dart
+bin/expenses.dart
+test/command_test.dart
+# Changed
+lib/expenses.dart
+pubspec.yaml
+# Removed — study 23's demonstration files. They made an argument about
+# privacy; they were never part of the tracker, and carrying them forward
+# would leave eleven snapshots holding code the program never calls.
+lib/src/crowded.dart
+lib/src/pence.dart
+bin/inside.dart
+bin/cast.dart
+bin/imports.dart
+test/privacy_test.dart

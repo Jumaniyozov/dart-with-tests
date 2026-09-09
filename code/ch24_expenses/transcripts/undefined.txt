@@ -1,0 +1,5 @@
+$ dart test test/command_test.dart
+00:00 +0: loading test/command_test.dart
+00:00 +0 -1: loading test/command_test.dart [E]
+  Failed to load "test/command_test.dart":
+  test/command_test.dart:23:23: Error: Method not found: 'run'.

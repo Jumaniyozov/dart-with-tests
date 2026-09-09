@@ -1,0 +1,2 @@
+$ dart test test/command_test.dart
+00:00 +9: All tests passed!

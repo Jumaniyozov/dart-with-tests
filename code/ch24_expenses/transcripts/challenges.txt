@@ -1,0 +1,6 @@
+$ dart test exercises/
+00:00 +0: loading exercises/challenges_test.dart
+00:00 +0: exercises/challenges_test.dart: challenge 1 — show prints the amount, on stdout, and exits zero
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — show prints the amount, on stdout, and exits zero [E]
+  UnimplementedError: challenges
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — show and refuses what it cannot read, on stderr

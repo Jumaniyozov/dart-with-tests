@@ -1,0 +1,6 @@
+$ dart run bin/expenses.dart add 12.50 coffee > recorded.txt
+$ cat recorded.txt
+£12.50  coffee
+$ dart run bin/expenses.dart add abc coffee > recorded.txt
+'abc' is not an amount
+$ cat recorded.txt

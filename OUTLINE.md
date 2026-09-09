@@ -403,7 +403,14 @@ Gloss: `library_private_types_in_public_api`, also enabled — a public API that
 a private type. And `part` / `part of`: it exists, it is mostly for generated code, and
 Book IV's codegen study is where it earns a place. Nothing in this book needs it.
 
-### 24 — A program that runs · `a-program-that-runs` · `ch24_expenses`
+### 24 — A program that runs · `a-program-that-runs` · `ch24_expenses` — **WRITTEN**
+
+Shipped: 12 green, 3 challenges at 7 failing, 7 transcripts. The first snapshot with a
+predecessor, so the first real exercise of `check_slices` — it passed, and both negative
+controls fired: an undeclared edit to a carried-forward `money.dart`, and an undeclared
+deletion. The `<Practice>` carries no attribution: two dart.dev pages were opened looking
+for a rule about exit codes and stream separation and neither has one, because that
+convention belongs to the shell rather than to Dart.
 
 Teaches `bin/`, `main(List<String> args)`, `stdout` against `stderr`, `exit` and exit
 codes, and an argument parser hand-written with study 14's patterns and study 13's
@@ -897,6 +904,14 @@ existing transcripts and verified to reproduce.
   not named there is identical to the previous study's copy, and that every file
   named there genuinely differs. A stale manifest fails as loudly as a stray edit,
   for the same reason a wrong challenge count does.
+- **Book II only — the orphan-`#region` rule is scoped by `SLICE`.** A snapshot carries
+  every earlier study's files, so every carried-forward region would read as an orphan in
+  every later package — by study 34, dozens of them, and a check that cries wolf is a
+  check nobody runs. The rule for Book II is therefore: **for each region in a file this
+  study's `SLICE` names, some MDX must include it.** Regions in files carried forward
+  unchanged were shown in the study that introduced them and are not orphans. Found while
+  writing study 24, where `money.dart#money` was flagged and `lib/expenses.dart#barrel`
+  and `command.dart#usage` were genuinely missing.
 - **Book II only — the domain never holds a `DateTime`.** Measured: for one
   instant `local == utc` is `false` while their hash codes are equal,
   `toIso8601String()` drops the offset, and `DateTime(2026, 2, 31)` is the 3rd of

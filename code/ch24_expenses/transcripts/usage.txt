@@ -1,0 +1,5 @@
+$ dart run bin/expenses.dart
+usage: expenses <command>
+
+  add <amount> <note>   record what you spent
+  help                  print this

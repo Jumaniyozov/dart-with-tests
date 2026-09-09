@@ -1,0 +1,225 @@
+---
+title: A program that runs
+study: 24
+direction: Stop writing a library and start writing a program. The shell is the caller now, and it reads numbers, not sentences.
+description: main, exit codes, stdout against stderr, and an argument parser built from patterns the reader already has.
+---
+
+Study 23 built a library. Nothing runs it. `dart test` can reach in and call `Money.fromPence`,
+but a person at a terminal cannot, and a program nobody can start is not a program.
+
+This study gives the package a front door. By the end of it, `expenses add 12.50 coffee` works.
+
+The whole of that door is nine lines:
+
+<include cwd lang="dart" meta='title="bin/expenses.dart"'>../code/ch24_expenses/bin/expenses.dart#main</include>
+
+`bin/` is where a package puts programs. A file there with a `main` function can be run, and
+`dart run bin/expenses.dart` runs it. `main` may take a `List<String>` — those are the words
+the person typed after the program's name, already split for you.
+
+Everything else in this file is the study.
+
+<Drill n={1}>
+
+<Direction>The test knows what a run should come to before anything can run.</Direction>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch24_expenses/transcripts/undefined.txt</include>
+</Console>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch24_expenses/transcripts/pass.txt</include>
+</Console>
+
+</Drill>
+
+## 24.1 Reading what the shell handed you
+
+Study 14's toy was `command.dart`: parse a small command into a record, then act on it. Its
+arguments were made up. These come from a terminal, and otherwise nothing has changed.
+
+<include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch24_expenses/lib/src/command.dart#run</include>
+
+That is a switch over a **list pattern**. `[]` matches no arguments at all. `['add', final
+amount, ...final note]` matches the word `add`, then binds the next word, then sweeps up
+everything left into `note`. The `when` guard separates *you meant add and got it right* from
+*you meant add and left something out* — and those are two different mistakes, so they get two
+different answers.
+
+The `[]` case answers the person who typed the program's name and nothing else, which is the
+most common thing a person does with a tool they have not used before.
+
+<include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch24_expenses/lib/src/command.dart#usage</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch24_expenses/transcripts/usage.txt</include>
+</Console>
+
+Note where that went: **stdout**, with a code of zero. Asking a program how to use it is not a
+mistake, and a tool that prints its usage to stderr and exits non-zero is telling a script that
+something went wrong when nothing did.
+
+The order matters. Patterns are tried top to bottom, so the specific `add` case must come
+before the general one, and `[final unknown, ...]` sits last because it matches anything.
+
+<Gloss title="Why a record and not a class?">
+`Outcome` is a `typedef` for `({int code, String out, String err})` — study 13's record, with
+names.
+
+Three values travel together, they have no invariant to keep, and two outcomes with the same
+contents *are* the same outcome. Study 13 drew the line exactly there: the moment you want a
+name, methods or an invariant, you want a class. This wants none of the three.
+</Gloss>
+
+## 24.2 The number the shell reads
+
+A program's return value is not what it prints. It is a single number handed back when the
+program stops, and every script that ever calls this program will branch on it.
+
+<include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch24_expenses/lib/src/command.dart#codes</include>
+
+Zero means it worked. Everything else means it did not, and *which* number says how.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch24_expenses/transcripts/codes.txt</include>
+</Console>
+
+`echo $?` asks the shell for the code the last program returned. `0`, then `2`.
+
+The two failures in this program are genuinely different and are worth different numbers.
+`misuse` means the program could not tell what you asked for — you typed something it cannot
+read. `refused` means it understood perfectly and will not do it: `add -5 coffee` is a
+well-formed request for something `Money` forbids. A script can retry one of those and must
+not retry the other.
+
+<Gloss title="Where the numbers come from">
+Nothing in Dart defines these. `0` for success is a convention every shell on every operating
+system agrees on; past that, programs choose.
+
+This book uses `0`, `1`, `2` because they are small and the study can explain all three. Real
+tools often follow `sysexits.h`, which reserves `64` for usage errors and climbs from there.
+Neither is more correct. What matters is that the numbers mean something and keep meaning it.
+</Gloss>
+
+## 24.3 Two streams, not one
+
+A program has two ways to write text out, and they go to different places.
+
+**stdout** is the program's answer — the thing it was run to produce. **stderr** is everything
+else: complaints, warnings, notes to the human. Both appear on your terminal, which is why the
+difference looks like nothing until the moment it matters.
+
+It matters the first time somebody redirects the output.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch24_expenses/transcripts/streams.txt</include>
+</Console>
+
+Read that carefully. `> recorded.txt` sends **stdout** to a file. The first run put `£12.50
+coffee` there. The second run failed — and the complaint still appeared on the terminal,
+because complaints do not travel on stdout. Then `cat recorded.txt` printed nothing at all.
+
+That is the behaviour a person expects and the reason the distinction exists. A file of
+results should contain results. If the error had gone to stdout, `recorded.txt` would now hold
+the sentence `'abc' is not an amount`, and whatever reads that file next would treat it as
+data.
+
+## 24.4 An amount a person typed
+
+`add` needs pence, and what arrives is text.
+
+<include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch24_expenses/lib/src/command.dart#parse</include>
+
+Study 9's `int.tryParse` answers `null` rather than throwing, and this function does the same:
+it splits on the dot, checks both halves, and answers `null` for anything it cannot read. The
+guard `when pence.length == 2` is why `12.5` is refused — pence are two digits, and `12.5`
+could mean five pence or fifty and the program must not guess.
+
+**This is the worse of two tools and it is here on purpose.** `null` says *no* and nothing
+else. It cannot say which half was wrong, or that the text was empty, or that there were three
+dots. Study 26 asks whether a caller needs to be told more than `null`, and rewrites this
+function around the answer.
+
+## 24.5 A library that has never seen a terminal
+
+Look again at what is where.
+
+`bin/expenses.dart` imports `dart:io` and is the only file in the package that does. It reads
+no arguments of its own, decides nothing, and formats nothing. It calls `run`, puts each kind
+of text on the stream it belongs on, and hands over the number.
+
+<include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch24_expenses/lib/src/command.dart#outcome</include>
+
+The barrel grew by one line to let it happen:
+
+<include cwd lang="dart" meta='title="lib/expenses.dart"'>../code/ch24_expenses/lib/expenses.dart#barrel</include>
+
+`run`, `Outcome` and the codes are now part of what this package offers, because `bin/` and the
+tests both live outside `lib/src/` and need them. `penceFrom` rides along in the same export —
+study 26 will have something to say about whether it should.
+
+Everything under `lib/` returns its answer instead of printing it. That is why
+`test/command_test.dart` can run every command this program has, check the exit code and both
+streams, and never open a terminal or a file.
+
+This was not free. `run` could have called `print` directly and been three lines shorter. It
+would also have been untestable except by capturing output, and the tests are the reason we
+know the streams are right.
+
+Study 27 gives this idea a name and pushes it much further, at the point where the program
+needs a clock and a disk.
+
+<Practice>
+**A program's output is its answer. Everything else goes to stderr, and the exit code says
+which happened.**
+
+This is the book's own convention, and it carries no citation because there is no Dart
+guideline to cite — the rule is older than Dart and belongs to the shell. Two dart.dev pages
+were opened looking for one before this note was written.
+
+The habit it replaces is the one every beginner has: `print` for everything, and an exit code
+of zero whatever happened. That program cannot be used by another program, which is most of
+what a command-line tool is for.
+</Practice>
+
+The whole study, run at once:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch24_expenses/transcripts/all.txt</include>
+</Console>
+
+## Wrapping up
+
+`bin/` holds programs; a `main` taking `List<String>` receives the words after the program's
+name. The shell reads the **exit code**, not the text — `0` worked, and the other numbers are
+yours to define and keep meaning. `stdout` carries the answer and `stderr` carries everything
+else, and the difference is invisible until somebody redirects one of them.
+
+Arguments are a list, so study 14's list patterns read them: a literal for the command word, a
+binding for the next, `...` for the rest, and a `when` guard to separate two mistakes that
+deserve different answers.
+
+The library returns an `Outcome` and never prints. That keeps `dart:io` in one file of nine
+lines and makes every command testable without a terminal.
+
+Two things here are deliberately worse than they should be. `penceFrom` answers `null` and
+cannot say why — study 26. The parser handles no `--flags`, no abbreviations and no
+`--flag=value` — study 33 replaces the whole of it with `package:args`.
+
+Also met: `dart run`, `stdout` and `stderr` as objects, `exit`, `echo $?`, and a `typedef` for
+a record type.
+
+Study 25 gives the program something to record.
+
+## Challenges
+
+Three challenges, seven failing tests. Make them pass one at a time. Do not edit the tests. All
+three extend the front door, and the second is the interesting one: a total that quietly
+skipped a number it could not read would be worse than no total at all.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch24_expenses/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch24_expenses/exercises/challenges.dart</include>
