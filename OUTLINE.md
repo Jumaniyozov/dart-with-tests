@@ -531,6 +531,11 @@ and `group`, and why `package:mockito` is not needed here.
 Toy: `lib/src/store.dart` becomes an interface; `InMemoryStore` implements it; a `Clock`
 is injected so "today" is a value, not a call.
 
+First job: **delete study 26's demonstration files.** `lib/src/asserting.dart` and
+`bin/asserting.dart` exist to prove what an assert is worth at run time and are not part
+of the tracker. Study 27's SLICE declares the removals, and `test/reading_test.dart` drops
+its import of them.
+
 The mechanism to name: a fake is not a lesser mock. A **mock asserts on calls**, so the
 test is coupled to how the code works; a **fake implements behaviour**, so the test is
 coupled only to what it does. The reason this works at all is that `Store` is an
@@ -769,19 +774,33 @@ paying study 24's Gloss.
 
 ### Promises Book II makes to itself
 
-Every forward reference in these entries, so a reorder can be costed rather than
-rediscovered. Book I's table is above and is unchanged apart from the study-19 debt,
-which study 23 now pays.
+Every forward reference in the *written* prose, checked against it rather than against
+intention. Two kinds of defect live here and both have been found: a promise the prose
+makes and this table does not record, and a row recording a promise the prose never made.
+Book I's table had the second kind once; this one had three.
+
+Navigation lines — "Study 25 gives the program something to record" at the end of a
+Wrapping up — are not promises and are not listed. A promise names something the reader is
+told will be explained or fixed.
 
 | Owed by | Made in | The reader is promised |
 | --- | --- | --- |
+| 27 | 24 | the idea behind returning an `Outcome` gets a name and goes further |
+| 27 | 25 | `Store` becomes an interface when a second implementation exists |
+| 27 | 26 | the injected `Store` and `Day.on(DateTime.now())` become a seam |
+| 28 | 25 | the store stops forgetting everything when the program stops |
 | 29 | 28 | the line format breaks on a note containing a comma |
 | 30 | 25 | why `Expense` carries a `Day` and not a `DateTime` |
-| 31 | 25 | `Category`'s `==` and `hashCode` are what make grouping work |
 | 33 | 24 | a parser with `--help`, abbreviations and `--flag=value` |
-| 34 | 23 | `lib/` against `lib/src/` becomes a version's promise |
-| 34 | 24 | `dart compile exe` is what you ship |
-| 27 | 25 | `Store` becomes an interface when a second implementation exists |
+
+Paid: 26←24 (`null` could not say which part was wrong; a sealed `Reading` can),
+26←24 again (`dart compile exe` named in a Gloss, measured in 26.4).
+
+Removed as fiction, found by checking the prose rather than the plan: **31←25** — the
+outline meant study 25 to promise study 31 that `Category`'s equality is what makes
+grouping work, and the written study never names study 31. **34←23** and **34←24** —
+neither study's prose mentions study 34 at all. A table that records promises nobody made
+cannot cost a reorder, which is the only reason it exists.
 
 ## Working in a fresh worktree
 
@@ -932,6 +951,18 @@ existing transcripts and verified to reproduce.
   `dart run tool/check_regions.dart` enforces it and normalises the package name first.
   It found the file-scoped version's four true misses in study 25 and cleared its three
   false alarms.
+- **The promise table is checked, not trusted.** `dart run tool/check_promises.dart`
+  asserts that every row corresponds to a study whose page really does name the study it
+  is said to promise. Three rows failed on first run, two of them naming a study neither
+  page mentions at all — the table had been written from the outline's intention rather
+  than from the prose. It also lists forward references the table omits, for a person to
+  triage: a Wrapping up saying "Study 25 gives the program something to record" is
+  navigation, not a promise.
+- **A demonstration file is not part of the package.** Study 26 exported
+  `lib/src/asserting.dart` from the barrel, which told every reader that `half` is
+  something this package supports — contradicting study 23, whose whole lesson is that the
+  barrel is a deliberate offer. Teaching files stay out of the barrel and are reached
+  through `lib/src/` directly, which is legal inside one package.
 - **A transcript must carry no absolute path.** A `Failed assertion` raised from `bin/`
   prints a `file:///Users/…` URI naming the author's machine, which no reader can
   reproduce. The same assert raised from `lib/` prints `package:chNN_name/…`, which

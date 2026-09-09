@@ -150,6 +150,15 @@ else. It cannot say which half was wrong, or that the text was empty, or that th
 dots. Study 26 asks whether a caller needs to be told more than `null`, and rewrites this
 function around the answer.
 
+<Gloss title="dart run, and the thing you actually ship">
+`dart run bin/expenses.dart` needs a Dart SDK on the machine. `dart compile exe` does not:
+it produces a self-contained native binary — 5.5 MB for this program, measured — that runs
+on its own.
+
+They are not the same program in one way that matters, and study 26 measures it: the
+compiled binary runs with assertions **off**.
+</Gloss>
+
 ## 24.5 A library that has never seen a terminal
 
 Look again at what is where.

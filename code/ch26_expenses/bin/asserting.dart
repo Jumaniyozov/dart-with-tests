@@ -1,5 +1,5 @@
 // #region running
-import 'package:ch26_expenses/expenses.dart';
+import 'package:ch26_expenses/src/asserting.dart';
 
 void main() {
   print('half(8) = ${half(8)}');

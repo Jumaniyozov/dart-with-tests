@@ -1,4 +1,5 @@
 import 'package:ch26_expenses/expenses.dart';
+import 'package:ch26_expenses/src/asserting.dart';
 import 'package:test/test.dart';
 
 /// The reason for a reading, whatever kind it was.

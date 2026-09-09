@@ -4,7 +4,7 @@ half(7) = 3   <- 7 is not even
 $ dart run --enable-asserts bin/asserting.dart
 half(8) = 4
 Unhandled exception:
-'package:ch26_expenses/src/asserting.dart': Failed assertion: line 7 pos 10: 'number.isEven': half wants an even number
+'package:ch26_expenses/src/asserting.dart': Failed assertion: line 12 pos 10: 'number.isEven': half wants an even number
 $ dart compile exe bin/asserting.dart -o asserting
 $ ./asserting
 half(8) = 4
