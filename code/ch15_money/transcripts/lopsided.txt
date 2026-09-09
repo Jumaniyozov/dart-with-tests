@@ -1,0 +1,6 @@
+$ dart analyze lib/lopsided.dart
+Analyzing lopsided.dart...
+
+   info - lopsided.dart:3:17 - Missing a corresponding override of 'hashCode'. Try overriding 'hashCode' or removing '=='. - hash_and_equals
+
+1 issue found.

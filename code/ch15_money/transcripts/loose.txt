@@ -1,0 +1,6 @@
+$ dart analyze lib/loose.dart
+Analyzing loose.dart...
+
+  error - loose.dart:3:31 - A value of type '(int,)' can't be returned from the function 'priceOf' because it has a return type of 'Money'. - return_of_invalid_type
+
+1 issue found.

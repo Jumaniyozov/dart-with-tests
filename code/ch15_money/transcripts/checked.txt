@@ -1,0 +1,6 @@
+$ dart analyze lib/checked.dart
+Analyzing checked.dart...
+
+  error - checked.dart:3:7 - A redirecting constructor can't have an 'assert' initializer. - assert_in_redirecting_constructor
+
+1 issue found.

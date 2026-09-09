@@ -1,0 +1,8 @@
+$ dart analyze lib/mistakes.dart
+Analyzing mistakes.dart...
+
+  error - mistakes.dart:3:21 - Undefined name 'pence'. Try correcting the name to one that is defined, or defining the name. - undefined_identifier
+  error - mistakes.dart:7:1 - Classes can't be declared to be 'const'. Try removing the 'const' keyword. If you're trying to indicate that instances of the class can be constants, place the 'const' keyword on  the class' constructor(s). - const_class
+  error - mistakes.dart:13:6 - Constructors declared with the 'new' keyword can't use '.' before the constructor name. Try replacing the '.' with a space. - new_constructor_dot_name
+
+3 issues found.

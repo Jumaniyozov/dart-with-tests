@@ -14,6 +14,7 @@
     "functions",
     "iterables",
     "records",
-    "patterns"
+    "patterns",
+    "classes"
   ]
 }

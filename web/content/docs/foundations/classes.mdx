@@ -1,0 +1,258 @@
+---
+title: Classes and constructors
+study: 15
+direction: Give the thing a name, and the name will start doing work for you.
+description: Primary constructors, const objects, why equality has to be written by hand, and the promise a record cannot make.
+---
+
+Study 13 ended with a list of four things a record does not have: a name, methods, invariants,
+and mutation. It called the first three the line where this study begins.
+
+Here is that line. An amount of money has been an `int` of pence since study 4, passed between
+functions that all had to remember what the number meant.
+
+<include cwd lang="dart" meta='title="lib/money.dart"'>../code/ch15_money/lib/money.dart#money</include>
+
+<Drill n={1}>
+
+<Direction>The type writes the money out. Nobody outside has to know how.</Direction>
+
+<include cwd lang="dart" meta='title="test/first_test.dart"'>../code/ch15_money/test/first_test.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch15_money/transcripts/pass.txt</include>
+</Console>
+
+</Drill>
+
+## 15.1 The header is the constructor
+
+`class const Money(final int pence)` is a **primary constructor**. The parameter list sits in
+the class header, and it does three jobs at once: it declares the field `pence`, it declares
+the constructor that takes it, and it assigns one to the other.
+
+Two details in that line are easy to get wrong, and a third is worth knowing before you meet
+it. All three are in one file here:
+
+```dart title="lib/mistakes.dart"
+// 1. No `final`, so `pence` is a parameter and not a field.
+class Amount(int pence) {
+  int get pounds => pence ~/ 100;
+}
+
+// 2. `const` before `class` rather than between `class` and the name.
+const class Fixed(final int pence) {}
+
+// 3. A dot before a named constructor declared with `new`.
+class Tally {
+  final int count;
+  new(this.count);
+  new.zero() : this(0);
+}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch15_money/transcripts/mistakes.txt</include>
+</Console>
+
+`final` is what makes `pence` a field. Without it the parameter is an ordinary constructor
+parameter that vanishes when the constructor returns, so the body cannot see it — which is what
+`Undefined name 'pence'` is telling you. Writing `var` instead makes a field you can reassign,
+which for money you do not want.
+
+`const` sits **between `class` and the name**. It is the constructor that is constant, not the
+class, and the analyzer says exactly that. This is the `const` constructor study 3 promised: it
+makes `const Money(250)` a value fixed while the program compiles.
+
+The third is for later in this study, and the message says it all: a constructor declared with
+`new` takes a space before its name, not a dot.
+
+Now the first thing the name buys you:
+
+```dart title="lib/loose.dart"
+Money priceOf(String item) => (250,);
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch15_money/transcripts/loose.txt</include>
+</Console>
+
+A record with one `int` in it is structurally identical to what `Money` holds, and the compiler
+still refuses. Study 13 called records **structurally** typed — same shape, same type. Classes
+are **nominally** typed: same name, same type, and nothing else will do. That refusal is the
+whole point of declaring a class rather than reaching for another record.
+
+## 15.2 Methods
+
+A record cannot carry a function. A class is mostly functions:
+
+<include cwd lang="dart" meta='title="test/money_test.dart"'>../code/ch15_money/test/money_test.dart#methods</include>
+
+`pounds`, `pencePart` and `isDebit` are **getters** — methods that take no arguments and are
+read like fields. There is no `()` at the call site, so a getter can replace a stored field
+later without changing a single caller.
+
+`plus` and `times` hand back a `Money`, not an `int`. That is worth doing deliberately: once a
+method returns the raw number, the amount has escaped the type and the next person has to
+remember what it means again.
+
+## 15.3 Equality is written, not given
+
+Study 13's headline was that `(1, 2) == (1, 2)` is true. A class starts with the opposite:
+
+<include cwd lang="dart" meta='title="lib/v1.dart"'>../code/ch15_money/lib/v1.dart#money</include>
+
+<include cwd lang="dart" meta='title="test/money_test.dart"'>../code/ch15_money/test/money_test.dart#equality</include>
+
+Read the first two tests together. Two `v1.Money(250)` objects are **not** equal, and the same
+two numbers in a record are. By default a class compares by identity — is this the same object?
+— and two `Money(250)` are two objects however alike they look. `toString` is no better:
+`Instance of 'Money'` is what a class says when nobody told it anything.
+
+So you write them:
+
+<include cwd lang="dart" meta='title="lib/money.dart"'>../code/ch15_money/lib/money.dart#equality</include>
+
+`other is Money && other.pence == pence` is study 9's type promotion doing the work: after the
+`is`, `other` is a `Money` and `other.pence` compiles.
+
+The `hashCode` is not optional, and this is the one place the analyzer will chase you:
+
+```dart title="lib/lopsided.dart"
+class const Money(final int pence) {
+  @override
+  bool operator ==(Object other) => other is Money && other.pence == pence;
+}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch15_money/transcripts/lopsided.txt</include>
+</Console>
+
+A `Map` finds a key by hash first and `==` second, so an object with `==` and no `hashCode`
+lands in the wrong bucket and is never found — which the last test in that group measures:
+`Money` works as a key and `v1.Money` does not. One field hashes as `pence.hashCode`; for more
+than one, `Object.hash(day, hour)` combines them properly and you should not invent your own.
+
+<Gloss title="Two const objects are one object">
+`identical(Money(250), Money(250))` is false — two calls, two objects, equal because you said
+so. But `const Money(250)` written twice is a single object, and the test above proves it.
+
+This is the canonicalisation study 3 introduced and study 7 showed for `const [1, 2]`, now
+arriving where it was always heading: at objects of your own types. A `const` constructor
+means Dart can build the value while compiling, and having built it once it never builds it
+again.
+</Gloss>
+
+## 15.4 The promise a record could not make
+
+Study 13 said nothing could promise a record's second field was under 100, "which is exactly
+what pence means". Here is the type that promises it:
+
+<include cwd lang="dart" meta='title="lib/money.dart"'>../code/ch15_money/lib/money.dart#split</include>
+
+<include cwd lang="dart" meta='title="test/money_test.dart"'>../code/ch15_money/test/money_test.dart#invariant</include>
+
+An **invariant** is something true of every instance that exists, guaranteed because the only
+door in is the constructor and the constructor checks. `Split(3, 150)` is not a `Split` with a
+bad field. It is not a `Split`.
+
+Notice that `Split` does **not** use a primary constructor, and that is not a style choice.
+Try to keep the header and add the check:
+
+```dart title="lib/checked.dart"
+class const Split(final int pounds, final int pence) {
+  const Split.checked(int pounds, int pence)
+    : assert(pence >= 0 && pence < 100),
+      this(pounds, pence);
+}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch15_money/transcripts/checked.txt</include>
+</Console>
+
+A class with a primary constructor may only have constructors that redirect to it, and a
+redirecting constructor may not assert. Between them those two rules mean the same thing: **the
+header form is for a class whose construction is nothing but assignment.** The moment there is
+a check, write the constructor out. That is the rule for choosing, and it is the analyzer's, not
+a matter of taste.
+
+Written out, two pieces of syntax are new — and both are new to Dart 3.13, not just to you:
+
+- `const new(this.pounds, this.pence)` declares the unnamed constructor. It used to be
+  `const Split(this.pounds, this.pence)`, repeating the class name.
+- `factory fromPence(int total)` declares a named factory. It used to be
+  `factory Split.fromPence(int total)`.
+
+A **factory** does not create the object itself; it decides which object to hand back and calls
+a real constructor to make it. `Split.fromPence(1234)` does the arithmetic and then goes in
+through the checked door like everyone else.
+
+`: assert(…)` is an **initializer list**: work that happens after the arguments arrive and
+before the body runs. Study 10 said `assert` is for programmer mistakes rather than user input,
+and that is exactly what this is. `Split(3, 150)` is a bug in the calling code. Text a person
+typed needs the treatment study 9 gave it, or the errors study 20 covers.
+
+<Gloss title="Reading the older form">
+Almost all the Dart you will meet was written before 3.13, and it names the class every time:
+
+<include cwd lang="dart" meta='title="lib/older.dart"'>../code/ch15_money/lib/older.dart#split</include>
+
+That is a real file in this study's package, and a test asserts it behaves identically to the
+`Split` above — same answers, same refusal. Named constructors changed shape too: what was
+`Split.zero()` is now `new zero()`, a space rather than a dot. Recognise the old form, write
+the new one.
+</Gloss>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch15_money/transcripts/all.txt</include>
+</Console>
+
+<Practice source="Effective Dart — Design" href="https://dart.dev/effective-dart/design#do-override-hashcode-if-you-override">
+**DO override `hashCode` if you override `==`.** The rule is one sentence — "If you override
+the `==` operator, you should also override `hashCode`" — and it is enforced here rather than
+remembered: `hash_and_equals` ships in `package:lints/core.yaml`, which `recommended.yaml`
+includes, which this book includes. The transcript above is that lint firing.
+
+Two neighbouring rules matter as much and are not enforced by anything.
+
+**AVOID defining custom equality for mutable classes.** A `Map` puts a key in a bucket chosen
+by its hash *when you insert it*. Change a field afterwards and the hash changes, the bucket
+does not, and the entry is lost inside its own map. `Money` is safe because `pence` is `final`
+and there is no way to change it — which is the real reason to reach for `final` fields first
+and only loosen when something forces you.
+
+**DO make your `==` operator obey the mathematical rules of equality.** Reflexive, symmetric,
+transitive. The usual way to break symmetry is to compare against a subclass, which study 16
+is about to give you the tools to do.
+</Practice>
+
+## Wrapping up
+
+A class gives a value a name the compiler enforces, methods that travel with it, and a
+constructor that can refuse to build a broken one. The primary constructor puts the fields and
+the constructor in the class header, `final` is what makes a parameter a field, and `const` goes
+between `class` and the name.
+
+Equality and `toString` are not given to you the way a record gives them. Write `==` and
+`hashCode` together or the analyzer will say so. Two `const` objects with the same arguments are
+one object.
+
+Also met: getters, factories, initializer lists, the `new`/`factory` declaration forms, and the
+rule that a primary constructor cannot check anything.
+
+Study 16 takes a family of types that share behaviour and lets you write down what they have in
+common — and closes the exhaustiveness story study 14 left open.
+
+## Challenges
+
+Three classes are unfinished. Make the tests pass one at a time. Do not edit the tests. Two of
+the three should keep their primary constructors; the third cannot have one, and the analyzer
+will tell you why.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch15_money/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch15_money/exercises/challenges.dart</include>
