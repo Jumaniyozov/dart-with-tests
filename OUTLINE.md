@@ -373,6 +373,12 @@ existing transcripts and verified to reproduce.
   {'b','a'})` passes, and it does **not** mean `==` is true — the matcher
   compares contents and ignores order for a set. A green test is evidence about
   the matcher, not about the language.
+- **No orphan `#region`.** A region marker with no `<include>` pointing at it is
+  either dead weight or, more often, a gap: seven were found in studies 2-7 and
+  every one turned out to be a definition the reader met by name and was never
+  shown — `standardPrices` used in a test, `hashPrefix` used in `tag`, the
+  four-language `enum` when only the three-language stage was on the page. Check
+  with: for each `// #region X` in `code/`, some MDX must include that path`#X`.
 - One `<Practice>` per study. When it carries an attribution it must be a real
   link the writer has opened: `<Practice source="Effective Dart — Usage"
   href="https://dart.dev/…">`. The candidate rules named above are starting

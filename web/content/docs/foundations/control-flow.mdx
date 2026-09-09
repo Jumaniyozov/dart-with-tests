@@ -6,10 +6,9 @@ description: The branches and loops this book has been using since study 6, name
 ---
 
 You have already written an `if`, a `switch` and a `for-in`. Study 6 switched on an enum and
-study 7 built a list with a collection-`for`, neither stopping to say what the shape was —
-there was a noun to teach and the flow was scaffolding. This study is the one that stops.
-
-A ledger is a list of amounts in pence: money in is positive, money out is negative.
+study 7 built a list with a collection-`for`, neither stopping to say what the shape was. This
+study is the one that stops. A ledger is a list of amounts in pence: money in is positive,
+money out is negative.
 
 <include cwd lang="dart" meta='title="lib/ledger.dart"'>../code/ch10_ledger/lib/ledger.dart#kind</include>
 
@@ -44,9 +43,8 @@ String describe(String? name) {
 <include cwd lang="saff-console" meta='title="terminal"'>../code/ch10_ledger/transcripts/truthy.txt</include>
 </Console>
 
-In a language with truthiness, `if (name)` quietly means "not empty **and** not null", and
-those two conditions travel together whether you wanted them to or not. `if (name != null)`
-and `if (name.isNotEmpty)` are different questions, and Dart will not guess which you meant.
+In a language with truthiness, `if (name)` quietly means "not empty **and** not null", two
+questions travelling together whether you wanted them to or not. Dart makes you pick.
 
 When both branches produce a value rather than doing something, there is a shorter form:
 
@@ -55,8 +53,8 @@ final heading = pence > 0 ? 'in' : 'out';
 ```
 
 `condition ? a : b` is an **expression** — it has a value, so it can go where a value goes,
-which the collection-`if` in study 7 was already relying on. Produce a value or do something:
-that split comes back in 10.5.
+which the collection-`if` in study 7 already relied on. Produce a value or do something: that
+split comes back in 10.5.
 
 ## 10.2 Walking a list
 
@@ -66,21 +64,19 @@ Two loops, one answer.
 
 <include cwd lang="dart" meta='title="lib/ledger.dart"'>../code/ch10_ledger/lib/ledger.dart#totalin</include>
 
-The first is the C-style `for`: three parts separated by semicolons — set up a counter, test
-it before every pass, change it after. It walks positions and reaches entries through
-`entries[i]`.
+The first is the C-style `for`: three parts separated by semicolons — set up a counter, test it
+before every pass, change it after. It walks positions and reaches entries through `entries[i]`.
 
-The second walks the entries. There is no `i`, so there is no chance of starting at `1`,
-stopping at `length`, or reading `entries[i]` after you moved `i` on. Prefer it. Use the
-indexed form when you genuinely need the position — reporting *which* entry, or walking two
-lists in step.
+The second walks the entries. There is no `i`, so no chance of starting at `1`, stopping at
+`length`, or reading `entries[i]` after moving `i` on. Prefer it; use the indexed form when you
+genuinely need the position.
 
 <include cwd lang="dart" meta='title="test/ledger_test.dart"'>../code/ch10_ledger/test/ledger_test.dart#walking</include>
 
 Say the quiet part now: both are the long way round. `totalIn` is six lines meaning "add these
 up", and study 12 replaces the body with `entries.fold(0, …)`. Write it out anyway. A `fold`
-you reached for because it was shorter is a habit; a `fold` you reached for knowing exactly
-which part of the loop is being folded away is understanding.
+reached for because it is shorter is a habit; a `fold` reached for knowing which part of the
+loop is being folded away is understanding.
 
 ## 10.3 Leaving early
 
@@ -92,23 +88,21 @@ which part of the loop is being folded away is understanding.
 
 Two honest notes. `firstOverdraft` would be shorter with `return i;` where the `break` is —
 `break` earns its keep only when there is work left after the loop, and here there is none. And
-`creditsIn` could have written `if (entry > 0) balance += entry;` instead of skipping.
-`continue` pays off when several conditions decide the skip, or when the body below is long
-enough that another level of indentation hurts. Neither is true here. Both are written the
-long way so you can see the shape.
+`creditsIn` could have written `if (entry > 0) balance += entry;` instead of skipping;
+`continue` pays off when several conditions decide the skip, or when the body below is long.
+Both are written the long way so you can see the shape.
 
 When loops are nested, `break` leaves only the inner one. A **label** lets you say which:
 
 <include cwd lang="dart" meta='title="lib/ledger.dart"'>../code/ch10_ledger/lib/ledger.dart#shared</include>
 
-`outer:` names the outer loop and `break outer;` leaves both. Without the label the inner
-`break` would end only the inner pass, the outer loop would carry on, and `shared` would end up
-holding the *last* match rather than the first.
+`outer:` names the outer loop and `break outer;` leaves both. Without the label the outer loop
+carries on and `shared` ends up holding the *last* match rather than the first — which the
+second test below runs rather than asserts from the armchair.
 
 <include cwd lang="dart" meta='title="test/ledger_test.dart"'>../code/ch10_ledger/test/ledger_test.dart#leaving</include>
 
-Labels are rare. Two loops deep with an early exit is about where they stop looking clever and
-start being the clearest thing available.
+Labels are rare. Two loops deep with an early exit is about where they stop looking clever.
 
 ## 10.4 A loop that must run before it can ask
 
@@ -117,9 +111,8 @@ obvious way to count the digits in an amount:
 
 <include cwd lang="dart" meta='title="lib/v1.dart"'>../code/ch10_ledger/lib/v1.dart#digits</include>
 
-`while` tests before every pass, including the first, so `digitsIn(0)` never enters the loop
-and answers `0` — an amount needing no space at all to write down. Zero is written `0`. It
-needs one column.
+`while` tests before every pass, including the first, so `digitsIn(0)` never enters the loop and
+answers `0` — a width of no columns at all. Zero is written `0`. It needs one.
 
 `do { … } while (…)` tests **after** the body, so the body always runs at least once:
 
@@ -127,8 +120,8 @@ needs one column.
 
 <include cwd lang="dart" meta='title="test/ledger_test.dart"'>../code/ch10_ledger/test/ledger_test.dart#width</include>
 
-That is the whole difference, and the whole reason `do-while` exists. You will not reach for it
-often — only when the question you are testing can be answered solely by work the body does.
+That is the whole difference, and the whole reason `do-while` exists: reach for it only when the
+question you are testing can be answered solely by work the body does.
 
 Now the `assert` on the top line. A negative amount does not merely give a wrong width, it
 gives a *believable* one. Study 4's `~/` truncates towards zero, so `-250 ~/ 10` is `-25`,
@@ -212,15 +205,16 @@ void report(int pence) {
 Same promise study 6 made, in a form that returns nothing. Add a fourth `Kind` and every
 `switch` not told about it stops compiling, statements included.
 
-A `default:` case switches the guarantee off:
+Unless you switch it off. Here is the same switch again with the missing case replaced by a
+`default:`:
 
 ```dart title="lib/defaulted.dart"
-String labelFor(int pence) {
+void report(int pence) {
   switch (kindOf(pence)) {
     case Kind.credit:
-      return 'in';
+      print('in');
     default:
-      return 'not in';
+      print('out');
   }
 }
 ```
@@ -229,8 +223,8 @@ String labelFor(int pence) {
 <include cwd lang="saff-console" meta='title="terminal"'>../code/ch10_ledger/transcripts/defaulted.txt</include>
 </Console>
 
-No issues found, and no protection either. That is exactly why you should not write a `default`
-over an enum you own: the case you add next year will compile, run, and quietly be "not in".
+No issues found, and no protection either. That is why you should not write a `default` over an
+enum you own: the case you add next year will compile, run, and quietly be an "out".
 
 <include cwd lang="dart" meta='title="test/ledger_test.dart"'>../code/ch10_ledger/test/ledger_test.dart#kinds</include>
 
@@ -257,8 +251,8 @@ here, and the analyzer will tell you before a reviewer does.
 `if` needs a real `bool`; `? :` is its expression form. The indexed `for` walks positions and
 `for-in` walks entries — prefer the second unless you need the position. `break` leaves a loop,
 `continue` skips a pass, a label says which loop you meant. `while` tests first and `do-while`
-tests last, which is the only reason to pick the second. `switch` produces a value as an
-expression and does work as a statement, and both are checked for exhaustiveness.
+tests last, which is the only reason to pick it. `switch` produces a value as an expression and
+does work as a statement, and both are checked for exhaustiveness.
 
 Also met: `assert`, and the fact that it is switched off until something switches it on.
 

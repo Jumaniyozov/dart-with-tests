@@ -6,10 +6,8 @@ const penceInPound = 100;
 const maxOrderPence = 100_000_000;
 // #endregion constants
 
-// #region total
 /// The cost of [quantity] items at [pence] each, in pence.
 int total(int pence, int quantity) => pence * quantity;
-// #endregion total
 
 // #region format
 /// Writes [pence] the way a person reads it: `1234` becomes `£12.34`.

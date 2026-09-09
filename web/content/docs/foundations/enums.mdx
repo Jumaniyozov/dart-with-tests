@@ -98,9 +98,14 @@ closed. A `String` switch can never be exhaustive — there is always another st
 the compiler cannot help. With an enum it can enumerate the possibilities, compare them
 against your cases, and refuse to build until they match.
 
-Add the case and it compiles again:
+Add the case and it compiles again. Here is where `language.dart` ends up — the fourth
+language, the greeting that uses it, and the `switch` that now covers all four:
+
+<include cwd lang="dart" meta='title="lib/language.dart"'>../code/ch06_language/lib/language.dart#enum</include>
 
 <include cwd lang="dart" meta='title="lib/language.dart"'>../code/ch06_language/lib/language.dart#prefix</include>
+
+<include cwd lang="dart" meta='title="lib/language.dart"'>../code/ch06_language/lib/language.dart#hello</include>
 
 <Console>
 <include cwd lang="saff-console" meta='title="terminal"'>../code/ch06_language/transcripts/all.txt</include>

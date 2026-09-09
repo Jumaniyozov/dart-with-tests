@@ -6,7 +6,6 @@
 const standardPrices = [250, 180, 320];
 // #endregion prices
 
-// #region total
 /// Adds every price in [prices]. Pence in, pence out.
 int totalOf(List<int> prices) {
   var sum = 0;
@@ -15,7 +14,6 @@ int totalOf(List<int> prices) {
   }
   return sum;
 }
-// #endregion total
 
 // #region build
 /// A basket of the standard prices, plus the extras the customer chose.
