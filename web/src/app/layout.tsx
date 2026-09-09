@@ -1,6 +1,8 @@
 import { RootProvider } from 'fumadocs-ui/provider/next';
 import './global.css';
+import type { Metadata } from 'next';
 import { Fraunces, JetBrains_Mono, Literata, Manrope } from 'next/font/google';
+import { appDescription, appName, siteUrl } from '@/lib/shared';
 
 /* Four faces, and each earns its place. Stonelight runs a serif display over a
    Manrope UI; a book adds one thing the app never needed — a text face that
@@ -30,6 +32,33 @@ const mono = JetBrains_Mono({
   variable: '--font-mono',
   display: 'swap',
 });
+
+/* App Router picks the marks up from src/app/ by filename — icon.svg,
+   apple-icon.png and favicon.ico — so `icons` is not restated here. Only the
+   things convention cannot infer are declared. */
+export const metadata: Metadata = {
+  metadataBase: siteUrl,
+  title: {
+    default: appName,
+    // A study page is already titled "Study N — Name"; the suffix says which
+    // book it belongs to without repeating the whole name in the tab.
+    template: `%s · ${appName}`,
+  },
+  description: appDescription,
+  applicationName: appName,
+  openGraph: {
+    type: 'book',
+    siteName: appName,
+    title: appName,
+    description: appDescription,
+    url: siteUrl,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: appName,
+    description: appDescription,
+  },
+};
 
 export default function Layout({ children }: LayoutProps<'/'>) {
   return (

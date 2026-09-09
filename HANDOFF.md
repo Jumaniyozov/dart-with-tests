@@ -52,7 +52,9 @@ colours look wrong in dev, `rm -rf .next/cache .source` before believing it.
 
 ## Open, not on the book
 
-Reference/cheatsheet section, favicon, OG metadata, 404 page, licence, Vercel
-deployment, and the GitHub links that were placeholders before the repository existed.
-Two stale files: `.impeccable/design.json` and
+Reference/cheatsheet section, 404 page, licence, Vercel deployment. Two stale files:
+`.impeccable/design.json` and
 `.impeccable/surfaces/web-src-app-docs-slug-page-tsx.md`.
+
+Done since this list was last written: favicon, OG metadata and the book's mark
+(`fbfb51a`), and the GitHub links, which are no longer placeholders.
