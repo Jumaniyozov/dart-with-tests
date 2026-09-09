@@ -1,0 +1,6 @@
+$ dart analyze lib/unreachable.dart
+Analyzing unreachable.dart...
+
+warning - unreachable.dart:5:24 - This case is covered by the previous cases. Try removing the case clause, or restructuring the preceding patterns. - unreachable_switch_case
+
+1 issue found.

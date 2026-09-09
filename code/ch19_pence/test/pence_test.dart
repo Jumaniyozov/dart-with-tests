@@ -3,19 +3,14 @@ import 'package:ch19_pence/v1.dart' as v1;
 import 'package:test/test.dart';
 
 void main() {
-  // #region reach
-  group('methods on types this package does not own', () {
-    test('an int formats itself', () {
-      expect(1234.asMoney, '£12.34');
-      expect(0.asMoney, '£0.00');
-    });
-
-    test('and one extension can be named when two would clash', () {
+  // #region override
+  group('naming the extension in front of the receiver', () {
+    test('picks that one, and is legal even when there is no clash', () {
       expect(PenceFormatting(1234).asMoney, '£12.34');
+      expect(PenceFormatting(0).isDebit, isFalse);
     });
-
   });
-  // #endregion reach
+  // #endregion override
 
   // #region totals
   group('an extension on a type with a type argument', () {
@@ -92,6 +87,20 @@ void main() {
     });
   });
   // #endregion gone
+
+  // #region pattern
+  group('a pattern matching on the type sees straight through it', () {
+    test('an amount matches, and so does a plain int', () {
+      expect(describe(Pence(700)), 'pence 700');
+      expect(describe(700), 'pence 700');
+      expect(describe('seven'), 'not an amount');
+    });
+
+    test('and so does a different extension type over the same int', () {
+      expect(describe(Pounds(7)), 'pence 7');
+    });
+  });
+  // #endregion pattern
 
   // #region open
   group('implements reopens the underlying type', () {

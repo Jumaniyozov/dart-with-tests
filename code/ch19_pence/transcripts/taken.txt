@@ -1,0 +1,6 @@
+$ dart analyze lib/taken.dart
+Analyzing taken.dart...
+
+  error - taken.dart:2:3 - The unnamed constructor is already defined. Try giving one of the constructors a name. - duplicate_constructor
+
+1 issue found.

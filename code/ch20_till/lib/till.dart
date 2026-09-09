@@ -10,13 +10,17 @@ int penceFrom(String typed) => switch (typed.split('.')) {
   _ => throw FormatException('not an amount', typed),
 };
 
-/// [text] as a whole number that is not negative, or a refusal.
+/// The digits of [text] as a whole number, or a refusal.
 ///
-/// `int.tryParse` returns `null` and says nothing about why. This is the same
-/// question asked of a caller who needs to be told.
+/// `int.tryParse` is not a validator. It trims spaces, takes a leading sign,
+/// and reads `'0x10'` as sixteen — so the characters are checked first, and
+/// only text that is entirely digits is parsed at all.
 int wholeIn(String text, String typed) {
-  final value = int.tryParse(text);
-  return value == null || value < 0 ? noAmount(typed) : value;
+  const digits = '0123456789';
+  final allDigits =
+      text.isNotEmpty && text.split('').every((each) => digits.contains(each));
+  final value = allDigits ? int.tryParse(text) : null;
+  return value ?? noAmount(typed);
 }
 
 /// Refuses [typed], and never returns.

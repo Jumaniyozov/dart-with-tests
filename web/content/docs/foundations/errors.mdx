@@ -13,6 +13,10 @@ Study 10 said an `assert` is no use here either. An assert catches a mistake **y
 it is not there in a released build. Text a person typed is a fact about the world, arriving at
 run time, and it needs an answer that arrives at run time too.
 
+(Amounts are back to being a plain `int` here. Every study in this book is its own package and
+none of them depends on another, because `import` does not open until study 23 — so study 19's
+`Pence` cannot travel. In a real program it would, and `penceFrom` would return one.)
+
 <include cwd lang="dart" meta='title="lib/till.dart"'>../code/ch20_till/lib/till.dart#parse</include>
 
 <Drill n={1}>
@@ -37,10 +41,10 @@ statements, as well as anywhere else that allows expressions." That is why the l
 `penceFrom`'s switch can *be* a `throw` — a switch expression needs every arm to produce a
 value, and an arm that never produces one is allowed because it never finishes.
 
-**`Never` is the type of that.** `noAmount` says it in its signature: it takes a string and has
-no return type in the ordinary sense, because it does not return. `Never` sits below every
-type in the language, so a call to it fits wherever any value is wanted — which is how
-`value == null || value < 0 ? noAmount(typed) : value` type-checks as an `int`.
+**`Never` is the type of that.** `noAmount` says so in its signature: it takes a string and has
+no return type in the ordinary sense, because it does not return. `Never` sits below every type
+in the language, so a call to it fits wherever any value is wanted — which is how
+`value ?? noAmount(typed)` is an `int` and not an `int?`.
 
 <include cwd lang="dart" meta='title="test/till_test.dart"'>../code/ch20_till/test/till_test.dart#refusing</include>
 
@@ -48,15 +52,18 @@ type in the language, so a call to it fits wherever any value is wanted — whic
 that source back. An exception that only says "bad input" makes the caller go and find the
 input again.
 
-<Gloss title="int.tryParse is more forgiving than it looks">
-`penceFrom` refuses `'twelve'` because `int.tryParse` refused it first. It is worth knowing
-exactly how much `tryParse` lets through before you lean on it as a validator:
+<Gloss title="int.tryParse is not a validator">
+`wholeIn` checks that every character is a digit *before* it parses anything, which looks like
+belt and braces until you see what `int.tryParse` accepts on its own:
 
 <include cwd lang="dart" meta='title="test/till_test.dart"'>../code/ch20_till/test/till_test.dart#lenient</include>
 
-Surrounding spaces are trimmed and a leading `+` is accepted, so `penceFrom(' +12 ')` is twelve
-pounds. For a till that is harmless. For a field where the exact characters matter it is not,
-and the answer is to check the text yourself before parsing it — which is challenge 2.
+Surrounding spaces are trimmed. A leading `+` or `-` is taken. And `'0x10'` is **sixteen**,
+because `tryParse` reads hexadecimal — so a till leaning on `tryParse` alone would charge £16
+for four characters nobody meant as a number.
+
+"It returned non-null" and "the text was a number" are different claims. When the exact
+characters matter, check them, and parse only what survives.
 </Gloss>
 
 ## 20.2 Which of `Error` and `Exception` you mean
@@ -107,6 +114,12 @@ Here is the same failure answered two ways:
 Neither is the correct one. Stopping is right for a till, where a wrong total is worse than no
 total; skipping is right for a log file you are summarising. What the language gives you is the
 choice, stated in the code where a reader can see it.
+
+Notice what `totalOf` does inside its `on` clause: it throws something *else*. That is a
+deliberate trade and 20.4 gives it a price — a new exception starts a new stack trace, so the
+line inside `penceFrom` that refused the text is lost. It is worth it here, because what
+replaces it is the line number, which is what the caller actually needs. It is not worth it
+when the new exception says nothing the old one did not.
 
 **Order matters, because the first clause that matches wins.** dart.dev: "the first `catch`
 clause that matches the thrown object's type handles the exception." Put the general one first
@@ -262,9 +275,9 @@ failure arrives after the function that caused it has already returned.
 
 ## Challenges
 
-Three tests are already written and already failing. Make them pass one at a time. Do not edit
-the tests. One of the three cannot be passed by catching the exception; it has to be sent on
-the right way.
+Three challenges, eight failing tests. Make them pass one at a time. Do not edit the tests. The
+second asks which family of failure you mean, not just that you threw one; the third cannot be
+passed by catching the exception at all.
 
 <Console>
 <include cwd lang="saff-console" meta='title="terminal"'>../code/ch20_till/transcripts/challenges.txt</include>

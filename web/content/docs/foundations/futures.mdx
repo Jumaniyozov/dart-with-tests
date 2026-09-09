@@ -120,7 +120,9 @@ function throw at the point of call. The failure is in the future, and it reache
 await it.
 
 Which is why `takePayment` works at all: `await` puts the value back into this function, and it
-puts the failure back inside this `try`. Study 20's `on` clause needs nothing new.
+puts the failure back inside this `try`. Study 20's `on` clause needs nothing new — including
+the part where it catches the `CardDeclined` and lets the `ArgumentError` straight through,
+which is study 20's rule about who is wrong, unchanged by any of this.
 
 Take the `await` away and that stops being true:
 

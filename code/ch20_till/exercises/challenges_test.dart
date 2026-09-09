@@ -31,17 +31,25 @@ void main() {
     });
   });
 
-  group('challenge 2 — strict about the text', () {
-    test('reads the digits it is given', () {
-      expect(strictWholeFrom('12'), 12);
-      expect(strictWholeFrom('0'), 0);
+  group('challenge 2 — who is wrong', () {
+    test('multiplies the amount by the quantity', () {
+      expect(priceOf('12', 3), 36);
+      expect(priceOf('0', 9), 0);
     });
 
-    test('and refuses what int.tryParse would have let through', () {
-      expect(() => strictWholeFrom(' 12 '), throwsFormatException);
-      expect(() => strictWholeFrom('+12'), throwsFormatException);
-      expect(() => strictWholeFrom('-12'), throwsFormatException);
-      expect(() => strictWholeFrom(''), throwsFormatException);
+    test('text that is not a number is the world being wrong', () {
+      expect(() => priceOf('twelve', 3), throwsFormatException);
+    });
+
+    test('and a quantity below one is the caller being wrong', () {
+      expect(() => priceOf('12', 0), throwsArgumentError);
+      expect(() => priceOf('12', -1), throwsArgumentError);
+      expect(
+        () => priceOf('12', 0),
+        throwsA(
+          isA<Error>().having((e) => e is Exception, 'is Exception', isFalse),
+        ),
+      );
     });
   });
 

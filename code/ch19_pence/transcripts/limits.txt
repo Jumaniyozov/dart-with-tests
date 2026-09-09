@@ -2,7 +2,8 @@ $ dart analyze lib/limits.dart
 Analyzing limits.dart...
 
   error - limits.dart:4:10 - Extension types can't declare members with the same name as a member declared by 'Object'. Try specifying a different name for the member. - extension_type_declares_member_of_object
-  error - limits.dart:7:25 - A value of type 'Pence' can't be assigned to a variable of type 'Object'. Try changing the type of the variable, or casting the right-hand type to 'Object'. - invalid_assignment
-  error - limits.dart:9:26 - A value of type 'int' can't be assigned to a variable of type 'OpenPence'. Try changing the type of the variable, or casting the right-hand type to 'OpenPence'. - invalid_assignment
+  error - limits.dart:6:17 - Extension types can't declare members with the same name as a member declared by 'Object'. Try specifying a different name for the member. - extension_type_declares_member_of_object
+  error - limits.dart:9:25 - A value of type 'Pence' can't be assigned to a variable of type 'Object'. Try changing the type of the variable, or casting the right-hand type to 'Object'. - invalid_assignment
+  error - limits.dart:11:26 - A value of type 'int' can't be assigned to a variable of type 'OpenPence'. Try changing the type of the variable, or casting the right-hand type to 'OpenPence'. - invalid_assignment
 
-3 issues found.
+4 issues found.

@@ -73,6 +73,17 @@ extension PenceTotals on Iterable<Pence> {
 extension type const OpenPence(int value) implements int {}
 // #endregion open
 
+// #region pattern
+/// What a pattern sees when it matches on an extension type.
+///
+/// There is exactly one amount case here. 19.3 shows what the analyzer says
+/// about adding a second.
+String describe(Object? value) => switch (value) {
+  Pence(:final value) => 'pence $value',
+  _ => 'not an amount',
+};
+// #endregion pattern
+
 // #region shadow
 /// A type that already has a `name`.
 class const Shop(final String name) {}

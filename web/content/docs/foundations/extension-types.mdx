@@ -30,8 +30,6 @@ what really happened — and yet:
 
 </Drill>
 
-<include cwd lang="dart" meta='title="test/pence_test.dart"'>../code/ch19_pence/test/pence_test.dart#reach</include>
-
 ## 19.1 Resolved before the program runs
 
 dart.dev says the mechanism in one line: **"Extension methods are resolved against the static
@@ -86,8 +84,10 @@ String show() => 1234.asMoney;
 </Console>
 
 The fix is in the message. An **extension override** — the extension's name in front of the
-receiver, `Terse(1234).asMoney` — chooses one on purpose. The test above uses the same form as
-`PenceFormatting(1234).asMoney`, where there is nothing to disambiguate and it is merely legal.
+receiver, `Terse(1234).asMoney` — chooses one on purpose. The form is legal whether or not
+there is anything to choose between:
+
+<include cwd lang="dart" meta='title="test/pence_test.dart"'>../code/ch19_pence/test/pence_test.dart#override</include>
 
 ## 19.2 A convention the compiler cannot check
 
@@ -114,9 +114,22 @@ The first line declares the type *and* its constructor at once. `int` is the **r
 type** — what a `Pence` really is — and `value` is the only way to reach it. Everything else in
 the body is yours to add.
 
-That first line also has no initialiser list, so it cannot check anything, and study 15's rule
-arrives unchanged in a new declaration form: **when a type must check something, write the
-constructor out.** Here that is a named one.
+That first line has no initialiser list, so there is nowhere to put a check — and it has
+already used up the unnamed constructor, so you cannot add a checked one beside it:
+
+```dart title="lib/taken.dart"
+extension type Checked(int value) {
+  Checked(this.value) : assert(value >= 0, 'an amount is never negative');
+}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch19_pence/transcripts/taken.txt</include>
+</Console>
+
+Study 15's rule arrives unchanged in a new declaration form, and the analyzer even names the
+fix: **when a type must check something, the check goes on a constructor that has a body to put
+it in.** Here that is a named one.
 
 <include cwd lang="dart" meta='title="test/pence_test.dart"'>../code/ch19_pence/test/pence_test.dart#named</include>
 
@@ -163,20 +176,42 @@ Absolutely none. That is not a figure of speech.
 
 <include cwd lang="dart" meta='title="test/pence_test.dart"'>../code/ch19_pence/test/pence_test.dart#gone</include>
 
-`7 is Pence` is true. So is `7 is Pounds`. The same list of two values answers `2` to
+`7 is Pence` is true, and so is `7 is Pounds`. One list of two values answers `2` to
 `whereType<Pence>()` **and** `2` to `whereType<Pounds>()`, because at run time there is one
-type in that list and it is `int`. `Pence(700).runtimeType` is `int`, and `toString` is the
-`int`'s.
+type in that list and it is `int`.
 
-Set that beside 18.3. A `Range<int>` and a `Range<String>` are two different types while the
-program runs, and that is what turns covariance from a silent hole into a `TypeError` at the
-line that caused it. A generic class carries its type argument into run time. An extension type
-carries nothing at all.
+Set that beside 18.3, where a `Range<int>` and a `Range<String>` were two different types while
+the program ran. A generic class carries its type argument into run time. An extension type
+carries nothing at all — and patterns are where that lands hardest, because there the analyzer
+says it out loud:
+
+<include cwd lang="dart" meta='title="lib/pence.dart"'>../code/ch19_pence/lib/pence.dart#pattern</include>
+
+<include cwd lang="dart" meta='title="test/pence_test.dart"'>../code/ch19_pence/test/pence_test.dart#pattern</include>
+
+A `Pounds` matches the `Pence` case and comes back as `'pence 7'`. Add the case you would
+expect to need and it is refused before you can run it:
+
+```dart title="lib/unreachable.dart"
+import 'pence.dart';
+
+String describe(Object? value) => switch (value) {
+  Pence(:final value) => 'pence $value',
+  Pounds(:final value) => 'pounds $value',
+  _ => 'not an amount',
+};
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch19_pence/transcripts/unreachable.txt</include>
+</Console>
+
+*This case is covered by the previous cases* — the compiler's own words for two types that are
+one type.
 
 So the rule is one sentence. **An extension type is a promise to the compiler; never ask the
-running program about it.** Anything that consults a run-time type — `is`, `as`, `whereType`,
-a pattern that matches on the type — sees straight through the name to the `int` underneath.
-For a value you must be able to tell apart while the program runs, you want study 15's class.
+running program about it.** For a value you must be able to tell apart while the program runs,
+you want study 15's class.
 
 ## 19.4 What you gain, and exactly what you gave up
 
@@ -196,6 +231,8 @@ import 'pence.dart';
 
 extension type Broken(int value) {
   String toString() => 'nope';
+
+  bool operator ==(Object other) => true;
 }
 
 final Object anything = Pence(1);
@@ -207,9 +244,10 @@ final OpenPence bigger = OpenPence(1200) + 100;
 <include cwd lang="saff-console" meta='title="terminal"'>../code/ch19_pence/transcripts/limits.txt</include>
 </Console>
 
-Three refusals, three different lessons. An extension type may not redeclare `toString`, `==`
-or `hashCode` — those belong to `Object` and there is no object here to give them to, which is
-why study 15's `Money` could define equality and `Pence` cannot. `Pence` is not an `Object`,
+Four refusals, three lessons. The first two are one lesson twice: an extension type may not
+redeclare anything `Object` declares — `toString`, `==`, `hashCode` — because those belong to
+the object underneath, and there is no separate object here to give them to. That is why study
+15's `Money` could define equality and `Pence` cannot. `Pence` is not an `Object`,
 which is the compile-time face of the same coin whose run-time face is that it already *is* an
 `int`. And `OpenPence(1200) + 100` is an `int`: `+` came from the representation type and
 answers in the representation type, so a transparent extension type keeps its name for exactly
@@ -248,17 +286,14 @@ The page that teaches extension types also warns about them, in a sentence most 
 out: **"This makes extension types an *unsafe* abstraction, because you can always find out the
 representation type at run time and access the underlying object."**
 
-Take that as the rule for choosing. An extension type is a *static* guarantee, and it is a very
-good one — inside code the compiler can see, `Pence` and `Pounds` cannot be confused. It is not
-a run-time guarantee of anything. So do not reach for one at a boundary where the values arrive
-from somewhere the compiler never saw: parsed text, decoded JSON, a `dynamic` from a plugin.
-There the type you want is a class, whose constructor runs, whose invariant holds, and whose
-identity survives the trip.
+Take that as the rule for choosing. Do not reach for an extension type at a boundary where the
+values arrive from somewhere the compiler never saw — parsed text, decoded JSON, a `dynamic`
+from a plugin. There the type you want is a class, whose constructor runs, whose invariant
+holds, and whose identity survives the trip.
 
-The habit that follows is the same one study 18 asked for and the opposite of a style rule:
-before you rely on a type, ask *when* it is checked. `Pence` is checked while you write.
-`Money` is checked while you run. Both are useful. Confusing them is how a guarantee that was
-never there gets relied on.
+The habit that follows is the opposite of a style rule: before you rely on a type, ask *when*
+it is checked. `Pence` is checked while you write. `Money` is checked while you run. Both are
+useful, and confusing them is how a guarantee that was never there gets relied on.
 </Practice>
 
 ## Wrapping up
@@ -280,8 +315,8 @@ wrong *while the program is running*, when an `assert` is not there and a type c
 
 ## Challenges
 
-Three tests are already written and already failing. Make them pass one at a time. Do not edit
-the tests. Two of the three are about where the code lives, not what it computes.
+Three challenges, six failing tests. Make them pass one at a time. Do not edit the tests. Two
+of the three are about where the code lives, not what it computes.
 
 <Console>
 <include cwd lang="saff-console" meta='title="terminal"'>../code/ch19_pence/transcripts/challenges.txt</include>

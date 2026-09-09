@@ -24,12 +24,16 @@ int sumOf(List<String> typed) {
   throw UnimplementedError('challenge 1');
 }
 
-/// 2. Like [wholeFrom], but strict about the text.
+/// 2. Who is wrong — the world, or the caller?
 ///
-///    `int.tryParse` trims spaces and accepts a leading sign, so `wholeFrom`
-///    reads `' +12 '` as twelve. This must not: anything but digits is a
-///    [FormatException]. `'12'` is `12`, `'0'` is `0`, and `''` throws.
-int strictWholeFrom(String typed) {
+///    `priceOf('12', 3)` is `36`.
+///
+///    Text that is not a number is the world's fault, and [wholeFrom] already
+///    throws the right thing for it. A [quantity] below 1 is the calling
+///    code's fault, and 20.2 says what that means you throw instead. The
+///    tests check that you agree with 20.2, not just that you threw
+///    something.
+int priceOf(String typed, int quantity) {
   throw UnimplementedError('challenge 2');
 }
 

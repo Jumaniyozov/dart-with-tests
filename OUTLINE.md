@@ -398,6 +398,21 @@ existing transcripts and verified to reproduce.
   shown — `standardPrices` used in a test, `hashPrefix` used in `tag`, the
   four-language `enum` when only the three-language stage was on the page. Check
   with: for each `// #region X` in `code/`, some MDX must include that path`#X`.
+- **No unshown definition — the inverse of the rule above, and the rule above
+  cannot see it.** A helper declared *outside* every region, in a file whose
+  regions are on the page, is invisible to the orphan check and is exactly the
+  same gap: study 20 shipped a `#trace` region calling `traceOf(…)` with
+  `traceOf` declared above `main()` and never shown. Check with: for each shown
+  region, every name it calls must be declared either inside a shown region, in
+  `dart:core`, or in a package the reader has been told about.
+- **Inline code in prose drifts; transcluded code cannot.** Backtick fragments
+  that quote real source are outside the include machinery and nothing checks
+  them. Study 20's prose quoted `value == null || value < 0 ? noAmount(typed)
+  : value` for two commits after that line was rewritten. Either transclude the
+  line or quote it in a form too small to go stale.
+- **`dart format` must be clean across `code/`**, because study 1 tells the
+  reader to format on save and two included files had drifted.
+  `dart format --output=none --set-exit-if-changed .` is the check.
 - One `<Practice>` per study. When it carries an attribution it must be a real
   link the writer has opened: `<Practice source="Effective Dart — Usage"
   href="https://dart.dev/…">`. The candidate rules named above are starting

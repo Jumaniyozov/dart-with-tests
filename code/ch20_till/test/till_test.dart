@@ -2,16 +2,6 @@ import 'package:ch20_till/till.dart';
 import 'package:ch20_till/v1.dart' as v1;
 import 'package:test/test.dart';
 
-/// The trace a failure arrives with, as text.
-String traceOf(void Function() body) {
-  try {
-    body();
-  } on FormatException catch (_, trace) {
-    return trace.toString();
-  }
-  return 'nothing was thrown';
-}
-
 void main() {
   // #region kinds
   group('an Error and an Exception are two different claims', () {
@@ -101,6 +91,19 @@ void main() {
   // #endregion order
 
   // #region trace
+  /// The trace a failure arrives with, as text.
+  ///
+  /// The second parameter of `catch` is the stack trace, and it is an
+  /// ordinary value: you can read it, keep it, or compare two of them.
+  String traceOf(void Function() body) {
+    try {
+      body();
+    } on FormatException catch (_, trace) {
+      return trace.toString();
+    }
+    return 'nothing was thrown';
+  }
+
   group('rethrow keeps the evidence and throw does not', () {
     test('rethrow arrives with the trace it started with', () {
       expect(traceOf(() => logged('twelve', [])), contains('penceFrom'));
@@ -121,16 +124,19 @@ void main() {
   // #endregion trace
 
   // #region lenient
-  group('int.tryParse is more forgiving than it looks', () {
-    test('it trims space and accepts a leading sign', () {
+  group('int.tryParse is not a validator', () {
+    test('it trims space, takes a sign, and reads hexadecimal', () {
       expect(int.tryParse(' 12 '), 12);
       expect(int.tryParse('+12'), 12);
       expect(int.tryParse('-12'), -12);
+      expect(int.tryParse('0x10'), 16);
     });
 
-    test('so this parser accepts a little more than it says', () {
-      expect(penceFrom(' 12 '), 1200);
-      expect(penceFrom('+12'), 1200);
+    test('so penceFrom checks the characters before it parses them', () {
+      expect(() => penceFrom(' 12 '), throwsFormatException);
+      expect(() => penceFrom(' +12 '), throwsFormatException);
+      expect(() => penceFrom('0x10'), throwsFormatException);
+      expect(penceFrom('12'), 1200);
     });
   });
   // #endregion lenient

@@ -57,6 +57,17 @@ an inherited getter or a mixin's requirement (studies 16 and 17 both need this).
 `super.pence` works in the header, and the longhand `: super(pence)` trips
 `use_super_parameters` from `package:lints/recommended.yaml`.
 
-**Reversing this is expensive and gets more so.** Studies 15 to 18 declare classes
-this way, and studies 19 to 22 will. Reverting would mean rewriting every class in
-Book I and rewriting study 15 around a different spine.
+**The same rule turned up again in a second declaration form.** Study 19's
+extension types have their own header — `extension type const Pence(int value)` —
+and it behaves the same way: it has no initialiser list, and it has already taken
+the unnamed constructor, so a checked constructor beside it is a
+`duplicate_constructor` error and the check has to go on a named one. Two
+unrelated features, one rule: *when a type must check something, the check goes on
+a constructor with a body to put it in.* That is now the book's phrasing of it, and
+it is worth preferring over "write the class out in body form", which was the
+study-15-only version and does not generalise — an extension type has no body form
+to fall back to.
+
+**Reversing this is expensive and gets more so.** Studies 15 to 22 declare classes
+and extension types this way. Reverting would mean rewriting every class in Book I
+and rewriting study 15 around a different spine.

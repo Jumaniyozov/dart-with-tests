@@ -7,9 +7,6 @@ void main() {
   });
 
   test('and says the balance after each one', () async {
-    expect(
-      await runningTotalOf(feedOf([700, 250], [])).toList(),
-      [700, 950],
-    );
+    expect(await runningTotalOf(feedOf([700, 250], [])).toList(), [700, 950]);
   });
 }

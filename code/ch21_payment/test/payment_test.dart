@@ -35,6 +35,14 @@ void main() {
       await expectLater(authorise(-1), throwsArgumentError);
       await expectLater(authorise(90000), throwsA(isA<CardDeclined>()));
     });
+
+    test(
+      'and study 20 rule holds: the handler catches one and not the other',
+      () async {
+        expect(await takePayment(90000), 'declined: over the floor limit');
+        await expectLater(takePayment(0), throwsArgumentError);
+      },
+    );
   });
   // #endregion failing
 
