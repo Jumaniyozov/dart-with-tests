@@ -1,0 +1,7 @@
+$ dart analyze lib/timing.dart
+Analyzing timing.dart...
+
+  error - timing.dart:17:19 - Const variables must be initialized with a constant value. Try changing the initializer to be a constant expression. - const_initialized_with_non_constant_value
+  error - timing.dart:17:19 - The constructor being called isn't a const constructor. Try removing 'const' from the constructor invocation. - const_with_non_const
+
+2 issues found.

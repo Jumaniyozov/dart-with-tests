@@ -48,6 +48,14 @@ The reader works in three places at once: this book, an editor, and a terminal r
 decoration. Chapters end with challenges shipped as already-failing tests the reader makes
 green, so the book verifies the reader rather than the reader trusting an answer key.
 
+Every chapter also carries at least one **best-practice note** — the professional layer on
+top of the syntax: what experienced Dart programmers actually do, and why. Where a
+published guideline covers the point (*Effective Dart*, a lint in `package:lints`) the note
+cites it and links to it, and states the guideline as written rather than as remembered.
+Where the guidance is this book's own convention, it says so and carries no citation. A
+note that attributes a preference to Effective Dart which Effective Dart does not hold is a
+defect of the same class as an untested code sample.
+
 ## Capabilities and Constraints
 
 - Dart 3.13.2 is the target; the book must cover language features through 3.13
@@ -70,9 +78,12 @@ green, so the book verifies the reader rather than the reader trusting an answer
 - Title: **Learn Dart with Tests**.
 - Chris James and *Learn Go with Tests* are credited in the front matter as the origin of
   the format.
-- The v1 book's "flight deck" palette (ink `#0A1322`, cyan `#36D2F2`, amber `#F4B740`,
-  Space Grotesk / IBM Plex Sans / JetBrains Mono) is prior art, **not** a binding
-  constraint. The visual direction is open.
+- The visual system is **Stonelight Press**, derived from SAFF · Stonelight
+  (`/Users/islom/Projects/saff-scafold`): light stone, deep emerald, earned brass. See
+  DESIGN.md. Brass means one thing in this book — a study the reader has worked.
+- Two earlier directions are prior art and explicit anti-references, **not** constraints:
+  the v1 "flight deck" palette (ink `#0A1322`, cyan `#36D2F2`, amber `#F4B740`), and the
+  Étude Book (Edition Peters livery, double rules, engraved marks) that preceded this one.
 
 ## Evidence on Hand
 
@@ -90,11 +101,18 @@ green, so the book verifies the reader rather than the reader trusting an answer
    are inline.
 2. **Concept, then proof.** Explain the idea in prose, then drive it with a test. Tests are
    how the reader checks understanding, not a ritual to perform.
-3. **Name the bad choice out loud.** When a chapter shows something suboptimal because the
+3. **Name the machinery, not just the habit.** A construct is never explained only as a
+   style preference. Say what the language actually does: when it happens (compile time or
+   run time), what it forbids, what it costs, and what it guarantees. `const` versus
+   `final` is a compile-time/run-time distinction before it is a naming convention;
+   `String` is UTF-16 code units before it is "text"; `int` is 64-bit native and doubles on
+   the web. Where the mechanism produces a real error message, show that message from a
+   real run rather than describing it.
+4. **Name the bad choice out loud.** When a chapter shows something suboptimal because the
    better tool comes later, say so and name the chapter that fixes it.
-4. **Write for a second-language reader.** Short sentences, active voice, one idea per
+5. **Write for a second-language reader.** Short sentences, active voice, one idea per
    sentence, no idiom or wordplay. Every term defined the first time it appears.
-5. **The reader never leaves their editor.** The book explains; the machine on their desk
+6. **The reader never leaves their editor.** The book explains; the machine on their desk
    verifies.
 
 ## Accessibility & Inclusion

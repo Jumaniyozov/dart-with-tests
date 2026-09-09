@@ -30,7 +30,7 @@ You now have a `pubspec.yaml`, a `lib/` directory, a `bin/` directory holding on
 file, and a `test/` directory. Run it:
 
 <Console>
-<include cwd lang="bash" meta='title="terminal"'>../code/ch01_hello/transcripts/generated.txt</include>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch01_hello/transcripts/generated.txt</include>
 </Console>
 
 Forty-two. Here is the program that printed it:
@@ -48,7 +48,7 @@ still runs.
 <include cwd lang="dart" meta='title="bin/hello.dart"'>../code/ch01_hello/bin/hello.dart</include>
 
 <Console>
-<include cwd lang="bash" meta='title="terminal"'>../code/ch01_hello/transcripts/hello.txt</include>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch01_hello/transcripts/hello.txt</include>
 </Console>
 
 ## The analyzer is the other half of the language
@@ -79,6 +79,23 @@ dart format .
 
 Run it before you save. There is no house style to learn and nothing to configure. This
 is one of the quiet pleasures of the language.
+
+<Practice source="dart.dev — Linter rules" href="https://dart.dev/tools/linter-rules">
+Format on save, and keep `dart analyze` at zero. Not "few warnings" — zero. A project with
+nine warnings you have decided to ignore is a project where the tenth, the real one, is
+invisible.
+
+Most of this is already set up: `dart create` writes an `analysis_options.yaml` containing
+`include: package:lints/recommended.yaml`, the rule set the Dart team maintains. This book
+adds three strictness switches to it:
+
+<include cwd lang="yaml" meta='title="analysis_options.yaml"'>../code/analysis_options.yaml</include>
+
+They close holes the defaults leave open: a value quietly treated as another type, a type
+the analyzer had to guess at, and a generic written without its type argument. Every
+package in this book compiles under them, so if you copy this file you will see exactly
+what the book sees.
+</Practice>
 
 ## Wrapping up
 

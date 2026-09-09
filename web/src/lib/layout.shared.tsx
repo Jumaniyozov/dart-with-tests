@@ -7,5 +7,8 @@ export function baseOptions(): BaseLayoutProps {
       // JSX supported
       title: appName,
     },
+    // Three states, not two. "System" is a real choice and hiding it forces a
+    // reader who follows their OS to keep re-picking a theme.
+    themeSwitch: { mode: 'light-dark-system' },
   };
 }

@@ -1,6 +1,6 @@
 import defaultMdxComponents from 'fumadocs-ui/mdx';
 import type { MDXComponents } from 'mdx/types';
-import { Console, Direction, Drill, Gloss } from './etude';
+import { Console, Direction, Drill, Gloss, Practice } from './press';
 
 export function getMDXComponents(components?: MDXComponents) {
   return {
@@ -8,6 +8,7 @@ export function getMDXComponents(components?: MDXComponents) {
     Drill,
     Direction,
     Gloss,
+    Practice,
     Console,
     ...components,
   } satisfies MDXComponents;

@@ -2,87 +2,150 @@
 @import 'fumadocs-ui/css/neutral.css';
 @import 'fumadocs-ui/css/preset.css';
 
-/* ── Étude Book ───────────────────────────────────────────────────────────
-   Peters green livery, plate ink on manuscript white. Light is the default
-   because the reader works long stretches at a lit desk with an editor open. */
+/* ── Stonelight Press ─────────────────────────────────────────────────────
+   Derived from SAFF · Stonelight: light stone, deep emerald, earned brass.
+   The app treats itself as one continuous room; the book treats itself as one
+   continuous object — the same materials, cut for reading rather than tapping.
+
+   Two changes the book makes on purpose:
+     · Literata carries the prose. Manrope is a UI face and a phone app never
+       asks it to hold an hour of reading; forty-four chapters do.
+     · Brass means *earned*. In the app it marks membership and ceremony; here
+       it marks the one thing a reader earns — a study they have worked. */
 
 @theme {
-  --color-fd-background: #f4f5f1;
-  --color-fd-foreground: #101512;
-  --color-fd-muted: #e7e9e1;
-  --color-fd-muted-foreground: #5c665e;
-  --color-fd-card: #fbfbf7;
-  --color-fd-card-foreground: #101512;
-  --color-fd-popover: #fbfbf7;
-  --color-fd-popover-foreground: #101512;
-  --color-fd-border: #c9cec6;
-  --color-fd-primary: #1f4a3d;
-  --color-fd-primary-foreground: #f4f5f1;
-  --color-fd-secondary: #e7e9e1;
-  --color-fd-secondary-foreground: #16352c;
-  --color-fd-accent: #dde3da;
-  --color-fd-accent-foreground: #16352c;
-  --color-fd-ring: #1f4a3d;
+  --color-fd-background: oklch(96.4% 0.007 165);
+  --color-fd-foreground: oklch(24% 0.036 170);
+  --color-fd-muted: oklch(92.6% 0.01 160);
+  --color-fd-muted-foreground: oklch(46% 0.026 170);
+  --color-fd-card: oklch(98.2% 0.004 165);
+  --color-fd-card-foreground: oklch(24% 0.036 170);
+  --color-fd-popover: oklch(98.2% 0.004 165);
+  --color-fd-popover-foreground: oklch(24% 0.036 170);
+  --color-fd-border: oklch(85% 0.025 95 / 0.65);
+  --color-fd-primary: oklch(38% 0.085 165);
+  --color-fd-primary-foreground: oklch(97% 0.01 160);
+  --color-fd-secondary: oklch(92.6% 0.01 160);
+  --color-fd-secondary-foreground: oklch(33% 0.08 167);
+  --color-fd-accent: oklch(95% 0.015 162);
+  --color-fd-accent-foreground: oklch(33% 0.08 167);
+  --color-fd-ring: oklch(58% 0.085 80);
 
-  --font-display: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), 'Cormorant Garamond', Georgia, serif;
   --font-body: var(--font-body), Georgia, 'Times New Roman', serif;
+  --font-ui: var(--font-ui), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-mono), ui-monospace, 'SFMono-Regular', monospace;
+
+  --radius-chip: 0.75rem;
+  --radius-card: 1rem;
+  --radius-panel: 1.5rem;
 }
 
 :root {
-  /* engraver's marks — state vocabulary, not decoration */
-  --etude-green: #1f4a3d;
-  --etude-green-ink: #16352c;
-  --etude-red: #c0392b;
-  --etude-plate: #fbfbf7;
-  --etude-rule: #c9cec6;
-  --etude-grey: #56605a;
-  --etude-console: #161b18;
-  --etude-console-ink: #cbd4cd;
-  --etude-rail: #1f4a3d;
-  --etude-rail-ink: #e4ebe5;
-  --etude-rail-mute: #a9c2b5;
-  --etude-marked: #f2d06b;
+  /* surfaces */
+  --porcelain: oklch(96.4% 0.007 165);
+  --porcelain-2: oklch(98.2% 0.004 165);
+  --stone: oklch(92.6% 0.01 160);
+  --stone-2: oklch(89.5% 0.012 158);
+  /* ink */
+  --ink: oklch(24% 0.036 170);
+  --ink-2: oklch(36% 0.032 170);
+  --ink-3: oklch(46% 0.026 170);
+  /* emerald — structure and action */
+  --emerald: oklch(38% 0.085 165);
+  --emerald-strong: oklch(33% 0.08 167);
+  --emerald-deep: oklch(21% 0.052 170);
+  --emerald-night: oklch(16% 0.04 172);
+  --on-emerald: oklch(97% 0.01 160);
+  /* brass — earned, never body text */
+  --brass: oklch(58% 0.085 80);
+  --brass-bright: oklch(74% 0.085 85);
+  --brass-pale: oklch(86% 0.045 88);
+  /* Brass as a *material* is 4.09:1 on porcelain — fine for a rule or a border,
+     a fail for label text. Text-weight brass is its own token. */
+  --brass-ink: oklch(45% 0.09 72);
+  /* lines */
+  --hairline: oklch(85% 0.025 95 / 0.65);
+  --hairline-soft: oklch(88% 0.02 110 / 0.45);
+  /* the one thing Stonelight has no word for: a failing test */
+  --correction: oklch(47% 0.15 27);
+  /* materials — machine output is its own ground, recessed under a light lamp
+     and a near-black slab under a dark one. Both are stated, not inherited. */
+  --console: oklch(90% 0.016 162);
+  --console-ink: oklch(26% 0.030 170);
+  /* Deep emerald, not near-black. The old 16% sat almost at the console's
+     value and read as a hole in the page; this is the same cloth, woven
+     lighter, and it is what a reader looks at for hours. */
+  --rail: oklch(25% 0.045 168);
+  --rail-ink: oklch(95% 0.018 150);
+  --rail-mute: oklch(75% 0.028 155);
+  --rail-line: oklch(100% 0 0 / 0.11);
+  --rail-wash: oklch(100% 0 0 / 0.06);
+  --rail-active: oklch(39% 0.085 165);
+  /* The rail keeps its colour under any lamp, so anything sitting on it must
+     too — a token that flips with the theme reads at 1.67:1 after sunset. */
+  --on-rail-surface: oklch(96% 0.012 155);
+  --on-rail-ink: oklch(30% 0.075 167);
 }
 
 .dark {
-  /* Not an inversion. The relationships are preserved: the plate lifts off the
-     page, the console recedes below it, and the livery keeps its own colour the
-     way book cloth does under any light. */
-  --color-fd-background: #131714;
-  --color-fd-foreground: #e2e6df;
-  --color-fd-muted: #1c211d;
-  --color-fd-muted-foreground: #9aa49c;
-  --color-fd-card: #1c211d;
-  --color-fd-card-foreground: #e2e6df;
-  --color-fd-popover: #1c211d;
-  --color-fd-popover-foreground: #e2e6df;
-  --color-fd-border: #2c332d;
-  --color-fd-primary: #6fbf9f;
-  --color-fd-primary-foreground: #0c1710;
-  --color-fd-secondary: #1c211d;
-  --color-fd-secondary-foreground: #dce5dd;
-  --color-fd-accent: #222a24;
-  --color-fd-accent-foreground: #dce5dd;
-  --color-fd-ring: #6fbf9f;
+  /* The same room after sunset. Values are Stonelight's own dark map, not an
+     inversion: the page sinks, the card lifts off it, the console sinks below
+     both, and the rail keeps its colour the way book cloth does under any lamp. */
+  --color-fd-background: oklch(21% 0.022 170);
+  --color-fd-foreground: oklch(93% 0.012 150);
+  --color-fd-muted: oklch(29.5% 0.026 168);
+  --color-fd-muted-foreground: oklch(67% 0.02 158);
+  --color-fd-card: oklch(25% 0.024 168);
+  --color-fd-card-foreground: oklch(93% 0.012 150);
+  --color-fd-popover: oklch(25% 0.024 168);
+  --color-fd-popover-foreground: oklch(93% 0.012 150);
+  --color-fd-border: oklch(48% 0.04 95 / 0.45);
+  --color-fd-primary: oklch(79% 0.1 158);
+  --color-fd-primary-foreground: oklch(16% 0.04 172);
+  --color-fd-secondary: oklch(29.5% 0.026 168);
+  --color-fd-secondary-foreground: oklch(93% 0.012 150);
+  --color-fd-accent: oklch(30% 0.05 166);
+  --color-fd-accent-foreground: oklch(93% 0.012 150);
+  --color-fd-ring: oklch(70% 0.085 82);
 
-  --etude-green: #6fbf9f;
-  --etude-green-ink: #8fd0b4;
-  --etude-red: #e08175;
-  --etude-plate: #1c211d;
-  --etude-rule: #2c332d;
-  --etude-grey: #96a099;
-  --etude-console: #080b09;
-  --etude-console-ink: #c6d0c8;
-  --etude-rail: #1f4a3d;
-  --etude-rail-ink: #e4ebe5;
-  --etude-rail-mute: #a9c2b5;
-  --etude-marked: #e8c264;
+  --porcelain: oklch(21% 0.022 170);
+  --porcelain-2: oklch(25% 0.024 168);
+  --stone: oklch(29.5% 0.026 168);
+  --stone-2: oklch(35% 0.026 168);
+  --ink: oklch(93% 0.012 150);
+  --ink-2: oklch(81% 0.018 155);
+  --ink-3: oklch(67% 0.02 158);
+  --emerald: oklch(79% 0.1 158);
+  --emerald-strong: oklch(38% 0.082 166);
+  --emerald-deep: oklch(28% 0.05 168);
+  --emerald-night: oklch(17% 0.038 172);
+  --on-emerald: oklch(16% 0.04 172);
+  --brass: oklch(70% 0.085 82);
+  --brass-bright: oklch(78% 0.09 86);
+  --brass-pale: oklch(85% 0.05 90);
+  --brass-ink: oklch(80% 0.09 85);
+  --hairline: oklch(48% 0.04 95 / 0.45);
+  --hairline-soft: oklch(45% 0.035 110 / 0.35);
+  --correction: oklch(72% 0.13 30);
+  --console: oklch(11% 0.018 172);
+  --console-ink: oklch(87% 0.018 148);
+  /* Same cloth under any lamp — identical to :root on purpose. */
+  --rail: oklch(25% 0.045 168);
+  --rail-ink: oklch(95% 0.018 150);
+  --rail-mute: oklch(75% 0.028 155);
+  --rail-line: oklch(100% 0 0 / 0.11);
+  --rail-wash: oklch(100% 0 0 / 0.06);
+  --rail-active: oklch(39% 0.085 165);
+  /* The rail keeps its colour under any lamp, so anything sitting on it must
+     too — a token that flips with the theme reads at 1.67:1 after sunset. */
+  --on-rail-surface: oklch(96% 0.012 155);
+  --on-rail-ink: oklch(30% 0.075 167);
 }
 
 html {
   scrollbar-gutter: stable;
-  scrollbar-color: var(--etude-grey) transparent;
+  scrollbar-color: var(--stone-2) transparent;
 }
 
 html > body[data-scroll-locked] {
@@ -91,50 +154,146 @@ html > body[data-scroll-locked] {
 }
 
 body {
-  font-family: var(--font-display);
+  font-family: var(--font-ui);
 }
 
 /* Browser surfaces belong to the design system, not to the browser. */
 ::selection {
-  background: var(--etude-green);
-  color: var(--color-fd-background);
+  background: var(--emerald);
+  color: var(--on-emerald);
 }
 ::-webkit-scrollbar {
-  width: 11px;
-  height: 11px;
+  width: 12px;
+  height: 12px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--etude-rule);
+  background: var(--stone-2);
   border: 3px solid var(--color-fd-background);
-  border-radius: 99px;
+  border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--etude-grey);
+  background: var(--ink-3);
 }
+/* Stonelight rings in brass. It is the one place brass appears unearned,
+   because a focus ring must be visible on emerald, stone and console alike. */
 :focus-visible {
-  outline: 2px solid var(--etude-green);
+  outline: 2px solid var(--brass);
   outline-offset: 2px;
+  border-radius: 2px;
 }
 
-/* ── The rail: the livery owns the whole region, never a stripe ────────── */
-#nd-sidebar {
-  background: var(--etude-rail);
-  color: var(--etude-rail-ink);
+/* ── The rail: emerald night owns the whole region ───────────────────────
+   Desktop renders `#nd-sidebar`; the mobile drawer is a separate element,
+   `#nd-sidebar-mobile`. Every rule below names both — scoping to the desktop
+   id alone leaves the drawer in stock fumadocs neutrals. */
+:is(#nd-sidebar, #nd-sidebar-mobile) {
+  background: var(--rail);
+  color: var(--rail-ink);
   border-right: 0;
-  --color-fd-muted-foreground: var(--etude-rail-mute);
-  --color-fd-foreground: var(--etude-rail-ink);
-  --color-fd-accent: color-mix(in srgb, #ffffff 9%, transparent);
-  --color-fd-accent-foreground: #ffffff;
-  --color-fd-border: color-mix(in srgb, #ffffff 14%, transparent);
-  --color-fd-card: color-mix(in srgb, #000000 16%, transparent);
-  --color-fd-secondary: color-mix(in srgb, #ffffff 9%, transparent);
+  --color-fd-muted-foreground: var(--rail-mute);
+  --color-fd-foreground: var(--rail-ink);
+  --color-fd-accent: oklch(24% 0.051 169);
+  --color-fd-accent-foreground: oklch(97% 0.015 150);
+  --color-fd-border: oklch(100% 0 0 / 0.12);
+  --color-fd-card: oklch(0% 0 0 / 0.18);
+  --color-fd-secondary: oklch(24% 0.051 169);
 }
-#nd-sidebar a[data-active='true'] {
-  color: #ffffff;
+/* ── The rail is a panel, not a wall ──────────────────────────────────────
+   Fumadocs floats the rail only while it is collapsed and hovered. Pinned open
+   it goes flush to the viewport edge with a hard border. The floating form is
+   the better one — it reads as a thing resting on the page — so the open state
+   takes it too. */
+#nd-sidebar[data-collapsed='false'] {
+  inset-block: 0.5rem;
+  inset-inline-start: 0.5rem;
+  width: calc(var(--fd-sidebar-width) - 0.5rem);
+  border-inline-end: 0;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+#nd-sidebar[data-collapsed='false'] > * {
+  width: 100%;
+}
+#nd-sidebar[data-collapsed='true'] {
+  border-radius: var(--radius-card);
+  border-color: var(--rail-line);
+}
+
+/* Rail entries are pills with room to be pills. The link carries its own
+   padding — without it the fill hugs the text and reads as a bar. */
+:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active='false'],
+:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active='true'] {
+  border-radius: var(--radius-chip);
+  padding: 0.4rem 0.55rem;
+  transition: background-color 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active='false']:hover {
+  background: var(--rail-wash);
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active='true'] {
+  background: var(--rail-active);
+  color: oklch(98% 0.012 150);
   font-weight: 600;
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) button[class*='rounded'] {
+  border-radius: var(--radius-chip);
+}
+
+/* ── Search: the key hints have to be readable on the rail ───────────────
+   The stock kbd is `bg-fd-background`, which inside the rail resolves to the
+   *page* colour — pale pills carrying pale text, invisible in light mode and
+   worse on hover. Everything on the rail is tinted from the rail. */
+:is(#nd-sidebar, #nd-sidebar-mobile) button:has(kbd) {
+  background: var(--rail-wash);
+  border-color: var(--rail-line);
+  color: var(--rail-mute);
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) button:has(kbd):hover {
+  background: oklch(100% 0 0 / 0.1);
+  color: var(--rail-ink);
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) kbd {
+  background: oklch(100% 0 0 / 0.12);
+  border-color: var(--rail-line);
+  color: var(--rail-ink);
+}
+
+/* ── Theme switch: light · system · dark ─────────────────────────────────
+   Fumadocs wraps the switch in a bordered tray and then strips three of the
+   switch's own four borders, leaving one stray rule beside the sun. Both the
+   tray and the stray edge go; the control is a track with a filled pill. */
+:is(#nd-sidebar, #nd-sidebar-mobile) [data-theme-toggle] {
+  border: 0;
+  border-radius: 999px;
+  padding: 2px;
+  margin-inline-start: 0;
+  background: var(--rail-wash);
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) > :last-child > div:has([data-theme-toggle]) {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  width: max-content;
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) [data-theme-toggle] button {
+  border-radius: 999px !important;
+  color: var(--rail-mute);
+  transition: background-color 0.15s cubic-bezier(0.22, 1, 0.36, 1), color 0.15s;
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) [data-theme-toggle] button:hover {
+  color: var(--rail-ink);
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) [data-theme-toggle] button.bg-fd-accent {
+  background: var(--rail-active);
+  color: oklch(98% 0.012 150);
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(#nd-sidebar, #nd-sidebar-mobile) [data-theme-toggle] button {
+    transition: none;
+  }
 }
 
 /* ── Reading column ───────────────────────────────────────────────────── */
@@ -143,29 +302,38 @@ body {
   font-family: var(--font-body);
   font-size: 1.02rem;
   line-height: 1.72;
+  color: var(--ink-2);
 }
 #nd-docs-layout .prose {
   max-width: 68ch;
+}
+#nd-docs-layout .prose strong {
+  color: var(--ink);
 }
 #nd-docs-layout .prose h2,
 #nd-docs-layout .prose h3,
 #nd-docs-layout .prose h4 {
   font-family: var(--font-display);
-  letter-spacing: -0.012em;
+  font-weight: 600;
+  letter-spacing: -0.008em;
+  color: var(--ink);
+}
+#nd-docs-layout .prose a {
+  color: var(--emerald);
+  text-decoration-color: oklch(from var(--emerald) l c h / 0.35);
+  text-underline-offset: 3px;
 }
 #nd-docs-layout .prose :not(pre) > code {
   font-family: var(--font-mono);
-  background: var(--color-fd-muted);
+  font-size: 0.86em;
+  background: var(--stone);
   border: 0;
-  border-radius: 2px;
-}
-#nd-docs-layout .prose figure,
-#nd-docs-layout .prose pre {
-  border-radius: 2px;
+  border-radius: 0.375rem;
+  padding: 0.12em 0.36em;
 }
 
 /* ── The one authored motion: the pencil mark drawing itself in ────────── */
-@keyframes etude-draw-on {
+@keyframes sl-draw-on {
   from {
     stroke-dashoffset: 34;
   }
@@ -173,200 +341,348 @@ body {
     stroke-dashoffset: 0;
   }
 }
-.etude-draw {
+.sl-draw {
   stroke-dasharray: 34;
-  animation: etude-draw-on 460ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: sl-draw-on 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 @media (prefers-reduced-motion: reduce) {
-  .etude-draw {
+  .sl-draw {
     animation: none;
     stroke-dashoffset: 0;
   }
 }
 
-/* ── Code is set on a plate; machine output is a terminal ──────────────── */
+/* ── Two materials: authored source is a card, machine output is a slab ── */
 #nd-docs-layout figure.shiki {
-  border-radius: 2px;
-  box-shadow: none;
-  background: var(--etude-plate);
-  border-color: var(--etude-rule);
+  border-radius: var(--radius-card);
+  box-shadow: 0 1px 2px oklch(24% 0.03 170 / 0.05);
+  background: var(--porcelain-2);
+  border-color: var(--hairline);
+  overflow: hidden;
 }
 #nd-docs-layout figure.shiki > div:first-child {
-  font-family: var(--font-mono);
+  font-family: var(--font-ui);
   font-size: 0.72rem;
-  letter-spacing: 0.02em;
-  border-color: var(--etude-rule);
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: var(--ink-3);
+  border-color: var(--hairline);
 }
 #nd-docs-layout figure.shiki pre {
   font-size: 0.82rem;
   line-height: 1.7;
 }
 
-.etude-console figure.shiki,
-.etude-console figure.shiki span {
-  color: var(--etude-console-ink) !important;
+/* Shiki writes `--shiki-*-font-weight` for a bold scope, but Fumadocs' stylesheet
+   only reads the colour and the font-style, so the theme's bold keywords arrive
+   and are never applied. These two rules read the property that is already there,
+   mirroring the light/dark pair Fumadocs sets for colour. */
+#nd-docs-layout .shiki code span {
+  font-weight: var(--shiki-light-font-weight, 400);
 }
-.etude-console figure.shiki {
-  background: var(--etude-console) !important;
-  border-color: var(--etude-console);
-}
-.etude-console figure.shiki > div:first-child {
-  color: color-mix(in srgb, var(--etude-console-ink) 62%, transparent) !important;
-  border-color: color-mix(in srgb, var(--etude-console-ink) 18%, transparent);
-}
-.etude-console figure.shiki button {
-  color: color-mix(in srgb, var(--etude-console-ink) 70%, transparent);
+.dark #nd-docs-layout .shiki code span {
+  font-weight: var(--shiki-dark-font-weight, 400);
 }
 
-/* ── Mobile: no rail, so the livery moves to the bar ───────────────────── */
-@media (max-width: 767px) {
-  #nd-subnav {
-    background: var(--etude-rail);
-    color: var(--etude-rail-ink);
-    border-bottom: 0;
-    --color-fd-foreground: var(--etude-rail-ink);
-    --color-fd-muted-foreground: var(--etude-rail-mute);
-    --color-fd-border: color-mix(in srgb, #ffffff 14%, transparent);
-    --color-fd-accent: color-mix(in srgb, #ffffff 9%, transparent);
-    --color-fd-accent-foreground: #ffffff;
-  }
+/* Ink for the console comes from the SAFF theme, which scopes the whole console
+   grammar rather than leaving output uncoloured, so nothing here may override a
+   token's colour. Only the slab's ground and chrome belong to CSS. */
+.sl-console figure.shiki {
+  background: var(--console) !important;
+  border-color: var(--console);
+  box-shadow: none;
+}
+.sl-console figure.shiki > div:first-child {
+  color: oklch(from var(--console-ink) l c h / 0.6) !important;
+  border-color: oklch(from var(--console-ink) l c h / 0.16);
+}
+.sl-console figure.shiki button {
+  color: oklch(from var(--console-ink) l c h / 0.7);
 }
 
-
-/* ── Fix 3: the repeat sign keeps its geometry at any drill height ─────── */
-.etude-repeat {
-  position: relative;
-  display: flex;
-  align-items: stretch;
-  gap: 2px;
-  flex: 1;
-  min-height: 2.25rem;
-  width: 14px;
-}
-.etude-repeat-thick {
-  width: 3px;
-  background: currentColor;
-}
-.etude-repeat-thin {
-  width: 1px;
-  background: currentColor;
-}
-.etude-repeat-dots {
-  position: absolute;
-  top: 50%;
-  right: 0;
-  width: 5px;
-  height: 14px;
-  transform: translateY(-50%);
-}
-
-/* ── Fixes 1 & 2: the rail entry carries its number and its mark ───────── */
-.etude-entry {
-  display: grid;
-  grid-template-columns: 1.35rem minmax(0, 1fr) 0.95rem;
-  gap: 0.5rem;
-  align-items: baseline;
-  width: 100%;
-}
-.etude-entry-no {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-  opacity: 0.6;
-}
-[data-active='true'] .etude-entry-no {
-  opacity: 1;
-  color: var(--etude-marked);
-}
-.etude-entry-name {
-  min-width: 0;
-  text-wrap: pretty;
-}
-.etude-entry-mark {
-  width: 0.85rem;
-  height: 0.85rem;
-  align-self: center;
-  color: var(--etude-marked);
-}
-
-/* ── Fix 5: verbatim machine output is never clipped ───────────────────── */
-/* The code block sizes its <pre> to max-content, so pre-wrap alone never
-   engages and the scroller above it overflows. Constrain the width too. */
-.etude-console figure.shiki pre,
-.etude-console figure.shiki code,
-.etude-console figure.shiki .line {
+/* Verbatim machine output is never clipped. The code block sizes its <pre> to
+   max-content, so pre-wrap alone never engages and the scroller overflows;
+   the width has to be constrained too. */
+.sl-console figure.shiki pre,
+.sl-console figure.shiki code,
+.sl-console figure.shiki .line {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   min-width: 0;
   width: 100%;
   max-width: 100%;
 }
-.etude-console figure.shiki > div:has(pre) {
+.sl-console figure.shiki > div:has(pre) {
   overflow-x: hidden;
 }
 
-
-/* ── The code plate's syntax palette comes from this world ──────────────
-   Remapped off the emitted Shiki custom properties rather than by swapping
-   themes, which silently disabled highlighting. Hexes are github-light /
-   github-dark as actually emitted. */
-#nd-docs-layout [style*='--shiki-light:#D73A49'] { --shiki-light: #1f4a3d !important; --shiki-dark: #7fc0a6 !important; }
-#nd-docs-layout [style*='--shiki-light:#032F62'] { --shiki-light: #7a6420 !important; --shiki-dark: #d8c48c !important; }
-#nd-docs-layout [style*='--shiki-light:#6F42C1'] { --shiki-light: #2c4a40 !important; --shiki-dark: #9cc9b6 !important; }
-#nd-docs-layout [style*='--shiki-light:#005CC5'] { --shiki-light: #6b5a22 !important; --shiki-dark: #c9b37a !important; }
-#nd-docs-layout [style*='--shiki-light:#E36209'] { --shiki-light: #4a5049 !important; --shiki-dark: #b6bdb6 !important; }
-#nd-docs-layout [style*='--shiki-light:#22863A'] { --shiki-light: #2f5d4c !important; --shiki-dark: #8fc9ae !important; }
-#nd-docs-layout [style*='--shiki-light:#6A737D'] { --shiki-light: #7d867f !important; --shiki-dark: #838c85 !important; }
-#nd-docs-layout [style*='--shiki-light:#24292E'] { --shiki-light: #2b322d !important; --shiki-dark: #d6ddd7 !important; }
-
-/* An entry with no number keeps its name in the name column. */
-.etude-entry-no:empty::before {
-  content: '';
+/* ── Mobile: no rail, so the livery moves to the bar ───────────────────── */
+@media (max-width: 767px) {
+  #nd-subnav {
+    background: var(--rail);
+    color: var(--rail-ink);
+    border-bottom: 0;
+    --color-fd-foreground: var(--rail-ink);
+    --color-fd-muted-foreground: var(--rail-mute);
+    --color-fd-border: oklch(100% 0 0 / 0.12);
+    --color-fd-accent: oklch(24% 0.051 169);
+    --color-fd-accent-foreground: oklch(97% 0.015 150);
+  }
 }
 
-/* ── Section heads carry a bar line: the chapter head's double rule, at the
-   scale a section deserves. Before this, the world stopped after the head and
-   the long middle of a chapter read like any docs site. ─────────────────── */
+/* ── A rail entry carries its number and, once worked, its brass mark ────
+   The numeral does not turn brass when the entry is active. Active is where
+   you are; brass is what you finished. Conflating them spends the one colour
+   that means something. */
+.sl-entry {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr) 0.9rem;
+  gap: 0.5rem;
+  align-items: baseline;
+  width: 100%;
+  font-size: 0.845rem;
+  line-height: 1.35;
+}
+.sl-entry-no {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--rail-mute);
+}
+[data-active='true'] .sl-entry-no {
+  color: oklch(84% 0.03 155);
+}
+.sl-entry-name {
+  min-width: 0;
+  text-wrap: pretty;
+}
+.sl-entry-mark {
+  width: 0.85rem;
+  height: 0.85rem;
+  align-self: center;
+  color: var(--brass-bright);
+}
+
+/* Front matter is not a chapter and stops pretending to be one: no numeral
+   column, and a rule under it so the books start cleanly. */
+.sl-front {
+  display: block;
+  font-size: 0.83rem;
+  line-height: 1.35;
+  color: var(--rail-mute);
+}
+/* The rule sits in the margin below the link, not inside it. Drawn as a flow
+   element it lands on the link's own background, and the hover fill runs
+   straight through it. */
+:is(#nd-sidebar, #nd-sidebar-mobile) a:has(.sl-front) {
+  position: relative;
+  margin-bottom: 0.85rem;
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) a:has(.sl-front)::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: -0.45rem;
+  border-bottom: 1px solid var(--rail-line);
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) a[data-active='true']:has(.sl-front) .sl-front {
+  color: oklch(97% 0.015 150);
+}
+
+/* ── A book: numeral, name, and how much of it you have worked ─────────── */
+:is(#nd-sidebar, #nd-sidebar-mobile) button:has(.sl-book) {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.5rem 0.55rem;
+  margin-top: 0.35rem;
+  border-radius: var(--radius-chip);
+  transition: background-color 0.15s cubic-bezier(0.22, 1, 0.36, 1);
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) button:has(.sl-book):hover {
+  background: var(--rail-wash);
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) button:has(.sl-book) > .sl-book {
+  flex: 1;
+  min-width: 0;
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) button:has(.sl-book) > svg {
+  flex: none;
+  width: 0.9rem;
+  height: 0.9rem;
+  color: var(--rail-mute);
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+:is(#nd-sidebar, #nd-sidebar-mobile) button:has(.sl-book)[aria-expanded='false'] > svg {
+  transform: rotate(-90deg);
+}
+.sl-book {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: baseline;
+  width: 100%;
+  text-align: start;
+}
+.sl-book-no {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-align: right;
+  color: var(--rail-mute);
+}
+.sl-book-name {
+  min-width: 0;
+  font-size: 0.845rem;
+  font-weight: 600;
+  color: var(--rail-ink);
+  text-wrap: pretty;
+}
+.sl-book-count {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--rail-mute);
+}
+/* The open book's studies hang off a spine, so a long list still reads as
+   belonging to one book. */
+.sl-book-studies {
+  margin: 0.15rem 0 0 0.55rem;
+  padding-left: 0.5rem;
+  border-left: 1px solid var(--rail-line);
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+/* ── How far through the book you are ─────────────────────────────────────
+   The count is the signal and the rule only makes it easier to feel, so the
+   reading survives greyscale. Brass, because worked studies are earned. */
+.sl-progress {
+  padding: 0.15rem 0.15rem 0.35rem;
+}
+.sl-progress-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0 0 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--rail-mute);
+}
+.sl-progress-count {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--rail-ink);
+}
+.sl-progress-track {
+  height: 2px;
+  border-radius: 999px;
+  background: oklch(100% 0 0 / 0.16);
+  overflow: hidden;
+}
+.sl-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--brass-bright);
+  transition: width 460ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .sl-progress-fill,
+  :is(#nd-sidebar, #nd-sidebar-mobile) a[data-active='false'],
+  :is(#nd-sidebar, #nd-sidebar-mobile) button:has(.sl-book),
+  :is(#nd-sidebar, #nd-sidebar-mobile) button:has(.sl-book) > svg {
+    transition: none;
+  }
+}
+
+/* ── Section heads: a brass hairline, and air ───────────────────────────
+   Stonelight has no double rule; it separates by material and space. A section
+   opens on a brass line because brass is the metal that marks structure. */
 #nd-docs-layout .prose h2 {
   margin-top: 3.25rem;
-  padding-top: 1.15rem;
-  border-top: 2px solid var(--color-fd-foreground);
-  box-shadow: 0 -5px 0 -4px var(--color-fd-foreground);
-  font-size: 1.28rem;
+  padding-top: 1.3rem;
+  border-top: 1px solid var(--brass);
+  font-size: 1.45rem;
 }
 #nd-docs-layout .prose h3 {
   margin-top: 2.4rem;
-  padding-top: 0.7rem;
-  border-top: 1px solid var(--etude-rule);
-  font-size: 1.05rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--hairline);
+  font-size: 1.15rem;
 }
 #nd-docs-layout .prose h2 a,
 #nd-docs-layout .prose h3 a {
   color: inherit;
+  text-decoration: none;
 }
 
-/* ── The reading position, in the book's own hand ──────────────────────── */
+/* ── The reading position ──────────────────────────────────────────────── */
 #nd-toc {
-  font-family: var(--font-display);
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
 }
 #nd-toc [data-active='true'] {
-  color: var(--etude-green);
+  color: var(--emerald);
   font-weight: 600;
 }
 
-/* ── The page foot is a ruled entry, not a card ────────────────────────── */
+/* ── The page foot: two cards, the way the app ends a screen ───────────── */
 #nd-page a[href^='/docs/'][class*='rounded'],
 #nd-page a[href^='/docs/'][class*='border'] {
-  border-radius: 0;
-  border-width: 0;
-  border-top: 1px solid var(--etude-rule);
-  background: transparent;
-  box-shadow: none;
-  padding-inline: 0;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--hairline);
+  background: var(--porcelain-2);
+  box-shadow: 0 1px 2px oklch(24% 0.03 170 / 0.05);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+#nd-page a[href^='/docs/'][class*='rounded']:hover,
+#nd-page a[href^='/docs/'][class*='border']:hover {
+  border-color: var(--brass);
 }
 
-/* ── The rail's search is squared to the world ─────────────────────────── */
-#nd-sidebar button[class*='rounded'] {
-  border-radius: 2px;
+/* The stock theme toggle stretches to the rail width and reads as an empty
+   card. A control should be the size of the control. */
+:is(#nd-sidebar, #nd-sidebar-mobile) > :last-child > div:has(button[aria-label='Toggle Theme']) {
+  width: max-content;
+  border-radius: var(--radius-chip);
+}
+
+/* ── Column widths ────────────────────────────────────────────────────────
+   The rail only ever holds a numeral, a name and a mark, so 268px was more
+   than it needs. The page keeps the space instead.
+
+   The reading column is wide, but running text is not: prose stops at 72ch
+   while code cards, consoles and note cards take the full column. Same left
+   edge, so the page still reads as one column — the code gets the room it
+   actually needs, and paragraphs keep a measure you can read for an hour
+   without losing your place. */
+@media (min-width: 768px) {
+  #nd-docs-layout {
+    --fd-sidebar-width: 228px;
+  }
+}
+/* Collapsing the rail must not move the text. Fumadocs sets
+   `--fd-sidebar-col: 0px` inline when collapsed, which drops the grid column
+   and slides the reading column left — every line lands somewhere new the
+   moment you hide the rail. The column stays reserved; only the panel leaves. */
+#nd-docs-layout[data-sidebar-collapsed='true'] {
+  --fd-sidebar-col: var(--fd-sidebar-width) !important;
+}
+
+#nd-docs-layout #nd-page {
+  max-width: 1100px;
+}
+#nd-docs-layout .prose {
+  max-width: 82ch;
+}
+#nd-docs-layout .prose > p,
+#nd-docs-layout .prose > ul,
+#nd-docs-layout .prose > ol,
+#nd-docs-layout .prose > blockquote {
+  max-width: 72ch;
 }

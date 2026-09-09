@@ -1,524 +1,399 @@
 ---
-name: Learn Dart with Tests
-description: A practice manual in Edition Peters livery — numbered études, engraved marks, plate ink on manuscript white.
+name: Stonelight Press
+description: >-
+  Learn Dart with Tests, in the SAFF · Stonelight material world. Light stone,
+  deep emerald, earned brass; the book as one continuous object. Colors are the
+  canonical light (:root) values in OKLCH — see "After sunset" for the dark map.
+derivedFrom: SAFF · Stonelight (/Users/islom/Projects/saff-scafold/DESIGN.md)
 colors:
-  ground: "#F4F5F1"
-  plate-ink: "#101512"
-  rail-green: "#1F4A3D"
-  green-ink: "#16352C"
-  correction-red: "#C0392B"
-  marked-ochre: "#F2D06B"
-  plate: "#FBFBF7"
-  rule: "#C9CEC6"
-  grey: "#56605A"
-  muted: "#E7E9E1"
-  muted-ink: "#5C665E"
-  console: "#161B18"
-  console-ink: "#CBD4CD"
-  rail-ink: "#E4EBE5"
-  rail-mute: "#A9C2B5"
+  # surfaces
+  porcelain: "oklch(96.4% 0.007 165)"
+  porcelain-2: "oklch(98.2% 0.004 165)"
+  stone: "oklch(92.6% 0.010 160)"
+  stone-2: "oklch(89.5% 0.012 158)"
+  # ink
+  ink: "oklch(24% 0.036 170)"
+  ink-2: "oklch(36% 0.032 170)"
+  ink-3: "oklch(46% 0.026 170)"
+  # emerald — structure and action
+  emerald: "oklch(38% 0.085 165)"
+  emerald-strong: "oklch(33% 0.080 167)"
+  emerald-deep: "oklch(21% 0.052 170)"
+  emerald-night: "oklch(16% 0.040 172)"
+  on-emerald: "oklch(97% 0.010 160)"
+  # brass — earned
+  brass: "oklch(58% 0.085 80)"          # material: rules, borders, focus ring
+  brass-ink: "oklch(45% 0.090 72)"      # text-weight brass (the 4.09:1 fix)
+  brass-bright: "oklch(74% 0.085 85)"
+  brass-pale: "oklch(86% 0.045 88)"
+  # lines
+  hairline: "oklch(85% 0.025 95 / 0.65)"
+  hairline-soft: "oklch(88% 0.020 110 / 0.45)"
+  # the book's own addition
+  correction: "oklch(47% 0.150 27)"     # a failing test; Stonelight has no red
+  # materials that keep their colour in both themes
+  console: "oklch(90% 0.016 162)"
+  console-ink: "oklch(26% 0.030 170)"
+  rail: "oklch(25% 0.045 168)"        # deep emerald, not near-black
+  rail-ink: "oklch(95% 0.018 150)"
+  rail-mute: "oklch(75% 0.028 155)"
+  rail-line: "oklch(100% 0 0 / 0.11)"  # every rule drawn on the rail
+  rail-wash: "oklch(100% 0 0 / 0.06)"  # hover, and any tray on the rail
+  rail-active: "oklch(39% 0.085 165)"  # the pill under the current entry
+  on-rail-surface: "oklch(96% 0.012 155)"
+  on-rail-ink: "oklch(30% 0.075 167)"
 typography:
-  display:
-    fontFamily: "Archivo, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "clamp(2.4rem, 7vw, 4.2rem)"
-    fontWeight: 700
-    lineHeight: 0.98
-    letterSpacing: "-0.035em"
-  numeral:
-    fontFamily: "Archivo, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "3.4rem"
-    fontWeight: 700
-    lineHeight: 0.82
-    letterSpacing: "-0.045em"
-    fontVariant: "tabular-nums"
-  headline:
-    fontFamily: "Archivo, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "1.72rem"
-    fontWeight: 600
-    lineHeight: 1.08
-    letterSpacing: "-0.022em"
-  title:
-    fontFamily: "Archivo, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "1.4rem"
-    fontWeight: 600
-    lineHeight: 1.3
-    letterSpacing: "-0.02em"
-  section-head:
-    fontFamily: "Archivo, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "1.28rem"
-    fontWeight: 600
-    letterSpacing: "-0.012em"
-  subsection-head:
-    fontFamily: "Archivo, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "1.05rem"
-    fontWeight: 600
-    letterSpacing: "-0.012em"
-  subtitle:
-    fontFamily: "Archivo, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "1.02rem"
-    fontWeight: 600
-    lineHeight: 1.4
-    letterSpacing: "-0.012em"
-  body:
-    fontFamily: "Literata, Georgia, 'Times New Roman', serif"
-    fontSize: "1.02rem"
-    fontWeight: 400
-    lineHeight: 1.72
-    letterSpacing: "normal"
-  direction:
-    fontFamily: "Literata, Georgia, 'Times New Roman', serif"
-    fontSize: "1rem"
-    fontWeight: 400
-    lineHeight: 1.5
-    fontStyle: "italic"
-  code:
-    fontFamily: "JetBrains Mono, ui-monospace, 'SFMono-Regular', monospace"
-    fontSize: "0.82rem"
-    fontWeight: 400
-    lineHeight: 1.7
-  label:
-    fontFamily: "JetBrains Mono, ui-monospace, 'SFMono-Regular', monospace"
-    fontSize: "0.72rem"
-    fontWeight: 400
-    lineHeight: 1.2
-    letterSpacing: "0.02em"
-    fontVariant: "tabular-nums"
+  display:   { fontFamily: "Fraunces", fontSize: "clamp(2.5rem, 7vw, 4.4rem)", fontWeight: 600, lineHeight: 0.98, letterSpacing: "-0.028em" }
+  numeral:   { fontFamily: "Fraunces", fontSize: "3.4rem", fontWeight: 400, lineHeight: 0.85, letterSpacing: "-0.03em" }
+  title:     { fontFamily: "Fraunces", fontSize: "2.1rem", fontWeight: 600, lineHeight: 1.06 }
+  section:   { fontFamily: "Fraunces", fontSize: "1.45rem", fontWeight: 600 }
+  body:      { fontFamily: "Literata", fontSize: "1.02rem", lineHeight: 1.72 }
+  direction: { fontFamily: "Manrope", fontSize: "0.92rem", fontWeight: 500 }
+  label:     { fontFamily: "Manrope", fontSize: "0.72rem", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }
+  code:      { fontFamily: "JetBrains Mono", fontSize: "0.82rem", lineHeight: 1.7 }
 rounded:
-  none: "0px"
-  engraved: "2px"
-  pill: "99px"
-spacing:
-  hair: "3px"
-  xs: "6px"
-  sm: "12px"
-  md: "20px"
-  lg: "28px"
-  xl: "48px"
-  gutter: "24px"
-  gutter-wide: "56px"
-components:
-  chapter-head:
-    textColor: "{colors.plate-ink}"
-    typography: "{typography.headline}"
-    rounded: "{rounded.none}"
-    padding: "0 0 10px"
-  chapter-numeral:
-    textColor: "{colors.rail-green}"
-    typography: "{typography.numeral}"
-  prescription:
-    textColor: "{colors.rail-green}"
-    typography: "{typography.direction}"
-    width: "60ch"
-  direction-fail:
-    textColor: "{colors.correction-red}"
-    typography: "{typography.direction}"
-  direction-pass:
-    textColor: "{colors.rail-green}"
-    typography: "{typography.direction}"
-  section-head:
-    textColor: "{colors.plate-ink}"
-    typography: "{typography.section-head}"
-    rounded: "{rounded.none}"
-    padding: "18px 0 0"
-  subsection-head:
-    textColor: "{colors.plate-ink}"
-    typography: "{typography.subsection-head}"
-    rounded: "{rounded.none}"
-    padding: "11px 0 0"
-  toc-entry-active:
-    textColor: "{colors.rail-green}"
-  gloss:
-    backgroundColor: "{colors.ground}"
-    textColor: "{colors.plate-ink}"
-    typography: "{typography.body}"
-    rounded: "{rounded.none}"
-    padding: "14px 0"
-  code-plate:
-    backgroundColor: "{colors.plate}"
-    textColor: "{colors.plate-ink}"
-    typography: "{typography.code}"
-    rounded: "{rounded.engraved}"
-  code-console:
-    backgroundColor: "{colors.console}"
-    textColor: "{colors.console-ink}"
-    typography: "{typography.code}"
-    rounded: "{rounded.engraved}"
-  rail:
-    backgroundColor: "{colors.rail-green}"
-    textColor: "{colors.rail-ink}"
-    rounded: "{rounded.none}"
-  rail-entry:
-    textColor: "{colors.rail-ink}"
-    typography: "{typography.label}"
-    padding: "0"
-  rail-entry-active:
-    textColor: "#FFFFFF"
-  cta-primary:
-    backgroundColor: "{colors.marked-ochre}"
-    textColor: "{colors.green-ink}"
-    rounded: "{rounded.none}"
-    padding: "12px 24px"
-  worked-toggle:
-    textColor: "{colors.grey}"
-    typography: "{typography.subtitle}"
-    padding: "0"
-  worked-toggle-marked:
-    textColor: "{colors.rail-green}"
+  chip: "0.75rem"
+  card: "1rem"
+  panel: "1.5rem"
+  pill: "999px"
 ---
 
-# Design System: Learn Dart with Tests
+# Stonelight Press — Design System
 
-## Overview
+The visual language of **Learn Dart with Tests**. Derived from SAFF · Stonelight: the same
+light stone, deep emerald and earned brass, cut for reading rather than tapping. Source of
+truth: `web/src/app/global.css`.
 
-**Creative North Star: "The Étude Book"**
+Where the app treats itself as one continuous room, the book treats itself as one
+continuous object. Same materials, different job.
 
-This is a practice manual in the livery of an engraved music edition, not a documentation
-site. The reader works with an editor and a terminal open and types along; the page is
-built for that posture. Each chapter is a numbered étude: a large green numeral beside the
-title over a double rule, an italic performance direction beneath it, then drills bracketed
-by drawn repeat signs. Nothing on the page is decorative — every mark is a music-engraving
-convention doing a job the reader can name.
+## What the book changes on purpose
 
-The material vocabulary is deliberately narrow: Peters green owns the full-height rail and
-every chapter numeral, plate ink sits on manuscript white, and correction red appears only
-where something is failing. Depth is carried by rules and material change, never by
-shadow. The only images in the build are marks the code draws — SVG repeat dots, a fermata,
-a pencil — because a rasterized illustration would break the engraved surface.
+Two departures from Stonelight, both forced by the job:
 
-The system refuses the default docs arrangement of neutral sidebar plus neutral column. It
-also refuses cards, colour bars, gradients, and shadowed elevation. Where a state matters,
-it is engraved: a numeral, a drawn mark, a rule weight, a word. Colour reinforces state but
-never carries it alone — PRODUCT.md's readers include red-green colour-blind readers, and
-the failing/passing drill directions must read without hue.
+1. **Literata carries the prose.** Stonelight runs a serif display over a Manrope UI, and
+   that is right for a phone app where nothing is read for an hour. Forty-four chapters
+   are. Manrope stays, but only for chrome: directions, labels, the prescription, the
+   table of contents. Fraunces replaces Fiorina Title as the display face — Fiorina is
+   licensed to SAFF, and Fraunces is open.
+2. **The book adds a red.** Stonelight has no red at all; its anti-references name
+   aggressive red CTAs. But a book about tests must show a failing test, so `correction`
+   exists. It is never a fill, never a border, never emphasis — only the word "failing"
+   and the direction above a red drill.
 
-**Key Characteristics:**
-- Peters green rail owning a whole region, never a stripe or an accent bar
-- Chapter numerals as display type, tabular and tight-tracked
-- Double-rule chapter head borrowed from a score's system break
-- Two distinct code materials: authored source on a plate, machine output on a console
-- Marks over colour for every state; one authored motion in the entire build
-- Flat surfaces, 2px corner engraving at most, no shadows anywhere
+## Color
 
-## Colors
+Emerald carries structure and action. Stone and porcelain carry surface. Brass is the
+earned metal, and in this book it means exactly one thing: **a study the reader has
+worked**. That is the book's only earned state, and it maps onto the role brass plays in
+the app (membership, ceremony).
 
-A three-note palette on paper: engraver's green, plate ink, correction red, with one ochre
-pencil for the reader's own marks.
+### After sunset (`.dark`)
 
-### Primary
-- **Peters Green** (`{colors.rail-green}`): The livery. It fills the full-height rail edge to
-  edge, colours every chapter numeral, every repeat sign, the performance direction, the
-  focus ring, and the selection highlight. It is a field colour and an ink colour, never a
-  border accent.
-- **Green Ink** (`{colors.green-ink}`): The darker green used for type set *on* green-adjacent
-  surfaces — the label on the ochre CTA, secondary foregrounds.
+Stonelight's own dark map, not an inversion.
 
-### Secondary
-- **Correction Red** (`{colors.correction-red}`): The colour of a bar that is not yet right.
-  Used on failing drill directions and on the fermata that marks a gloss. It never appears
-  as a background, a border, or a decoration.
-- **Marked Ochre** (`{colors.marked-ochre}`): The reader's pencil. Only two uses: the drawn
-  pencil mark on a worked study (in the rail and on the toggle) and the primary CTA field on
-  the cover. It signifies *the reader did this*, not *the system wants attention*.
+| token | dark value |
+|---|---|
+| porcelain | `oklch(21% 0.022 170)` |
+| porcelain-2 | `oklch(25% 0.024 168)` |
+| stone | `oklch(29.5% 0.026 168)` |
+| ink | `oklch(93% 0.012 150)` |
+| ink-2 | `oklch(81% 0.018 155)` |
+| ink-3 | `oklch(67% 0.02 158)` |
+| emerald | `oklch(79% 0.10 158)` |
+| brass | `oklch(70% 0.085 82)` |
+| brass-ink | `oklch(80% 0.09 85)` |
+| correction | `oklch(72% 0.13 30)` |
+| console | `oklch(11% 0.018 172)` |
 
-### Neutral
-- **Manuscript White** (`{colors.ground}`): The page ground. Light is the default because the
-  reader works long stretches at a lit desk.
-- **Plate Ink** (`{colors.plate-ink}`): Body and heading type; also the 2px double rule under
-  a chapter head and the 2px rule above the worked toggle.
-- **Plate** (`{colors.plate}`): A half-step above the ground — the authored-source code plate.
-  Its lift is tonal, not shadowed.
-- **Rule** (`{colors.rule}`): Every hairline: gloss borders, code-plate borders, cover list
-  dividers, scrollbar thumb.
-- **Grey** (`{colors.grey}`) / **Muted Ink** (`{colors.muted-ink}`): Secondary prose and unmarked
-  control states.
-- **Muted** (`{colors.muted}`): Inline-code background inside prose.
-- **Console** (`{colors.console}`) / **Console Ink** (`{colors.console-ink}`): The terminal slab
-  and its output. A different material from the page, on purpose.
-- **Rail Ink** (`{colors.rail-ink}`) / **Rail Mute** (`{colors.rail-mute}`): Type on the green
-  rail. Inside the rail, every surface tint is a `color-mix` of white or black against the
-  green — the rail never introduces a new opaque colour.
+Every `rail-*` token, plus `console-ink`, `on-rail-surface` and `on-rail-ink`, is
+**identical in both themes**.
 
-### Dark
+### Legibility (measured, both themes)
 
-Dark mode is not an inversion of these values; it is the same relationships restated in a
-darker room. The page ground drops to `#131714`, the code plate rises **above** it to
-`#1C211D` so authored source still lifts off the page exactly as the light plate does, and
-the console falls **below** it to `#080B09` so machine output still recedes. Green goes to
-`#6fbf9f`, red to `#e08175`, the pencil to `#e8c264`, grey to `#96a099`, the rule to
-`#2c332d`, console ink to `#c6d0c8`. The rail alone does not move: Peters green is
-`#1F4A3D` in both themes.
+Ratios computed in the browser by painting each OKLCH token to a canvas and reading back
+sRGB, so the engine does the conversion. Every text pair passes **AA**; most reach AAA.
+
+| pair | light | dark | use |
+|---|---|---|---|
+| ink / porcelain | 14.66 | 14.30 | headings, strong |
+| ink-2 / porcelain | 9.65 | 9.82 | body |
+| ink-3 / porcelain-2 | 6.68 | 5.37 | prescription, citations |
+| emerald / porcelain | 8.63 | 9.43 | links, passing direction |
+| correction / porcelain | 6.65 | 6.70 | failing direction |
+| on-emerald / emerald | 8.76 | 10.34 | drill pill |
+| brass-ink / porcelain-2 | 7.18 | 8.51 | Best-practice label |
+| brass / porcelain | 3.89 | 6.50 | **rules and borders only** |
+| rail-ink / rail | 16.22 | 16.22 | rail entries |
+| rail-mute / rail | 7.27 | 7.27 | rail numerals |
+| brass-bright / rail | 8.30 | 9.61 | worked mark |
+| on-rail-ink / on-rail-surface | 11.62 | 11.62 | cover CTA |
+| console-ink / console | 11.40 | 13.90 | terminal output |
 
 ### Named Rules
 
-**The Preserved-Relationships Rule.** Dark mode preserves the light-mode *relationships*,
-never the light-mode arithmetic. The plate is always a step lighter than the page ground and
-the console always darker than it, so the Two-Materials Rule reads in both themes. Audit
-test: in dark mode, if the plate and the console are the same near-black, or if either sits
-flush with the ground, the theme is wrong regardless of the individual values.
+**The Earned-Brass Rule.** Brass marks what the reader has earned and nothing else: the
+worked mark, the study number of a worked entry, the best-practice note. It is never a
+brand accent, never a fill, and never body text. The one exception is the focus ring,
+which is brass because a ring must be visible on porcelain, emerald and console alike.
 
-**The Same-Cloth Rule.** The livery does not change with the light. `--etude-rail` and its
-ink are identical in `:root` and `.dark` — book cloth is the same cloth under any lamp. A
-tinted or lightened dark-mode rail is a bug, not a refinement.
+**The Two-Brasses Rule.** `brass` is a *material* at 3.89:1 on porcelain — legal for a
+rule, a border or a ring, illegal for text. Label text takes `brass-ink`. Reaching for
+`brass` on a text node is the single easiest accessibility regression in this system, and
+it is the one this build already made once.
 
-**The Whole-Region Rule.** Peters green owns an entire region — the rail, the mobile subnav,
-the cover masthead — or it appears as ink. It is never a 4px stripe, a chip fill, a badge, or
-a highlight bar.
+**The Same-Cloth Rule.** The rail keeps its colour under any lamp — identical in `:root`
+and `.dark`, the way book cloth is the same cloth in any light. It follows that anything
+sitting *on* it must also be theme-stable: the cover CTA uses `on-rail-surface` /
+`on-rail-ink` rather than `porcelain-2`, which read 1.67:1 after sunset when it flipped
+with the theme. The console is **not** cloth — it is a material the page recesses into,
+and it turns with the lamp.
 
-**The Mark-Not-Hue Rule.** No state is carried by colour alone. A failing drill is red *and*
-says so in words; a worked study is ochre *and* carries a drawn pencil; the active rail entry
-is brighter *and* bolder *and* its numeral changes state. Audit test: greyscale the screen —
-if you can no longer tell pass from fail or worked from unworked, the treatment is wrong.
+**The Equal-Step Rule.** A material's distance from its neighbour is the same under either
+lamp. The card sits 1.28:1 from the console in dark; the light console's ground is chosen
+so it sits 1.28:1 from the card too, rather than at whatever value looked right. Audit:
+measure the step in both themes — if they differ, one theme has a flatter page than the
+other, and the reader will feel it as the theme being worse rather than different.
 
-**The Correction-Red Rule.** Red means a thing is failing or a thing must not be skimmed.
-It is never used for emphasis, links, brand, or decoration, and never as a fill.
+**The Preserved-Relationships Rule.** Dark preserves relationships, not arithmetic. The
+card lifts off the page, the console sinks below it. Audit: in dark, if the card and the
+console are the same near-black, or the card sits flush with the page, the theme is wrong.
 
-**The Remapped-Syntax Rule.** Syntax colour is not a Shiki theme. The build intercepts the
-emitted `--shiki-light` / `--shiki-dark` custom properties by attribute selector and remaps
-each github-light hex into this palette (keywords → green, strings → an ochre-brown, comments
-→ grey). Swapping the Shiki theme, or letting the highlighter emit different hexes, silently
-reverts the code plate to GitHub's palette. Extend the remap table; do not replace it with a
-theme.
+**The Mark-Not-Hue Rule.** No state is carried by colour alone. A failing drill is
+`correction` *and* says so in words; a worked study is brass *and* carries a drawn pencil;
+the active rail entry is a filled pill *and* bolder *and* its numeral changes colour.
+Audit: greyscale the screen — if pass and fail are no longer distinguishable, it is wrong.
+
+**The Own-Theme Rule.** Syntax colour is a real theme with real scopes — `saff-light` and
+`saff-dark` in `web/src/lib/saff/`, built from one structure so the two can differ in
+colour but never in which scope means what. This replaced a remap of GitHub's emitted
+hexes, which could not work: github-light gives `String` and `1_000_00` the same hex, and
+by the time a hex exists the meaning has already been discarded. Scopes are the semantic
+layer; hex is only presentation. Audit: if two roles must differ and share a hex upstream,
+the answer is a scope, never a selector.
+
+**The Chroma-Over-Ladder Rule.** Light takes its chroma to the sRGB edge and keeps
+its lightness ranking. Five of the ten roles — type, string, number, interpolation,
+annotation — share one hue arc, and light gives them 0.111 of lightness where dark
+gives 0.200, so hue carries five roles alone and the closest pair sits at ΔE 3.2.
+A lightness ladder was built and measured at ΔE 6.4; it was rejected on sight
+because it turns numbers and interpolation into deep rust. The flatness is a
+chosen cost, recorded here rather than hidden. Audit: do not "fix" the ΔE by
+re-ranking lightness without putting the rust back in front of a reader first.
+
+**The Measured-Colour Rule.** Every hex in the theme is what a browser paints for the
+OKLCH beside it, read back off a canvas — never converted. Five of the light roles fall
+outside sRGB, and browsers resolve those by clipping each channel, not by the chroma
+reduction of CSS Color 4; converting instead of measuring desaturates them by up to
+11/255 per channel, which is visible. Re-measure when a source value changes.
+
+**The Grammar-Corrections Rule.** Where a bundled grammar is wrong for the book, correct it
+in an injection, not in CSS. Dart's files `var` under `storage.type.primitive` beside
+`void`, which would print the three words of Study 3 in two different roles; it leaves
+brackets unscoped; and its call rule swallows the `(` after a name. All of it lives in
+`saff.injection.dart`, with the reason written next to each pattern.
 
 ## Typography
 
-**Display Font:** Archivo (with `ui-sans-serif`, `system-ui`)
-**Body Font:** Literata (with Georgia, Times New Roman) — normal and italic
-**Label/Mono Font:** JetBrains Mono (with `ui-monospace`, SFMono-Regular)
+Four faces, and each earns its place.
 
-All three are self-hosted through `next/font/google` and exposed as `--font-display`,
-`--font-body`, `--font-mono`. No system display face is ever used.
+- **Fraunces** — display. Chapter numerals, titles, section heads, the cover. `--font-display`.
+- **Literata** — the reading face. All prose and list text. `--font-body`.
+- **Manrope** — UI chrome. Directions, labels, prescription, table of contents, rail entries. `--font-ui`.
+- **JetBrains Mono** — code, terminal output, and any number that orders something. `--font-mono`.
 
-**Character:** Archivo is the engraver's hand — tight, grotesque, confident at large sizes with
-negative tracking. Literata is the reading voice: a serif with real italics, set generously for
-long stretches. JetBrains Mono is the machine's voice and the numbering system. The three
-never blur: sans announces, serif explains, mono counts and executes.
+**The Reading-Face Rule.** Prose is Literata and only Literata. Manrope may never take a
+paragraph the reader is expected to read for more than a sentence; that is what separates
+this from the app it came from.
 
-### Hierarchy
-- **Display** (700, `clamp(2.4rem, 7vw, 4.2rem)`, 0.98, −0.035em): The cover masthead only.
-- **Numeral** (700, 3.4rem, 0.82, −0.045em, tabular): The chapter number beside the chapter
-  title. Set in Peters green, baseline-aligned to the title, never boxed.
-- **Headline** (600, 1.72rem, 1.08, −0.022em, balanced): The chapter title, over the double rule.
-- **Title** (600, 1.4rem, −0.02em): Section headings on the cover.
-- **Section Head** (600, 1.28rem, −0.012em): In-prose `h2`, over its bar line.
-- **Subsection Head** (600, 1.05rem, −0.012em): In-prose `h3`, over a single hairline.
-- **Subtitle** (600, 1.02rem): In-prose h4 and gloss titles; Archivo at −0.012em.
-- **Body** (400, 1.02rem, 1.72): All prose and list items, Literata, in a 68ch column.
-- **Direction** (400 italic, 1rem/0.95rem, 1.5): Performance directions and prescriptions.
-  Italic Literata is the *instruction* voice, distinct from explanation.
-- **Code** (400, 0.82rem, 1.7): Both code materials.
-- **Label** (400, 0.72rem, +0.02em/+0.06em, tabular): Code-plate filename bars, rail étude
-  numbers, span notes on the cover.
+## Shape
 
-### Named Rules
+| radius | value | used by |
+|---|---|---|
+| chip | `0.75rem` | rail entries, search |
+| card | `1rem` | code card, note cards, cover CTA, page foot, book cards |
+| panel | `1.5rem` | reserved |
+| pill | `999px` | drill numeral |
 
-**The Three-Voice Rule.** Archivo announces, Literata explains, JetBrains Mono counts and
-executes. A number that orders something (étude number, drill index, book span) is always mono
-and tabular; a number that *is* the chapter's identity is Archivo display.
-
-**The Instruction-Italic Rule.** Italic Literata is reserved for performance directions — how to
-work this drill. Never use it for emphasis inside prose; emphasis is a semantic `<strong>`.
+**The Card-or-Nothing Rule.** A thing is a card, a pill, or plain text on the page. There
+is no third container and no tinted row: a surface that needs to read as separate becomes
+a card, and a surface that does not stays on the page. Cards carry `1px` hairline and a
+1px-blur shadow at 5% and nothing heavier — Stonelight's own lift, not a drop shadow.
 
 ## Layout
 
-A two-region model: a full-height green rail on the left and a reading column on the right.
-The rail is a region, not a nav strip — its background, its ink, its borders, its muted
-foreground and its hover tints are all re-declared inside `#nd-sidebar` so nothing neutral
-leaks in. Below 768px the rail disappears and the livery moves wholesale to the top subnav;
-the mobile bar takes the same green field and the same re-declared token set. There is no
-intermediate "half rail" state.
+| band | width | note |
+|---|---|---|
+| rail | `228px` (`--fd-sidebar-width`, ≥768px) | holds a numeral, a name and a mark, nothing else |
+| page container | `1100px` cap | `#nd-page`, overriding fumadocs' 900 |
+| reading column | `82ch` | code cards, consoles and note cards take this full width |
+| running text | `72ch` | `.prose > p`, `> ul`, `> ol`, `> blockquote` |
+| table of contents | `268px` | fumadocs default, unchanged |
 
-The reading column is capped at **68ch** for prose. Prescriptions cap tighter at **60ch**
-because a one-line instruction should not run the full measure. The cover is a centred
-`max-w-4xl` column inside full-bleed sections.
+**The Fixed-Column Rule.** Collapsing the rail hides the panel and moves nothing else.
+Fumadocs sets `--fd-sidebar-col: 0px` inline when collapsed, dropping the grid column so
+the reading column slides left; the column stays reserved instead, so every line of text
+is in the same place whether the rail is shown or hidden. Measured shift on toggle: `0px`
+for the page, the prose, the heading and the table of contents.
 
-Vertical rhythm is coarse and consistent: drills sit on a 1.5rem block gap, glosses on
-1.75rem with 0.875rem internal padding, the worked toggle 3rem below the last drill.
-Section padding on the cover is 24px horizontal / 56px at `md`, with 64–96px vertical bands.
+**The Two-Measures Rule.** The column is wide and the text is not. Code, terminal output
+and note cards run to `82ch` because a wrapped line of Dart is a lie about the code's
+shape; paragraphs stop at `72ch` because that is what a reader can follow for an hour.
+Both start at the same left edge, so the page still reads as one column. Widening the
+paragraph cap to match the column would undo the reason the column is wide.
 
-The drill is a two-column grid — a fixed 26px mark gutter and a `minmax(0, 1fr)` content
-column — so repeat signs align down the page like a barline. The rail entry is a three-column
-grid (`1.35rem` number / flexible name / `0.95rem` mark) baseline-aligned, so numbers form a
-right-aligned tabular column and marks form a right margin. Both grids use `minmax(0, 1fr)`
-for the flexible column; content never widens the gutters.
+## Elevation
 
-Browser chrome belongs to the system: `scrollbar-gutter: stable`, an 11px scrollbar with a
-rule-coloured thumb inset 3px against the ground, selection in Peters green on the ground
-colour, and a 2px green focus ring at 2px offset.
-
-## Elevation & Depth
-
-**There are no shadows in this build.** `box-shadow` is explicitly zeroed on the code plate,
-and nothing else declares one. Depth is entirely tonal and linear, which is what an engraved
-page does: a plate sits a half-step lighter than the ground, the console sits far darker, and
-hierarchy is drawn with rules of three weights.
-
-### Rule Vocabulary
-- **Hairline** (`1px solid {colors.rule}`): Gloss top/bottom, code-plate border, cover list
-  dividers. Separates peers.
-- **Structural** (`1px solid {colors.plate-ink}`): The lower line of the chapter double rule.
-- **Terminal** (`2px solid {colors.plate-ink}`): The upper line of the chapter double rule and
-  the line above the worked toggle. Opens and closes a study.
-- **Bar line** (`border-top: 2px` + `box-shadow: 0 -5px 0 -4px`, both in the foreground ink):
-  The section head's double rule — a 2px line with a hairline 5px above it, drawn with a
-  spread-negative shadow because an element has only one top border. Opens an `h2` (3.25rem
-  above, 1.15rem below).
-
-### Named Rules
-
-**The No-Shadow Rule.** Nothing in this world casts a shadow — no cards, no popovers, no
-hover lift, no offset. If a surface needs to read as separate, change its material (plate,
-console) or draw a rule. A hard offset shadow would import a neobrutalist idiom this world
-does not speak.
-
-**The Double-Rule Rule.** The double rule is the score's system break, and it exists at two
-scales and no others: the chapter head takes it full weight (2px with a 1px line 3px beneath,
-once per page), and an `h2` takes the bar-line restatement of the same device (2px with a
-hairline 5px above). An `h3` takes a single hairline in the rule colour. These are three
-steps of one device — a section head is not a new divider, and no fourth weight may be
-invented for a fourth level.
-
-## Shapes
-
-Square by default. The only radius in the system is **2px** — the "engraved" corner — applied
-to the code plate, the console slab, inline code, and the rail's search control (pulled
-down from the pill fumadocs ships). Buttons, the CTA, the rail, glosses, and
-the chapter head are all fully square (0px). The one exception is the scrollbar thumb, a pill
-(99px), which is browser furniture rather than page geometry.
-
-Marks are drawn geometry, never glyphs from a font or an icon set: the repeat sign is a 3px
-bar, a 1px bar and two SVG dots; the fermata is a 1.5px stroked arc with a filled centre; the
-pencil is a two-path stroked SVG. Every mark inherits `currentColor`, so a mark takes the
-colour of the state that owns it.
+Effectively flat. The only shadow in the system is `0 1px 2px oklch(24% 0.03 170 / 0.05)`
+on cards, which reads as a sheet resting on stone rather than floating above it.
 
 ## Components
 
 ### Chapter Head (signature)
-The identity of a study. A baseline-aligned grid of the green chapter numeral and the chapter
-title, over the double rule. The numeral is omitted for non-numbered pages and the title
-simply takes the whole width — the head never renders an empty slot or a placeholder.
+Fraunces numeral at 3.4rem in emerald, title at 2.1rem beneath it. No rule, no double rule
+— the head separates by scale and air. The numeral is omitted on pages with no study number.
 
 ### Prescription
-An italic Literata line in Peters green directly under the head, capped at 60ch. It is the
-tempo marking: how to work this study. One per page, authored as MDX frontmatter, never more
-than two lines.
+Manrope 0.98rem in `ink-3`, max 56ch, under the head. How to work this study.
 
 ### Drill (signature)
-- **Shape:** two-column grid, 26px mark gutter, 14px gap, square.
-- **Gutter:** a bold mono numeral (0.8rem, tabular) above a drawn repeat sign, both in Peters
-  green. The repeat sign stretches to the drill's height with a 2.25rem minimum, so it reads as
-  a barline at any content length.
-- **Content:** first and last children have their margins collapsed so the drill sits flush.
+`1.75rem` emerald pill carrying the step number in Manrope 600, `on-emerald`. Content in
+the second column. The pill is the app's circular control doing a book's job.
 
 ### Direction
-An italic Literata paragraph inside a drill, in correction red while the bar is failing and
-Peters green once it passes. **The text must state the state in words** — the tone prop
-changes hue, the sentence carries the meaning.
+Manrope 0.92rem/500. `correction` while the bar fails, `emerald` once it passes — and the
+words always say which.
 
 ### Gloss
-- **Shape:** square, hairline rule top and bottom, 14px vertical padding, no background fill.
-- **Mark:** a red fermata in the left cell — hold here, do not skim.
-- **Title:** Archivo 600 at 0.94rem; body drops to 0.95rem/1.62.
-It is not a card and must never grow a fill, a radius, or a left accent bar.
+A porcelain-2 card, hairline border, `1rem` radius, bookmark mark in emerald, title in
+Fraunces 600. A note that must not be skimmed.
 
-### Code Plate (authored source)
-- **Style:** plate background, hairline rule border, 2px corners, no shadow.
-- **Header:** a mono filename bar at 0.72rem with +0.02em tracking, divided by a hairline.
-- **Behaviour:** source **scrolls horizontally**; a line is never rewrapped, because wrapping
-  falsifies the code's shape.
-- **Syntax:** the remapped Shiki custom properties (see The Remapped-Syntax Rule).
+### Practice (best-practice note)
+A card whose left edge is `1px` of `brass` where the other three sides are `hairline`, over
+a brass-pale gradient falling into porcelain-2. Label in Manrope uppercase 0.72rem/0.08em
+tracking, `brass-ink`. Citation in mono `ink-3`, dotted-underlined when it links out. An
+uncited note visibly claims less.
+
+**The Hairline-Accent Rule.** The brass edge is a hairline, never a tab. A coloured border
+thicker than 1px on one side of a card is the most recognisable tell of a generated UI, and
+the note does not need it: the gradient wash, the brass label and the citation already say
+what this block is. Three cues carry it; the fourth was only shouting.
+
+### Code Card (authored source)
+`figure.shiki` on porcelain-2, hairline border, `1rem` radius, filename bar in Manrope
+0.72rem. Source **scrolls horizontally**; a line is never rewrapped, because wrapping
+falsifies the code's shape.
 
 ### Console (machine output) — signature
-- **Style:** near-black console slab, border the same colour as the fill (no visible edge), 2px
-  corners; all spans forced to console ink so syntax colour is suppressed entirely.
-- **Header:** the filename bar at 62% ink, divided at 18% ink.
-- **Behaviour:** output **wraps** (`pre-wrap` + `overflow-wrap: anywhere`, with the `<pre>`,
-  `<code>` and `.line` constrained to 100% width and the scroller's overflow hidden, because the
-  block otherwise sizes to `max-content` and wrapping never engages). Verbatim machine output is
-  never clipped and never scrolls sideways.
+Recessed stone under a light lamp, a near-black slab under a dark one, border the same
+colour as the fill. The nine roles are the same in both; only their lightness flips,
+because emphasis on a pale ground is darkness and on a dark ground is light. Output is
+**not** uncoloured
+and **not** shell script: transcripts carry `lang="saff-console"`, a grammar of this book's
+own that knows the nine things a reader looks for — the `$` prompt in brass, the command
+bright, the elapsed clock dim, `+N` green, `-N` and `[E]` and `Error:` red, `file:line:col`
+gold, quoted paths soft green, the `^` caret lit. Its root scope carries the console ink, so
+untokenised output cannot fall through to the code card's foreground. Nothing in CSS may set
+a colour on a console token. Output **wraps** — it must never be clipped. The `<pre>` carries `w-max`, so `pre-wrap` alone does nothing; the width has to be
+constrained on `pre`, `code` *and* `.line`, and `overflow-x: hidden` on the scroller
+removes the escape hatch, so a future rule reinstating `white-space: pre` here would clip
+silently.
 
-**The Two-Materials Rule.** Authored source and machine output are different materials and must
-stay different: source is a light plate that scrolls, output is a dark slab that wraps. This is
-a product principle — the reader must be able to tell at a glance what they type from what the
-machine said — not a style preference. Never render a transcript on a plate or source on the
-console.
+### Rail
+Deep emerald owns the entire region — and the region is **two elements**: `#nd-sidebar`
+on desktop and `#nd-sidebar-mobile` in the drawer. Every rail rule names both with
+`:is(#nd-sidebar, #nd-sidebar-mobile)`; scoping to the desktop id alone leaves the drawer
+in stock neutrals below 768px, which is exactly the bug this pass found.
 
-### Rail Entry
-- **Style:** a three-column baseline grid — étude number (mono, tabular, right-aligned, 60%
-  opacity), name (`text-wrap: pretty`), mark slot.
-- **Active:** white, weight 600, and the number goes to full opacity in marked ochre.
-- **Worked:** an ochre pencil mark in the third column. Unworked entries render an empty span so
-  the columns never shift.
-- **Hover:** a 9% white `color-mix` tint from the rail's re-declared accent token.
+The rail is a book's contents page, not a docs tree. It answers three questions at a
+glance — which study you are in, how far through the book you are, which studies you have
+worked — in four parts:
+
+- **Progress** (banner, above everything): the word "Worked", the count in tabular mono,
+  and a 2px track whose fill is `brass-bright`. The count is the signal; the rule only
+  makes it easier to feel. The total counts studies that **exist**, never the 44 planned.
+- **Front matter**: no numeral column, `rail-mute`, followed by a hairline. A page that is
+  not a chapter stops occupying a chapter's grid.
+- **Book**: a full-width trigger — roman numeral in mono, name in Manrope 600, worked
+  count (`2/3`) in mono, chevron rotated `-90deg` when shut. A closed book still reports
+  its count, so the rail answers "where am I in the whole thing" without expanding.
+- **Study**: `chip`-radius pill, `0.4rem 0.55rem` padding, three-column grid of mono
+  numeral, name and worked mark. The active entry is a filled `emerald-deep` pill. Open
+  books hang their studies off a 1px spine at 11% white.
+
+**The Open-Book Rule.** The book you are reading is open; the others are shut. On a page
+inside no book — the front matter — the book holding study 1 opens instead, because a
+contents page with no contents is not a contents page.
+
+**The Panel Rule.** The rail is a panel resting on the page, not a wall bounding it:
+`0.5rem` inset on all three outer sides, `card` radius, no end border. Fumadocs ships that
+form only for the collapsed-and-hovered state and goes flush with a hard border when
+pinned; both states take the panel here, because the reader should not get a different
+object depending on whether they pinned it.
+
+**The Rail-Tints-Its-Own-Chrome Rule.** Anything sitting on the rail takes its colours from
+`rail-*`, never from the page tokens. The stock search hint is `bg-fd-background`, which
+inside the rail resolves to the *page* colour — pale pills carrying pale text, unreadable
+in light mode. Any borrowed component gets the same treatment: tray backgrounds become
+`rail-wash`, rules become `rail-line`, text becomes `rail-ink` or `rail-mute`.
+
+**The Separator-Outside-The-Box Rule.** A rule that divides two rows is positioned
+absolutely into the margin between them, never drawn as a flow child of either. Drawn
+inside the link, the front-matter separator sat on the link's own background and the hover
+fill ran straight through it.
+
+**The Active-Is-Not-Earned Rule.** The active entry's numeral is `oklch(84% 0.03 155)`,
+never brass. Active is where you are standing; brass is what you finished. Spending brass
+on the current row destroys the only colour in this system that carries a fact.
+
+### Rail Progress
+The one place a meter exists. It is legible without it — the count is written out — so the
+rule is reinforcement, not the reading. `role="progressbar"` with real `aria-valuenow` /
+`aria-valuemax`. Fill transitions over 460ms on the house ease and is collapsed by
+`prefers-reduced-motion`.
 
 ### Worked Toggle (signature interaction)
-A borderless button above a 2px terminal rule at the end of a study. Unworked: grey, pencil at
-45% opacity, label "Mark this study worked". Worked: Peters green, pencil at full opacity, and
-the label reads "**Worked.** The mark stays in the margin." Marking it draws the pencil path in
-and broadcasts to the rail, which draws its own mark in the margin. State persists in
-`localStorage`; blocked storage degrades to an unmarked but working page. Hover is opacity only.
+Hairline above, a drawn pencil that animates its stroke in on first mark, and the state
+in words. Worked is `brass`; unworked is `ink-3`.
 
-### Table of Contents
-The reading position, set in the book's own hand: Archivo throughout, with the active entry
-in Peters green at weight 600. It carries no rail, no indent bar, and no fill — position is
-marked by ink alone, since the entry's own text already names where you are.
-
-### Page Foot
-The previous/next pair is a ruled entry, not a card: the fumadocs card chrome is stripped
-back to a single hairline on top, square corners, transparent fill, no shadow, no inline
-padding. It reads as the last two lines of the page rather than two boxes under it.
-
-### Cover CTA
-Square (0px), marked ochre field, green ink label, Archivo 600 at 0.94rem, 12px/24px padding.
-Its companion is a plain underlined text link at the same size — there is no second filled
-button, no outline variant.
+### Theme Switch
+Three states — light · system · dark (`themeSwitch: { mode: 'light-dark-system' }`), because
+"system" is a real choice and a two-state toggle makes a reader who follows their OS keep
+re-picking. Rendered as a `rail-wash` track of round buttons with the current state filled
+in `rail-active`. Fumadocs wraps it in a bordered tray and then strips three of the
+switch's own four borders, leaving one stray rule beside the sun; both the tray chrome and
+that edge are removed.
 
 ### Motion
-**The One-Motion Rule.** This build authors exactly one animation: `etude-draw-on`, a
-34-unit `stroke-dashoffset` sweep over **460ms** on `cubic-bezier(0.16, 1, 0.3, 1)`, which draws
-the pencil mark in when a study is first marked worked. It is fully disabled under
-`prefers-reduced-motion: reduce`, with the stroke resolved to its final state. Everything else
-that moves is an opacity fade on hover. Do not add entrance animations, scroll reveals, or
-transitions on colour.
+One authored animation: `sl-draw-on`, 460ms on `cubic-bezier(.22, 1, .36, 1)` — Stonelight's
+own `--ease-out`. Collapsed by `prefers-reduced-motion`.
 
 ## Do's and Don'ts
 
-### Do:
-- **Do** let Peters green own an entire region — rail, mobile subnav, cover masthead — or use it
-  as ink on numerals, repeat signs and directions.
-- **Do** pair every colour state with a mark or a word (The Mark-Not-Hue Rule); the page must
-  survive greyscale.
-- **Do** keep authored source on the light plate (scrolls) and machine output on the dark
-  console (wraps).
-- **Do** draw marks as inline SVG with `currentColor` and 1.5–1.6 stroke weights.
-- **Do** extend the `--shiki-light` remap table when a new token colour appears in the emitted
-  output, rather than swapping the Shiki theme.
-- **Do** re-declare `--color-fd-*` tokens inside any region that takes the green field, so no
-  neutral surface colour leaks in.
+### Do
+- **Do** let emerald-night own an entire region — the rail, the mobile subnav, the cover.
+- **Do** spend brass only on what the reader earned, and take `brass-ink` when it is text.
+- **Do** keep authored source on the porcelain card (scrolls) and machine output on the
+  emerald-night console (wraps).
+- **Do** pair every colour state with a mark or a word; the page must survive greyscale.
 - **Do** define every new token in both `:root` and `.dark`, and set the dark value by the
-  relationship it must preserve — plate above the ground, console below it, livery unchanged —
-  not by inverting the light value.
-- **Do** open an `h2` with the bar line and an `h3` with a single hairline, so a long chapter
-  keeps the world going after the head.
-- **Do** set numbers that order things in tabular mono, and the chapter's own number in Archivo
-  display.
+  relationship it preserves rather than by inverting the light value.
+- **Do** keep anything that sits on the rail theme-stable, because the rail is.
+- **Do** extend the `--shiki-light` remap table when a new token colour appears.
 
-### Don't:
-- **Don't** add a `box-shadow` anywhere, including a hard offset shadow — this world has no
-  light source and no neobrutalist idiom.
-- **Don't** introduce a card: no filled, rounded, bordered container for prose. Glosses use two
-  hairlines and nothing else.
-- **Don't** add a kicker or eyebrow line above a heading. The chapter numeral is the label,
-  and standing facts (the study count, the Dart version) belong in the opening sentence.
-- **Don't** invent a fourth rule weight or a new divider device for a heading level. The
-  double rule has three steps: chapter head, `h2` bar line, `h3` hairline.
-- **Don't** let a dark-mode surface collapse onto its neighbour: the plate, the ground and the
-  console must stay three distinguishable materials in both themes.
-- **Don't** use a glyph icon font or an icon package; every mark in this system is drawn SVG.
-- **Don't** use a system display face — Archivo, Literata and JetBrains Mono are self-hosted and
-  are the only three faces.
-- **Don't** exceed 2px of corner radius on page geometry; buttons and regions are square.
-- **Don't** use correction red as a fill, a border, or an emphasis colour, or marked ochre for
-  anything the reader did not do themselves.
-- **Don't** author a second animation. The 460ms draw-on is the only authored motion.
-- **Don't** ship a raster. This build contains no photographs, illustrations, textures or
-  generated plates, and an imported image would break the engraved surface.
+### Don't
+- **Don't** set prose in Manrope. Literata reads; Manrope labels.
+- **Don't** use `brass` for text. That pair is 3.89:1 and it fails.
+- **Don't** invent a third container. Card, pill, or nothing.
+- **Don't** add a heavier shadow, a hover lift, or a hard offset shadow.
+- **Don't** use `correction` as a fill, a border, or an emphasis colour.
+- **Don't** use a glyph icon font; every mark here is drawn SVG with `currentColor`.
+- **Don't** add a double rule, a bar line or an engraved mark. Those belonged to the
+  étude world this replaced, and reintroducing one makes the page speak two languages.
+
+## Prior art
+
+The **Étude Book** — Edition Peters livery, Archivo over Literata, square geometry, the
+double rule at three scales, repeat signs and fermatas — was this project's design system
+until this replacement, and is recorded in git history. It is prior art and an
+anti-reference, not a constraint. Nothing here should be a compromise between the two.

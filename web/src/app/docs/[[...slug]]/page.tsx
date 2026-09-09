@@ -1,11 +1,16 @@
-import { getPageImageUrl, getPageMarkdownUrl, source } from '@/lib/source';
-import { DocsBody, DocsPage, MarkdownCopyButton, ViewOptionsPopover } from 'fumadocs-ui/layouts/docs/page';
+import {
+  DocsBody,
+  DocsPage,
+  MarkdownCopyButton,
+  ViewOptionsPopover,
+} from 'fumadocs-ui/layouts/docs/page';
+import { createRelativeLink } from 'fumadocs-ui/mdx';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getMDXComponents } from '@/components/mdx';
-import type { Metadata } from 'next';
-import { createRelativeLink } from 'fumadocs-ui/mdx';
-import { EtudeHead, Prescription } from '@/components/etude';
+import { Prescription, PressHead } from '@/components/press';
 import { Worked } from '@/components/worked';
+import { getPageImageUrl, getPageMarkdownUrl, source } from '@/lib/source';
 
 export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
   const params = await props.params;
@@ -22,7 +27,7 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
         <MarkdownCopyButton markdownUrl={markdownUrl} />
         <ViewOptionsPopover markdownUrl={markdownUrl} />
       </div>
-      <EtudeHead n={study} title={page.data.title} />
+      <PressHead n={study} title={page.data.title} />
       {direction ? <Prescription>{direction}</Prescription> : null}
       <DocsBody>
         <MDX components={getMDXComponents({ a: createRelativeLink(source, page) })} />

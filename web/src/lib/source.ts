@@ -5,7 +5,7 @@ import { defineDocs } from 'fumadocs-mdx/macro';
 import { metaSchema, pageSchema } from 'fumadocs-core/source/schema';
 import { z } from 'zod';
 
-/** A chapter is an étude: it carries its number and its performance direction. */
+/** A study carries its number and the direction it is worked under. */
 const studySchema = pageSchema.extend({
   study: z.number().int().optional(),
   direction: z.string().optional(),
@@ -17,6 +17,26 @@ const docs = defineDocs({
     schema: studySchema,
     postprocess: {
       includeProcessedMarkdown: true,
+    },
+    /**
+     * The book brings its own syntax theme and two grammars Shiki does not ship.
+     * The imports are dynamic because the macro erases this whole call from the
+     * app bundle, so nothing here should be reachable from a static import.
+     */
+    mdxOptions: async (environment) => {
+      const [{ applyMdxPreset }, { saffDark, saffLight }, { saffConsole, saffDart, saffDartInterpolation }] =
+        await Promise.all([
+          import('fumadocs-mdx/config'),
+          import('./saff/theme'),
+          import('./saff/langs'),
+        ]);
+
+      return applyMdxPreset({
+        rehypeCodeOptions: {
+          themes: { light: saffLight, dark: saffDark },
+          langs: ['dart', saffConsole, saffDart, saffDartInterpolation],
+        },
+      })(environment);
     },
   },
   meta: {

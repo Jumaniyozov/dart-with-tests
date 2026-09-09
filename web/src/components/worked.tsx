@@ -49,15 +49,15 @@ export function Worked({ study }: { study: string }) {
 
   return (
     <div
-      className="flex items-center gap-3 mt-12 pt-3.5"
-      style={{ borderTop: '2px solid var(--color-fd-foreground)' }}
+      className="flex items-center gap-3 mt-12 pt-4"
+      style={{ borderTop: '1px solid var(--hairline)' }}
     >
       <button
         type="button"
         onClick={toggle}
         aria-pressed={hydrated ? worked : undefined}
         className="inline-flex items-center gap-2.5 text-[0.87rem] font-medium cursor-pointer bg-transparent border-0 p-0 hover:opacity-70 transition-opacity"
-        style={{ color: worked ? 'var(--etude-green)' : 'var(--etude-grey)' }}
+        style={{ color: worked ? 'var(--brass)' : 'var(--ink-3)' }}
       >
         <svg
           viewBox="0 0 16 16"
@@ -72,7 +72,7 @@ export function Worked({ study }: { study: string }) {
           <title id={titleId}>pencil</title>
           <path
             d="M2.5 13.5l1-3 7.5-7.5 2 2L5.5 12.5z"
-            className={justMarked ? 'etude-draw' : undefined}
+            className={justMarked ? 'sl-draw' : undefined}
             style={{ opacity: worked ? 1 : 0.45 }}
           />
           <path d="M9.5 4.5l2 2" style={{ opacity: worked ? 1 : 0.45 }} />
@@ -80,7 +80,7 @@ export function Worked({ study }: { study: string }) {
         <span>
           {worked ? (
             <>
-              <b className="font-semibold" style={{ color: 'var(--color-fd-foreground)' }}>
+              <b className="font-semibold" style={{ color: 'var(--ink)' }}>
                 Worked.
               </b>{' '}
               The mark stays in the margin.

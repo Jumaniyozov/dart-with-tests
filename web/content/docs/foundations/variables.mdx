@@ -15,6 +15,18 @@ final name = 'Islom';   // assigned once, when this line runs
 const pi = 3.14;        // fixed before the program even starts
 ```
 
+Two of those three words also decide **when** the value is worked out, and this is the
+part that catches people:
+
+- `var` and `final` are worked out at **run time**. The code on the right of the `=` runs
+  when your program reaches that line. It can call a function, read a file, ask the clock.
+- `const` is worked out at **compile time**, before the program starts, while Dart turns
+  your source into a program. The finished value is stored inside the program itself.
+
+So these are not three flavours of one idea. `var` and `final` differ in how many times
+you may assign. `const` differs in when the value exists at all. Section 3.2 shows what
+that costs you and what it buys.
+
 You do not have to write the type. Dart reads it off the value: `count` is an `int`,
 `name` is a `String`. This is **inference**, not dynamic typing — the type is fixed and
 checked, you simply did not have to type it out. Write the type when it makes the code
@@ -29,7 +41,7 @@ clearer and leave it out when it would only repeat what is obvious.
 <include cwd lang="dart" meta='title="test/first_test.dart"'>../code/ch03_variables/test/first_test.dart</include>
 
 <Console>
-<include cwd lang="bash" meta='title="terminal"'>../code/ch03_variables/transcripts/undefined.txt</include>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch03_variables/transcripts/undefined.txt</include>
 </Console>
 
 </Drill>
@@ -41,7 +53,7 @@ clearer and leave it out when it would only repeat what is obvious.
 <include cwd lang="dart" meta='title="lib/tags.dart"'>../code/ch03_variables/lib/v1.dart#tag</include>
 
 <Console>
-<include cwd lang="bash" meta='title="terminal"'>../code/ch03_variables/transcripts/pass.txt</include>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch03_variables/transcripts/pass.txt</include>
 </Console>
 
 </Drill>
@@ -71,7 +83,59 @@ hours later, so notice it now and meet it properly in Study 7.
 
 </Drill>
 
-## 3.2 A value you are not going to use
+<Practice source="Effective Dart — Usage" href="https://dart.dev/effective-dart/usage#do-follow-a-consistent-rule-for-var-and-final-on-local-variables">
+Effective Dart does not say "always write `final`". It says to pick one rule for local
+variables and hold it everywhere: either `final` for the ones you never reassign and `var`
+for the ones you do, or `var` for all of them. Both are accepted Dart.
+
+This book uses the first rule, and you should too while you read it. `final` unless the
+value changes makes reassignment visible: the reader sees `var` and knows to keep watching
+that name, instead of scanning the whole function to find out.
+
+Do not expect the analyzer to enforce this. `prefer_final_locals` is deliberately left out
+of `package:lints`, because the Dart team treats it as a style preference rather than a
+defect. It is a convention you keep, not a rule the machine checks.
+</Practice>
+
+## 3.2 What the compiler can know
+
+`const` is not a stricter `final`. It is a value the compiler computes for you and writes
+into the program. That puts a hard limit on what may sit to the right of the `=`: literals,
+arithmetic on literals, and other `const` values. Nothing that needs the program to be
+running.
+
+<include cwd lang="dart" meta='title="lib/timing.dart"'>../code/ch03_variables/lib/timing.dart#timing</include>
+
+`maxTagLength` is arithmetic on two numbers the compiler can already see, so the program
+ships with 60 in it and never does the multiplication. `now` cannot work that way. The
+clock is a fact about the machine while the program runs, so the value does not exist yet
+when the compiler is looking.
+
+Ask for it anyway and Dart refuses:
+
+```dart title="lib/timing.dart"
+const startedAt = DateTime.now(); // will not compile
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch03_variables/transcripts/const-runtime.txt</include>
+</Console>
+
+The first message is the rule stated plainly: a `const` needs a constant expression, and
+`DateTime.now()` is not one. The second says why not — `DateTime.now()` is an ordinary
+constructor, and only a constructor marked `const` can run inside the compiler. Change one
+word — `final startedAt = DateTime.now();` — and it compiles, because `final` waits for
+the program to run.
+
+<Gloss title="Why const earns the extra restriction">
+A compile-time value costs nothing to build while the program runs, and Dart
+**canonicalises** it: write the same `const` value in ten places and you get one object in
+memory, not ten. With numbers and strings you rarely notice. With objects it changes how
+much work your program does, which is why `const` constructors get their own study
+later — Study 7.
+</Gloss>
+
+## 3.3 A value you are not going to use
 
 Sometimes the language hands you something you do not want. Dart 3.7 made `_` a real
 **wildcard**: it binds nothing at all, so there is no name to read by accident and no
@@ -89,22 +153,23 @@ Here is where `tags.dart` ends up:
 <include cwd lang="dart" meta='title="lib/tags.dart"'>../code/ch03_variables/lib/tags.dart#tag</include>
 
 <Console>
-<include cwd lang="bash" meta='title="terminal"'>../code/ch03_variables/transcripts/all.txt</include>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch03_variables/transcripts/all.txt</include>
 </Console>
 
 ## Wrapping up
 
-`const` for values fixed before the program runs. `final` for values computed once and
-then left alone. `var` only when the value really does change. Written that way, the
-keyword tells the reader how much attention a name deserves, which is worth more than the
-handful of characters it costs.
+`const` for values the compiler can work out before the program starts. `final` for values
+the program computes once and then leaves alone. `var` only when the value really does
+change. Written that way, the keyword tells the reader two things at once: how much
+attention a name deserves, and when its value comes into existence.
 
-Also met: type inference, and `_` as a wildcard that binds nothing.
+Also met: type inference, compile time versus run time, and `_` as a wildcard that binds
+nothing.
 
 ## Challenges
 
 <Console>
-<include cwd lang="bash" meta='title="terminal"'>../code/ch03_variables/transcripts/challenges.txt</include>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch03_variables/transcripts/challenges.txt</include>
 </Console>
 
 <include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch03_variables/exercises/challenges.dart</include>

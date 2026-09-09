@@ -42,7 +42,7 @@ fails, so write it as a sentence about behaviour.
 <Direction>Run it. A failure you have never seen is a test you cannot trust.</Direction>
 
 <Console>
-<include cwd lang="bash" meta='title="terminal"'>../code/ch02_greeting/transcripts/undefined.txt</include>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch02_greeting/transcripts/undefined.txt</include>
 </Console>
 
 Two errors, and both are useful. The first says the file `lib/greeting.dart` does not
@@ -64,7 +64,7 @@ function whose whole body is one expression. `$name` inside a string is **interp
 Dart replaces it with the value of `name`.
 
 <Console>
-<include cwd lang="bash" meta='title="terminal"'>../code/ch02_greeting/transcripts/pass.txt</include>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch02_greeting/transcripts/pass.txt</include>
 </Console>
 
 </Drill>
@@ -106,8 +106,18 @@ tells you a type is too loose.
 </Gloss>
 
 <Console>
-<include cwd lang="bash" meta='title="terminal"'>../code/ch02_greeting/transcripts/all.txt</include>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch02_greeting/transcripts/all.txt</include>
 </Console>
+
+<Practice>
+Name a test after the behaviour, not after the function. `greets by name` tells you what
+broke when the line goes red; `test hello` tells you nothing the file name did not already
+say. Read your test names on their own: they should form a description of the program.
+
+Give each test one reason to fail. Several `expect` calls are fine when they check one
+idea together — an empty name and a blank name are the same idea — but two separate ideas
+in one test means the second one stops being checked the moment the first breaks.
+</Practice>
 
 ## Wrapping up
 
@@ -124,7 +134,7 @@ Three tests are already written and already failing. Make them pass one at a tim
 edit the tests.
 
 <Console>
-<include cwd lang="bash" meta='title="terminal"'>../code/ch02_greeting/transcripts/challenges.txt</include>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch02_greeting/transcripts/challenges.txt</include>
 </Console>
 
 <include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch02_greeting/exercises/challenges.dart</include>
