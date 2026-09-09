@@ -12,6 +12,7 @@
     "null-safety",
     "control-flow",
     "functions",
-    "iterables"
+    "iterables",
+    "records"
   ]
 }

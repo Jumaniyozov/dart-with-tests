@@ -1,0 +1,6 @@
+$ dart analyze lib/frozen.dart
+Analyzing frozen.dart...
+
+  error - frozen.dart:5:9 - The setter '$2' isn't defined for the type '(int, int)'. Try importing the library that defines '$2', correcting the name to the name of an existing setter, or defining a setter or field named '$2'. - undefined_setter
+
+1 issue found.

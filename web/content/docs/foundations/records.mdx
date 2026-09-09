@@ -1,0 +1,203 @@
+---
+title: Records
+study: 13
+direction: When a function has two things to say, let it say both.
+description: Handing back more than one value, why two records with the same fields are equal, and exactly where a record stops being enough.
+---
+
+Study 4 split an amount into pounds and pence inside `format`, used both halves, and threw one
+away. It had no choice: a function hands back one value. The usual workarounds are all worse
+than the problem — return a two-element list and lose the types, return a `Map` and lose them
+again, or declare a class for a thing that is nothing but two numbers.
+
+A **record** is Dart's answer. It is a value holding several other values, and it needs no
+declaration at all.
+
+<include cwd lang="dart" meta='title="lib/split.dart"'>../code/ch13_split/lib/split.dart#split</include>
+
+<Drill n={1}>
+
+<Direction>Both halves, from one call, with both types intact.</Direction>
+
+<include cwd lang="dart" meta='title="test/first_test.dart"'>../code/ch13_split/test/first_test.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch13_split/transcripts/pass.txt</include>
+</Console>
+
+</Drill>
+
+`(int, int)` is the type: a record of two `int`s. `(amount ~/ 100, amount % 100)` is the value.
+There is no `Pair` class anywhere, and nothing was declared — the type is written where it is
+used, the way `List<int>` is.
+
+Fields can be named instead of counted:
+
+<include cwd lang="dart" meta='title="lib/split.dart"'>../code/ch13_split/lib/split.dart#named</include>
+
+`({int pounds, int pence})` reads worse than `(int, int)` and pays for it at every call site,
+where `money.pounds` says what it is and `split.$1` does not. Use positional fields when the
+order is obvious and there are two of them. Name them otherwise.
+
+## 13.1 Reading the fields
+
+Positional fields are `$1`, `$2` and so on, counting from one. Named fields use their names.
+And a record can be taken apart in the same line that receives it:
+
+<include cwd lang="dart" meta='title="lib/split.dart"'>../code/ch13_split/lib/split.dart#format</include>
+
+`final (pounds, pence) = splitPence(amount);` declares two variables from one call. That is a
+**pattern**, and it is the whole of study 14 — this is a light first use.
+
+<include cwd lang="dart" meta='title="test/split_test.dart"'>../code/ch13_split/test/split_test.dart#reading</include>
+
+One trap in that last test. A positional field may be given a name *in the type*, and it looks
+exactly like it should create a getter:
+
+<include cwd lang="dart" meta='title="lib/split.dart"'>../code/ch13_split/lib/split.dart#range</include>
+
+```dart title="lib/byname.dart"
+int smallestOf(List<int> entries) => rangeOf(entries).smallest;
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch13_split/transcripts/byname.txt</include>
+</Console>
+
+The name is documentation for whoever reads the signature, exactly like the parameter name in
+`int Function(int pence)` back in study 11. If you want `.smallest` to work, name the field for
+real: `({int smallest, int largest})`.
+
+## 13.2 Two records with the same fields are the same record
+
+This is the reason records exist, and it is a sharp break from what study 8 found:
+
+<include cwd lang="dart" meta='title="test/split_test.dart"'>../code/ch13_split/test/split_test.dart#equality</include>
+
+`(1, 2) == (1, 2)` is **true**. `[1, 2] == [1, 2]` is **false**. Two lists holding the same
+numbers are two different lists; two records holding the same numbers are the same record as
+far as `==` is concerned.
+
+dart.dev states the rule as: two records are equal if they have the same *shape* — the same set
+of fields — and their corresponding fields have the same values. That has three consequences
+worth reading off the tests above.
+
+**Equal is not identical.** `identical((1, 2), (1, 2))` is false: two objects, both equal. Study
+7 met the other case, where `const [1, 2]` and `const [1, 2]` really are one object. `const`
+canonicalises; record equality compares.
+
+**Named fields are matched by name, not by order.** `(pounds: 1, pence: 2)` equals
+`(pence: 2, pounds: 1)`. The order you typed them in is not part of the shape.
+
+**Positional and named are different shapes**, and the analyzer will not even let you ask:
+
+```dart title="lib/shapes.dart"
+bool sameMoney() {
+  final counted = (1, 2);
+  final named = (pounds: 1, pence: 2);
+  return counted == named;
+}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch13_split/transcripts/shapes.txt</include>
+</Console>
+
+`unrelated_type_equality_checks` is the analyzer noticing that the answer can only ever be
+`false`, and that a comparison whose answer is fixed at compile time is almost certainly a
+mistake. Two shapes, two types, no overlap.
+
+Equality that means something brings `hashCode` with it, and that makes a record something a
+`List` can never be:
+
+<include cwd lang="dart" meta='title="lib/split.dart"'>../code/ch13_split/lib/split.dart#key</include>
+
+<include cwd lang="dart" meta='title="test/split_test.dart"'>../code/ch13_split/test/split_test.dart#key</include>
+
+A `Map` keyed by `(int, int)` finds an entry by the *values* in the key, not by which object you
+happened to build. Try that with a `List` key and every lookup misses.
+
+## 13.3 Where a record stops
+
+Records are **immutable**. Not "you should not change them" — there is nothing to change with:
+
+```dart title="lib/frozen.dart"
+void roundDown(int amount) {
+  final split = splitPence(amount);
+  split.$2 = 0;
+}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch13_split/transcripts/frozen.txt</include>
+</Console>
+
+Not "cannot assign" — `undefined_setter`. dart.dev puts it plainly: records are immutable, so
+fields do not have setters. To change one, build another.
+
+That immutability is the last of four things a record does not have, and the four together are
+the honest boundary of this study:
+
+- **No name.** `(int, int)` is the type. Nothing distinguishes an amount split into pounds and
+  pence from a pair of coordinates, and nothing stops you passing one where the other belongs.
+- **No methods.** You cannot ask a `(int, int)` to format itself.
+- **No invariants.** Nothing can promise the second field is under 100, which is exactly what
+  "pence" means.
+- **No mutation.**
+
+The first three are what a class gives you, and study 15 builds one. The fourth is a feature,
+not a gap — study 7 spent a whole section on why frozen data is easier to reason about.
+
+<Gloss title="A record has no runtime cost you did not ask for">
+`(1, 2).runtimeType` prints `(int, int)`, and that type is worked out from the fields — Dart
+calls this **structural** typing. Two records of the same shape have the same type even though
+nobody declared it, which is the opposite of how a class works: two identical classes with
+different names are different types forever.
+
+That is what makes `(int, int)` free to write. There is no declaration to keep in step, no file
+to import, and no name to agree on with anyone.
+</Gloss>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch13_split/transcripts/all.txt</include>
+</Console>
+
+<Practice source="dart.dev — Records" href="https://dart.dev/language/records">
+dart.dev's own line is the rule: "Records only hold data. When that's all you need, they're
+immediately available and easy to use without needing to declare any new classes."
+
+Read the emphasis on *when that's all you need*. A record is the right answer for a value that
+is genuinely just its fields and is being handed from one place to one other place — a function
+returning two things, a key made of two things, a row in a list of rows.
+
+The moment you find yourself writing the same record type in four signatures, or wanting to
+give it a method, or needing to promise something about its fields, the record has stopped
+being all you need. Reach for a class. Reaching for one *before* that point is the more common
+mistake, and it is the one this study is here to stop: a class declared for two numbers is
+three lines of ceremony guarding nothing.
+</Practice>
+
+## Wrapping up
+
+A record holds several values in one, with no declaration. `(int, int)` counts its fields and
+reads them as `$1` and `$2`; `({int pounds, int pence})` names them. A name written on a
+positional field is documentation and does not become a getter.
+
+Two records are equal when their shapes and their values match, which lists and sets are not,
+and that equality brings a `hashCode` — so a record can be a `Map` key. Records are immutable,
+have no name, no methods and no invariants, and that is the line where study 15 begins.
+
+Also met: destructuring in a variable declaration, and structural typing.
+
+Study 14 takes the pattern in `final (pounds, pence) = …` seriously.
+
+## Challenges
+
+Three tests are already written and already failing. Make them pass one at a time. Do not edit
+the tests. Each one hands back more than one value, and none of them needs a class.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch13_split/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch13_split/exercises/challenges.dart</include>

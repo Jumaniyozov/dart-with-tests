@@ -1,0 +1,6 @@
+$ dart analyze lib/shapes.dart
+Analyzing shapes.dart...
+
+   info - shapes.dart:4:18 - The type of the right operand ('({int pence, int pounds})') isn't a subtype or a supertype of the left operand ('(int, int)'). Try changing one or both of the operands. - unrelated_type_equality_checks
+
+1 issue found.

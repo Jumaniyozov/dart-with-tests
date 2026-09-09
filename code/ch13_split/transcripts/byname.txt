@@ -1,0 +1,6 @@
+$ dart analyze lib/byname.dart
+Analyzing byname.dart...
+
+  error - byname.dart:3:55 - The getter 'smallest' isn't defined for the type '(int, int)'. Try importing the library that defines 'smallest', correcting the name to the name of an existing getter, or defining a getter or field named 'smallest'. - undefined_getter
+
+1 issue found.
