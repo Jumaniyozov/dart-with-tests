@@ -1,0 +1,6 @@
+$ dart analyze lib/standalone.dart
+Analyzing standalone.dart...
+
+  error - standalone.dart:6:15 - Mixins can't be instantiated. - mixin_instantiate
+
+1 issue found.

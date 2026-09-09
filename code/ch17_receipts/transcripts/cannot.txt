@@ -1,0 +1,7 @@
+$ dart analyze lib/cannot.dart
+Analyzing cannot.dart...
+
+  error - cannot.dart:5:9 - Mixins can't declare constructors. - mixin_declares_constructor
+  error - cannot.dart:9:7 - Missing concrete implementation of 'getter Signed.pence'. Try implementing the missing method, or make the class abstract. - non_abstract_class_inherits_abstract_member
+
+2 issues found.

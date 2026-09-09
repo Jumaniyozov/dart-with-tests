@@ -1,0 +1,7 @@
+$ dart analyze lib/loose.dart
+Analyzing loose.dart...
+
+  error - loose.dart:4:7 - Missing concrete implementation of 'getter Line.base'. Try implementing the missing method, or make the class abstract. - non_abstract_class_inherits_abstract_member
+  error - loose.dart:4:20 - 'Discounted' can't be mixed onto 'Object' because 'Object' doesn't implement 'Line'. Try extending the class 'Discounted'. - mixin_application_not_implemented_interface
+
+2 issues found.

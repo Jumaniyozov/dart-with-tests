@@ -1,0 +1,11 @@
+name: ch17_receipts
+description: Study 17 — sharing behaviour between types that are not related.
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.26.0

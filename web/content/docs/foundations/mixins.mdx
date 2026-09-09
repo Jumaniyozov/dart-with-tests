@@ -1,0 +1,201 @@
+---
+title: Mixins
+study: 17
+direction: Two types that share nothing can still share behaviour. Order matters more than you expect.
+description: Sharing code between unrelated classes, what a mixin cannot do, and the application order that quietly changes your answer.
+---
+
+Study 16 shared behaviour by making a family: `Payment` and `Refund` both have `pence` because
+both are an `Entry`. That works when the types really are related.
+
+A shop receipt and a payslip are not related. One is money out of a shop, the other money in
+from an employer, and no sensible parent class covers both. They still need the same handful of
+things said about an amount.
+
+<include cwd lang="dart" meta='title="lib/receipts.dart"'>../code/ch17_receipts/lib/receipts.dart#signed</include>
+
+<include cwd lang="dart" meta='title="lib/receipts.dart"'>../code/ch17_receipts/lib/receipts.dart#users</include>
+
+<Drill n={1}>
+
+<Direction>Same behaviour, no common ancestor.</Direction>
+
+<include cwd lang="dart" meta='title="test/first_test.dart"'>../code/ch17_receipts/test/first_test.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch17_receipts/transcripts/pass.txt</include>
+</Console>
+
+</Drill>
+
+## 17.1 Declaring what you need
+
+A **mixin** is a block of behaviour that can be poured into a class with `with`. It is not a
+parent — `Receipt` extends nothing — and the same mixin can go into classes that have nothing
+else in common.
+
+The interesting line in `Signed` is `int get pence;` with no body. A mixin holds no data of its
+own, so instead of storing the amount it **declares what it requires** and leaves that to
+whoever mixes it in. `Receipt` and `Payslip` each satisfy it with a field, and `@override` on
+the header parameter is how a primary constructor says "this field is the one you asked for".
+
+<include cwd lang="dart" meta='title="lib/receipts.dart"'>../code/ch17_receipts/lib/receipts.dart#dated</include>
+
+`Dated` requires something else entirely, and only `Receipt` takes it. Mixins compose: take the
+ones you want, ignore the rest.
+
+<include cwd lang="dart" meta='title="test/receipts_test.dart"'>../code/ch17_receipts/test/receipts_test.dart#sharing</include>
+
+A mixin is also a **type**. `Receipt` and `Payslip` are both `Signed`, so a function can take a
+`Signed` and accept either — which is the whole point, since that is the thing they actually
+have in common.
+
+## 17.2 What a mixin cannot do
+
+Two rules, and the first explains the second:
+
+```dart title="lib/cannot.dart"
+// A mixin has no constructor of its own.
+mixin Stamped {
+  const new();
+}
+
+// And a class mixing Signed in must supply what Signed asked for.
+class Bare with Signed {}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch17_receipts/transcripts/cannot.txt</include>
+</Console>
+
+**Mixins can't declare constructors.** That is not an oversight. A mixin is applied to a class
+that already has its own constructor, and there is nowhere for a second one to run. So a mixin
+can never initialise anything, which is exactly why `Signed` asks for `pence` rather than
+holding it.
+
+And a class that takes a mixin must answer everything the mixin asked for, or the analyzer
+says so in the same language it used for an abstract class in study 16.
+
+## 17.3 When two mixins want the same name
+
+Nothing stops two mixins declaring the same member, and Dart does not treat it as an error:
+
+<include cwd lang="dart" meta='title="lib/receipts.dart"'>../code/ch17_receipts/lib/receipts.dart#clash</include>
+
+<include cwd lang="dart" meta='title="test/receipts_test.dart"'>../code/ch17_receipts/test/receipts_test.dart#clash</include>
+
+**The rightmost mixin wins.** `with Titled, Numbered` gives you `Numbered`'s `label`. Mixins
+are applied left to right and each one is layered over what came before, so the last one
+applied is the one on top.
+
+That rule is worth measuring rather than remembering, which is what the test above is for.
+Nothing in the language warns you about the collision, and swapping two names in a `with`
+clause is a very small-looking edit.
+
+## 17.4 An order that changes the money
+
+The collision above is mild, because only one of the two could ever win. It gets sharper when
+each mixin *builds on* the one before, and that is what `on` and `super` are for.
+
+<include cwd lang="dart" meta='title="lib/receipts.dart"'>../code/ch17_receipts/lib/receipts.dart#chain</include>
+
+`mixin Discounted on Line` says this mixin may only be applied to a `Line`. That restriction is
+what makes `super.total()` mean anything: the compiler needs to know there *is* a `total()`
+underneath to call. Break the promise and it says so:
+
+```dart title="lib/loose.dart"
+// `Discounted` says `on Line`. This is not a Line.
+class Voucher with Discounted {}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch17_receipts/transcripts/loose.txt</include>
+</Console>
+
+Now the part worth slowing down for. `DiscountThenTax` and `TaxThenDiscount` have identical
+fields, identical mixins, and one difference: the order in the `with` clause.
+
+<include cwd lang="dart" meta='title="test/receipts_test.dart"'>../code/ch17_receipts/test/receipts_test.dart#chain</include>
+
+A pound off then twenty per cent on is £10.80. Twenty per cent on then a pound off is £11.00.
+Both are defensible ways to bill someone and they are twenty pence apart, and the only thing
+that chose between them was which mixin was written last.
+
+Read the chain from the right. The rightmost mixin's method runs first and its `super` call
+reaches the one to its left, which reaches the one to *its* left, and so on down to the class
+itself. `with Discounted, Taxed` means `Taxed` wraps `Discounted` wraps `Line`.
+
+<Gloss title="mixin class — both at once">
+A plain `mixin` cannot be instantiated; it only exists to be mixed in.
+
+```dart title="lib/standalone.dart"
+mixin Plain {
+  int get n => 1;
+}
+
+final loose = Plain();
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch17_receipts/transcripts/standalone.txt</include>
+</Console>
+
+A `mixin class` can be used either way:
+
+<include cwd lang="dart" meta='title="lib/receipts.dart"'>../code/ch17_receipts/lib/receipts.dart#both</include>
+
+<include cwd lang="dart" meta='title="test/receipts_test.dart"'>../code/ch17_receipts/test/receipts_test.dart#both</include>
+
+It is the right declaration when a thing is genuinely useful on its own *and* worth pouring into
+other classes. It gives up something in exchange: a `mixin class` may not have an `on` clause at
+all — the parser rejects the word — and it may not extend anything but `Object`. It has to work
+as an ordinary class, and an ordinary class has no `on`.
+</Gloss>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch17_receipts/transcripts/all.txt</include>
+</Console>
+
+<Practice source="dart.dev — Mixins" href="https://dart.dev/language/mixins#use-the-on-clause-to-declare-a-superclass">
+dart.dev is unusually direct about `on`, and the rule is narrower than most people apply it:
+
+**"The `on` clause exists to define the type that `super` calls are resolved against. So, you
+should only use it if you need to have a `super` call inside a mixin."**
+
+`Signed` and `Dated` have no `on` clause and should not: they add behaviour and call nothing
+underneath, so restricting where they can go would only make them less useful. `Discounted` and
+`Taxed` need one, because without it `super.total()` has no meaning. Ask which of those two
+kinds you are writing before reaching for `on`.
+
+Worth knowing where this leaves you: the ordering rule in 17.3 and 17.4 is **not** on that page,
+or anywhere else in the language tour. The behaviour is well defined and it is measured by two
+tests in this study, but if you are relying on it, a test is what makes it visible to whoever
+edits the `with` clause next.
+</Practice>
+
+## Wrapping up
+
+A mixin shares behaviour between classes that are not a family. It cannot have a constructor
+and holds no data of its own, so it declares what it requires with a body-less member and the
+class supplies it. A mixin is a type, so the classes that take it can be used interchangeably
+where it is expected.
+
+Mixins are applied left to right and the rightmost wins a collision. When they call `super`,
+each wraps the one before it, so the order in a `with` clause can change the answer rather than
+just the winner. Use `on` only when you need that `super` call.
+
+Also met: `mixin class`, and `@override` on a primary constructor parameter.
+
+Study 18 asks a different question about reuse: what if the behaviour is the same but the type
+it works on is not?
+
+## Challenges
+
+A sensor reading and two adjustments. Make the tests pass one at a time. Do not edit the tests.
+The last one is passed by changing two `with` clauses and nothing else.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch17_receipts/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch17_receipts/exercises/challenges.dart</include>

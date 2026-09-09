@@ -16,6 +16,7 @@
     "records",
     "patterns",
     "classes",
-    "inheritance"
+    "inheritance",
+    "mixins"
   ]
 }
