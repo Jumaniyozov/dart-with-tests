@@ -17,3 +17,4 @@ workspace:
   - ch09_lookup
   - ch10_ledger
   - ch11_pipeline
+  - ch12_report

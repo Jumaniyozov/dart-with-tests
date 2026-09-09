@@ -1,0 +1,8 @@
+$ dart run bin/lazy.dart
+the chain is built, and nothing above has run yet
+  ...doubling 100
+first: 200
+  ...doubling 100
+  ...doubling -50
+  ...doubling 200
+all:   [200, -100, 400]

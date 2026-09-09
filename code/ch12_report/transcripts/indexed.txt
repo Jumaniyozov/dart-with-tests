@@ -1,0 +1,6 @@
+$ dart analyze lib/indexed.dart
+Analyzing indexed.dart...
+
+  error - indexed.dart:3:54 - The operator '[]' isn't defined for the type 'Iterable<String>'. Try defining the operator '[]'. - undefined_operator
+
+1 issue found.

@@ -1,0 +1,191 @@
+---
+title: Iterables
+study: 12
+direction: Every loop you wrote in study 10 was a shape. This study names the shapes and hands you them.
+description: map, where and fold; what an Iterable is; and why nothing in a chain runs until something asks it to.
+---
+
+Study 10 wrote loops on purpose, and said so at the time. Here is one of them:
+
+<include cwd lang="dart" meta='title="ch10 lib/ledger.dart"'>../code/ch10_ledger/lib/ledger.dart#totalin</include>
+
+And here it is again, now that study 11 has given you a name for the thing in the middle:
+
+<include cwd lang="dart" meta='title="lib/report.dart"'>../code/ch12_report/lib/report.dart#total</include>
+
+Same answer, one line. The loop had a shape — start from something, combine it with each
+entry, keep the running answer — and `fold` **is** that shape, with the only part that
+differed left as a function you pass in.
+
+<Drill n={1}>
+
+<Direction>The same ledger, the same balance, and no running variable in sight.</Direction>
+
+<include cwd lang="dart" meta='title="test/first_test.dart"'>../code/ch12_report/test/first_test.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch12_report/transcripts/pass.txt</include>
+</Console>
+
+</Drill>
+
+## 12.1 Folding a list down to one value
+
+`fold` takes a starting value and a function of two arguments: what you have so far, and the
+next element. `where` keeps the elements its function says `true` to, and hands the rest along
+unchanged — which is study 10's `continue`, without the loop.
+
+<include cwd lang="dart" meta='title="lib/report.dart"'>../code/ch12_report/lib/report.dart#credits</include>
+
+`reduce` is `fold` without the seed. It combines the first element with the second, that
+answer with the third, and so on — which means it needs at least one element to start from:
+
+<include cwd lang="dart" meta='title="lib/report.dart"'>../code/ch12_report/lib/report.dart#largest</include>
+
+<include cwd lang="dart" meta='title="test/report_test.dart"'>../code/ch12_report/test/report_test.dart#folding</include>
+
+An empty ledger folds to `0` and reduces to an exception. That is not a flaw in `reduce`; it is
+the honest consequence of not being given a starting value. Use `fold` when "nothing" has an
+answer, `reduce` when it genuinely does not.
+
+## 12.2 Reshaping
+
+`map` builds a new sequence by putting every element through a function. Look carefully at what
+it hands back:
+
+<include cwd lang="dart" meta='title="lib/report.dart"'>../code/ch12_report/lib/report.dart#lines</include>
+
+`Iterable<String>`, not `List<String>`. An **`Iterable`** is anything you can walk from
+beginning to end — a list is one, but so is a chain like this, and so is a sequence read from a
+file that has no end in sight. The contract is only "you can ask me for the next one", so an
+`Iterable` has no `[]`:
+
+```dart title="lib/indexed.dart"
+String firstLine(List<int> entries) => lines(entries)[0];
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch12_report/transcripts/indexed.txt</include>
+</Console>
+
+`.first` works, and `.toList()` turns the chain into a real list when you need one. Two more
+shapes worth having:
+
+<include cwd lang="dart" meta='title="lib/report.dart"'>../code/ch12_report/lib/report.dart#flatten</include>
+
+<include cwd lang="dart" meta='title="lib/report.dart"'>../code/ch12_report/lib/report.dart#page</include>
+
+`expand` maps each element to a *sequence* and runs the results together, so a list of days
+becomes one list of entries. `skip` and `take` cut a window, and neither complains when you ask
+for more than there is.
+
+<include cwd lang="dart" meta='title="test/report_test.dart"'>../code/ch12_report/test/report_test.dart#shaping</include>
+
+## 12.3 Asking a question
+
+`any` and `every` answer yes or no, and both stop as soon as the answer cannot change.
+
+<include cwd lang="dart" meta='title="lib/report.dart"'>../code/ch12_report/lib/report.dart#asking</include>
+
+`firstWhere` finds one element. Its `orElse` is a named parameter that takes a function — study
+11's machinery, doing real work — and it is what saves this from throwing when nothing matches:
+
+<include cwd lang="dart" meta='title="lib/report.dart"'>../code/ch12_report/lib/report.dart#shared</include>
+
+Compare that with study 10's version of the same question: two nested loops, a label, a
+`break outer;` and a variable to carry the answer out. `theirs.contains` is a tear-off, so the
+whole search is one line and nothing in it is about looping.
+
+<include cwd lang="dart" meta='title="test/report_test.dart"'>../code/ch12_report/test/report_test.dart#asking</include>
+
+Note the empty-list expectations. `any` on nothing is `false` and `every` on nothing is `true`,
+which reads oddly until you say it out loud: no element failed the test, because there were no
+elements.
+
+## 12.4 Nothing runs until something asks
+
+Here is the part that surprises people, and it is the reason `map` returns an `Iterable`
+instead of a `List`.
+
+<include cwd lang="dart" meta='title="bin/lazy.dart"'>../code/ch12_report/bin/lazy.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch12_report/transcripts/lazy.txt</include>
+</Console>
+
+Read that output line by line, because all three surprises are in it.
+
+**Building the chain did nothing.** The message about the chain being built prints *first*, even
+though the `map` call is above it. `map` stored your function and returned; it did not run
+anything.
+
+**Asking for `.first` doubled one entry.** Not three. The chain produced exactly as much as was
+needed to answer, and stopped.
+
+**Asking for everything doubled `100` again.** The chain is not a result, it is a recipe.
+Walking it a second time follows the recipe a second time.
+
+<include cwd lang="dart" meta='title="test/report_test.dart"'>../code/ch12_report/test/report_test.dart#lazy</include>
+
+Laziness is what makes `entries.where(…).map(…).take(3)` cheap: nothing builds three
+intermediate lists, and the work stops after three results. The cost is that an `Iterable` is
+live. If the work is expensive or the function has an effect — printing, counting, writing —
+walking twice does it twice. `.toList()` is how you settle the answer, and the last test above
+is the proof: after `toList`, walking it any number of times costs nothing more.
+
+<Gloss title="Where the laziness stops">
+Not every method is lazy. The rule is easy to see once you know where to look: a method
+returning an `Iterable` is a link in the chain and defers; a method returning anything else has
+to produce an answer now, so it walks.
+
+`map`, `where`, `expand`, `take` and `skip` return `Iterable` — lazy. `fold`, `reduce`, `any`,
+`every`, `first`, `length`, `toList` and `toSet` return a value — they walk. That is why the
+`print` in `bin/lazy.dart` stayed silent until `.first`.
+</Gloss>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch12_report/transcripts/all.txt</include>
+</Console>
+
+<Practice source="Effective Dart — Usage" href="https://dart.dev/effective-dart/usage#dont-use-length-to-see-if-a-collection-is-empty">
+**DON'T use `.length` to see if a collection is empty.** The reason Effective Dart gives is the
+one this study just spent a section on: "The Iterable contract does not require that a
+collection know its length". For a lazy chain, finding the length means walking the whole thing.
+
+That is measurable, and the last test in the group above measures it. On a three-element
+`where` chain, `.length` runs the predicate three times. `.isNotEmpty` runs it once and stops.
+Same question, one third of the work, and the gap grows with the collection.
+
+`prefer_is_empty` and `prefer_is_not_empty` ship in `package:lints/core.yaml`, which
+`recommended.yaml` includes, so the analyzer already enforces this in every package in this
+book. So does `avoid_function_literals_in_foreach_calls`, which is the same idea from the other
+end: `for (final x in xs)` from study 10 reads better than `xs.forEach((x) { … })`, and unlike
+`forEach` it lets you `break`.
+</Practice>
+
+## Wrapping up
+
+`fold` and `reduce` collapse a sequence to one value, and only `fold` has an answer for an empty
+one. `map`, `where` and `expand` reshape it; `take` and `skip` cut it; `any`, `every` and
+`firstWhere` interrogate it. All of them take the function that used to be the body of your
+loop.
+
+The `Iterable` they return is a recipe, not a result. Nothing runs until something asks, only as
+much runs as the question needs, and asking twice runs it twice — `.toList()` when you want the
+answer to hold still.
+
+Also met: tear-offs used in earnest, and `orElse`.
+
+The next two studies go back to data. Study 13 gives you a way to hand back more than one value
+at a time, and study 14 gives you a way to take it apart.
+
+## Challenges
+
+Three tests are already written and already failing. Make them pass one at a time. Do not edit
+the tests. No loops — study 10 already showed you that answer.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch12_report/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch12_report/exercises/challenges.dart</include>

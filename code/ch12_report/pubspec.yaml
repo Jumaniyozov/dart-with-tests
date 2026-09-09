@@ -1,0 +1,11 @@
+name: ch12_report
+description: Study 12 — the loops from study 10, deleted.
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.26.0

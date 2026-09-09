@@ -11,6 +11,7 @@
     "maps-and-sets",
     "null-safety",
     "control-flow",
-    "functions"
+    "functions",
+    "iterables"
   ]
 }
