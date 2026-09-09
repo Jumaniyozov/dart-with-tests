@@ -1,0 +1,7 @@
+$ dart test test/first_test.dart
+00:00 +0: loading test/first_test.dart
+00:00 +0: three items at ten pence cost thirty pence
+00:00 +0 -1: three items at ten pence cost thirty pence [E]
+  Expected: <0.3>
+    Actual: <0.30000000000000004>
+00:00 +0 -1: Some tests failed.

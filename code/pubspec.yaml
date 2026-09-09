@@ -9,3 +9,4 @@ workspace:
   - ch01_hello
   - ch02_greeting
   - ch03_variables
+  - ch04_money

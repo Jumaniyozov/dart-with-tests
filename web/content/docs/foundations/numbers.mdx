@@ -1,0 +1,195 @@
+---
+title: Numbers
+study: 4
+direction: Count in whole units. Let the failing test tell you why.
+description: int, double, and the reason money is never a double — then integer division and remainder to put it back together.
+---
+
+Dart has two kinds of number. An `int` is a whole number. A `double` is a number with a
+fractional part. Both are a `num`, which is the type you write when either will do.
+
+```dart
+int items = 3;        // whole
+double price = 1.99;  // fractional
+num either = 3;       // an int today, may hold a double tomorrow
+```
+
+You will reach for `double` the moment you meet money, because a price has a decimal
+point. That instinct is wrong, and this study is about why. The reason is not a rule
+somebody invented. It is how the machine stores the number.
+
+## 4.1 A price that will not add up
+
+Three items at ten pence each. The answer is thirty pence. Write that down as a test,
+in pounds, the way you would say it out loud.
+
+<Drill n={1}>
+
+<Direction>Nothing exists yet. Start where the money is written the obvious way.</Direction>
+
+```dart title="test/first_test.dart"
+import 'package:ch04_money/money.dart';
+import 'package:test/test.dart';
+
+void main() {
+  test('three items at ten pence cost thirty pence', () {
+    expect(total(0.10, 3), 0.30);
+  });
+}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch04_money/transcripts/undefined.txt</include>
+</Console>
+
+The same two errors as last time: the file is missing, and the function is missing. Nothing
+surprising yet.
+
+</Drill>
+
+<Drill n={2}>
+
+<Direction>Write the obvious version. Then read the failure very carefully.</Direction>
+
+<include cwd lang="dart" meta='title="lib/money.dart"'>../code/ch04_money/lib/v1.dart#total</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch04_money/transcripts/drift.txt</include>
+</Console>
+
+Read those two lines again.
+
+```
+Expected: <0.3>
+  Actual: <0.30000000000000004>
+```
+
+The code is not wrong. The multiplication is not wrong. The test is not wrong. The
+**number** is wrong, and it was wrong before your program ever ran.
+
+A `double` stores a value as a binary fraction: halves, quarters, eighths, and so on
+downwards — sums of powers of two. One tenth is not a sum of powers of two. You cannot
+write it that way, in the same way you cannot write one third as a finite decimal. So
+`0.10` is not stored as one tenth. It is stored as the nearest binary fraction to one
+tenth, which is very slightly more. Multiply that by three and you multiply the error too,
+and now it is large enough to print.
+
+This is not a Dart problem. Every language that uses the same 64-bit floating-point format
+gives the same answer, because they are all storing the same approximation.
+
+</Drill>
+
+<Drill n={3}>
+
+<Direction tone="pass">Change the unit, not the arithmetic.</Direction>
+
+The fix is not a cleverer sum. It is to stop asking the computer to hold a fraction at all.
+Count in the smallest unit you will ever need — pence — and count in whole numbers.
+
+<include cwd lang="dart" meta='title="lib/money.dart"'>../code/ch04_money/lib/v2.dart#total</include>
+
+The body is the same expression it always was. Only the types changed, and the test changes
+with them: the price is now `10`, not `0.10`, because the unit is pence.
+
+<include cwd lang="dart" meta='title="test/first_test.dart"'>../code/ch04_money/test/first_test.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch04_money/transcripts/pass.txt</include>
+</Console>
+
+`int` arithmetic is exact. Three tens are thirty, with no nearest anything.
+
+</Drill>
+
+<Gloss title="Never test a double for equality">
+`expect(total(0.10, 3), 0.30)` was a fair test of a bad idea, and it is also a bad test.
+Two doubles that came from different calculations are almost never exactly equal, so
+comparing them with `==` will fail for reasons that have nothing to do with your code. When
+you genuinely need a `double` — a measurement, an average, a ratio — compare it with a
+tolerance instead. `package:matcher` has `closeTo` for exactly this. Money does not need
+it, because money should not be a `double`.
+</Gloss>
+
+## 4.2 Reading the number back
+
+`1234` is correct and unreadable. A person wants `£12.34`. Splitting one into the other is
+what integer division is for.
+
+<include cwd lang="dart" meta='title="lib/money.dart"'>../code/ch04_money/lib/money.dart#format</include>
+
+Three operators are doing the work, and the difference between the first two catches
+everybody:
+
+- `/` divides and **always hands back a `double`**, even when both sides are `int`.
+  `1234 / 100` is `12.34`, and that is the fraction we just spent a whole section escaping.
+- `~/` divides and throws the fraction away, handing back an `int`. `1234 ~/ 100` is `12`.
+- `%` hands back what is left over. `1234 % 100` is `34`.
+
+`~/` is not `/` with rounding applied afterwards. It is a different operator with a
+different return type, and the type is fixed at compile time — which is why `pounds` and
+`remainder` are both `int` without you writing a single type.
+
+`padLeft(2, '0')` turns `5` into `05`, so five pence does not print as `£12.5`.
+
+<include cwd lang="dart" meta='title="lib/money.dart"'>../code/ch04_money/lib/money.dart#constants</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch04_money/transcripts/all.txt</include>
+</Console>
+
+## 4.3 How large a number can be
+
+`100000000` is a hundred million, probably. You counted the zeros twice and you are still
+not sure. Since Dart 3.6 you can put underscores anywhere inside a number literal:
+
+```dart
+const maxOrderPence = 100_000_000;
+```
+
+The compiler ignores them completely. `100_000_000` and `100000000` are the same literal,
+and the underscores exist only so a human can see the groups. Use them the way you would
+use spaces in a phone number.
+
+<Gloss title="How big an int is depends on where it runs">
+On a phone, a laptop or a server, a Dart `int` is a signed 64-bit whole number, and it is
+exact all the way to the ends of that range. Compiled to JavaScript for a browser it is
+not: the web has one number type, a 64-bit floating-point value, and Dart maps both `int`
+and `double` onto it. Whole numbers stay exact only up to 53 bits there. Money in pence
+will not come close to either limit, so this does not change what you just wrote — but
+"how big can this get" is a question with two answers in Dart, and it is worth knowing that
+before a number surprises you.
+</Gloss>
+
+<Practice source="dart.dev — Numbers in Dart" href="https://dart.dev/resources/language/number-representation">
+Never store money in a `double`. Store it as a whole number of the smallest unit — pence,
+cents, satoshi — in an `int`, and divide only when you print it.
+
+This one is not from Effective Dart, and no lint will catch it. It is not a Dart rule at
+all: it is true in every language with binary floating point, which is nearly all of them.
+Dart's own page on how numbers are represented is where the machinery is written down, and
+it is worth reading once now that you have seen the failure.
+
+The habit that follows: when a value must be exact, ask what the smallest unit is and count
+those. Money is pence. A duration is milliseconds. A weight is grams. Fractions are for
+measurements you were never going to compare with `==` anyway.
+</Practice>
+
+## Wrapping up
+
+`int` is exact and `double` is an approximation, and no amount of care in your own code
+changes that. Money is counted in whole pence, in an `int`, and turned back into pounds
+with `~/` and `%` only at the moment a person reads it.
+
+Also met: `num`, the difference between `/` and `~/`, `%`, `padLeft`, digit separators, and
+the fact that an `int` is a different size on the web.
+
+## Challenges
+
+Three tests are already written and already failing. Make them pass one at a time. Do not
+edit the tests. No `double` appears in any answer.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch04_money/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch04_money/exercises/challenges.dart</include>

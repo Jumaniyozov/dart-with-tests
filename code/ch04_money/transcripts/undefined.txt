@@ -1,0 +1,11 @@
+$ dart test test/first_test.dart
+00:00 +0: loading test/first_test.dart
+00:00 +0 -1: loading test/first_test.dart [E]
+  Failed to load "test/first_test.dart":
+  test/first_test.dart:1:8: Error: Error when reading 'lib/money.dart': No such file or directory
+  import 'package:ch04_money/money.dart';
+         ^
+  test/first_test.dart:6:12: Error: Method not found: 'total'.
+      expect(total(0.10, 3), 0.30);
+             ^^^^^
+00:00 +0 -1: Some tests failed.

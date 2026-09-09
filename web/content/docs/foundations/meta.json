@@ -3,6 +3,7 @@
   "pages": [
     "hello-dart",
     "your-first-test",
-    "variables"
+    "variables",
+    "numbers"
   ]
 }
