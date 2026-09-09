@@ -89,9 +89,21 @@ orphan-region rule, rather than a private note to the writer.
 Resolution stays trivial because they share the workspace lock.
 
 **A retroactive fix costs twelve edits.** Correcting a bug in study 23's `Money` means
-applying it to every later snapshot. This is the real price of the layout, and the check
-turns it from a silent risk into a loud failure: fix one and the next
-`check_slices` run names every package that disagrees.
+applying it to every later snapshot. This is the real price of the layout.
+
+**And the check is narrower than this record first claimed.** `check_slices` compares a
+file only when the study's `SLICE` does *not* name it. For a file the study does change,
+any difference is expected, so a fix applied to one snapshot and not the next is
+invisible to it. Measured: `penceFrom` was fixed in `ch24_expenses` and `ch25_expenses`
+together, and reverting one of them left `check_slices` reporting that all three packages
+agree.
+
+What caught it was `tool/check_regions.dart`, which compares each `#region` against the
+previous snapshot's copy: the diverged `parse` region showed up as changed and unshown.
+So the honest statement is that the two checks cover different halves — `check_slices`
+guards files a study leaves alone, `check_regions` guards regions inside files it
+touches — and a divergence inside a region the study both changes and shows is caught by
+neither, which is correct, because a shown change is a deliberate one.
 
 **`diff ch23_expenses ch24_expenses` is the study's slice**, exactly. That is a usable
 artifact for a reader who wants to see what changed without reading prose, and it cannot

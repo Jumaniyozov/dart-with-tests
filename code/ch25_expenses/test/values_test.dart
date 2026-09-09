@@ -57,7 +57,26 @@ void main() {
 
     test('a month that is not a month is refused', () {
       expect(() => Day(2026, 13, 1), throwsArgumentError);
-      expect(() => Day(2026, 2, 32), throwsArgumentError);
+      expect(() => Day(2026, 0, 1), throwsArgumentError);
+    });
+
+    test('and a day that month has never had', () {
+      // The reason this type exists is that it is a real calendar day.
+      // Checking `day <= 31` would let it hold the 31st of February.
+      expect(() => Day(2026, 2, 31), throwsArgumentError);
+      expect(() => Day(2026, 4, 31), throwsArgumentError);
+      expect(() => Day(2026, 1, 0), throwsArgumentError);
+    });
+
+    test('February knows which years are long', () {
+      expect(Day(2024, 2, 29).asText, '2024-02-29');
+      expect(() => Day(2025, 2, 29), throwsArgumentError);
+      expect(
+        Day(2000, 2, 29).asText,
+        '2000-02-29',
+        reason: '400 is a leap year',
+      );
+      expect(() => Day(1900, 2, 29), throwsArgumentError, reason: '100 is not');
     });
   });
 

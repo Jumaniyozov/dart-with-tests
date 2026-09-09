@@ -12,11 +12,27 @@ class const Day._(final int year, final int month, final int day) {
     if (month < 1 || month > 12) {
       throw ArgumentError.value(month, 'month', 'not a month');
     }
-    if (day < 1 || day > 31) {
-      throw ArgumentError.value(day, 'day', 'not a day of any month');
+    final last = _lastDayOf(year, month);
+    if (day < 1 || day > last) {
+      throw ArgumentError.value(day, 'day', 'that month has $last days');
     }
     return Day._(year, month, day);
   }
+
+  /// How long a month is, which depends on which month and sometimes which
+  /// year. Checking `day <= 31` would let this type hold the 31st of
+  /// February — a date that has never existed, in a type whose whole reason
+  /// to exist is being a real calendar day.
+  static int _lastDayOf(int year, int month) => switch (month) {
+    2 => _isLeapYear(year) ? 29 : 28,
+    4 || 6 || 9 || 11 => 30,
+    _ => 31,
+  };
+
+  /// Every fourth year, except every hundredth, except every four-hundredth.
+  /// 2000 was a leap year and 1900 was not.
+  static bool _isLeapYear(int year) =>
+      year % 4 == 0 && (year % 100 != 0 || year % 400 == 0);
 
   /// The day an instant fell on, where the program is running.
   ///

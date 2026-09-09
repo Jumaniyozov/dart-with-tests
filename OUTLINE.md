@@ -920,6 +920,13 @@ existing transcripts and verified to reproduce.
   `dart run tool/check_regions.dart` enforces it and normalises the package name first.
   It found the file-scoped version's four true misses in study 25 and cleared its three
   false alarms.
+- **`int.tryParse` is more generous than the sentence you are about to write.** It reads
+  `0x10` as 16 and accepts a sign wherever it is handed one. The studies 19-22 audit found
+  this in study 20's shipped parser; study 24 shipped it again, and `penceFrom('5.-1')`
+  answered 499 — £4.99 recorded for input that means nothing, with nothing thrown and
+  nothing warned. Check the characters before parsing them, and make the check an
+  assertion. The same applies to any type that claims to be a real-world value: study 25's
+  `Day` accepted the 31st of February until it was measured.
 - **Book II only — the domain never holds a `DateTime`.** Measured: for one
   instant `local == utc` is `false` while their hash codes are equal,
   `toIso8601String()` drops the offset, and `DateTime(2026, 2, 31)` is the 3rd of

@@ -131,10 +131,19 @@ data.
 
 <include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch24_expenses/lib/src/command.dart#parse</include>
 
-Study 9's `int.tryParse` answers `null` rather than throwing, and this function does the same:
-it splits on the dot, checks both halves, and answers `null` for anything it cannot read. The
-guard `when pence.length == 2` is why `12.5` is refused — pence are two digits, and `12.5`
+Study 9's `int.tryParse` answers `null` rather than throwing, and this function does the same.
+The guard `when pence.length == 2` is why `12.5` is refused — pence are two digits, and `12.5`
 could mean five pence or fifty and the program must not guess.
+
+Every character is checked before anything is parsed, and that is not belt and braces.
+`int.tryParse` is more generous than a person expects: it reads `0x10` as **16**, and it takes a
+sign wherever it is handed one. Split `5.-1` on the dot and both halves parse — `5` and `-1` —
+so a version of this function that trusted `tryParse` would answer **499** and record £4.99 for
+input that means nothing at all. Nothing throws, nothing warns, and the wrong money is in the
+store. `_isDigits` is what makes the refusal real.
+
+A leading `-` is read on purpose, because `-5.00` is a perfectly readable amount. It is `Money`
+that refuses it, not the parser, and 24.2 depends on those being two different failures.
 
 **This is the worse of two tools and it is here on purpose.** `null` says *no* and nothing
 else. It cannot say which half was wrong, or that the text was empty, or that there were three

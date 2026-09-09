@@ -16,6 +16,21 @@ void main() {
       expect(penceFrom('12.505'), isNull);
       expect(penceFrom('1.2.3'), isNull);
     });
+
+    test('and refuses what int.tryParse would have let through', () {
+      // `int.tryParse` reads hexadecimal and takes a sign wherever it finds
+      // one. A parser that answered 499 for '5.-1' would put wrong money in
+      // the store and nothing downstream could tell.
+      expect(penceFrom('0x10'), isNull);
+      expect(penceFrom('5.-1'), isNull);
+      expect(penceFrom('5. 1'), isNull);
+      expect(penceFrom(' 12.50'), isNull);
+    });
+
+    test('a leading minus is readable, and is Money\'s problem not ours', () {
+      expect(penceFrom('-5'), -500);
+      expect(penceFrom('-5.50'), -550);
+    });
   });
 
   group('a run that worked', () {

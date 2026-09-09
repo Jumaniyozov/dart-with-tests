@@ -151,6 +151,12 @@ silence.
 A day is not. The 9th of September is the 9th of September everywhere, and an expense happened
 on a day.
 
+A type that claims to be a real calendar day has to be one. Checking `day <= 31` would let it
+hold the 31st of February, which has never existed — so `_lastDayOf` asks which month, and
+February asks which year. The leap rule is every fourth year, except every hundredth, except
+every four-hundredth: 2000 was a leap year and 1900 was not, and both are tested, because a rule
+with two exceptions is a rule somebody will get wrong.
+
 Study 30 measures four separate ways `DateTime` gets this wrong. Here is the one that belongs
 to this study, because it is about `==`:
 

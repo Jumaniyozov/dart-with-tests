@@ -39,22 +39,36 @@ usage: expenses <command>
 // #region parse
 /// Pence from what a person typed at a terminal. `12.50` is 1250.
 ///
-/// Naive on purpose, and study 26 rewrites it. It answers `null` for anything
-/// it cannot read, which is study 9's `tryParse` answer — and study 26 asks
-/// whether `null` is really what a caller needs to be told here.
+/// Every character is checked before anything is parsed, because
+/// `int.tryParse` is more generous than a person expects: it reads `0x10` as
+/// 16 and accepts a leading sign anywhere it is handed one. A parser that
+/// takes `5.-1` and answers 499 is worse than one that refuses, because
+/// nothing downstream can tell that it guessed.
+///
+/// A leading `-` is read, because `-5.00` is a perfectly readable amount. It
+/// is [Money] that refuses it, and 24.2 depends on those being two different
+/// failures.
+///
+/// Still naive in one way, and study 26 rewrites it for that: `null` says no
+/// and cannot say which part was wrong.
 int? penceFrom(String text) {
-  switch (text.split('.')) {
-    case [final pounds]:
-      final whole = int.tryParse(pounds);
-      return whole == null ? null : whole * 100;
-    case [final pounds, final pence] when pence.length == 2:
-      final whole = int.tryParse(pounds);
-      final part = int.tryParse(pence);
-      return whole == null || part == null ? null : whole * 100 + part;
+  final negative = text.startsWith('-');
+  final sign = negative ? -1 : 1;
+  switch ((negative ? text.substring(1) : text).split('.')) {
+    case [final pounds] when _isDigits(pounds):
+      return sign * int.parse(pounds) * 100;
+    case [final pounds, final pence]
+        when _isDigits(pounds) && _isDigits(pence) && pence.length == 2:
+      return sign * (int.parse(pounds) * 100 + int.parse(pence));
     default:
       return null;
   }
 }
+
+/// Digits and nothing else — not a sign, not a space, not `0x`.
+bool _isDigits(String text) =>
+    text.isNotEmpty &&
+    text.codeUnits.every((unit) => unit >= 0x30 && unit <= 0x39);
 // #endregion parse
 
 // #region run
