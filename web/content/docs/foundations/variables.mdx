@@ -92,9 +92,11 @@ This book uses the first rule, and you should too while you read it. `final` unl
 value changes makes reassignment visible: the reader sees `var` and knows to keep watching
 that name, instead of scanning the whole function to find out.
 
-Do not expect the analyzer to enforce this. `prefer_final_locals` is deliberately left out
-of `package:lints`, because the Dart team treats it as a style preference rather than a
-defect. It is a convention you keep, not a rule the machine checks.
+Do not expect the analyzer to enforce this. `prefer_final_locals` appears in neither
+`core.yaml` nor `recommended.yaml` of `package:lints`, so the `analysis_options.yaml` from
+study 1 does not turn it on. That follows from what the guidance itself says — "Either rule
+is acceptable, but pick *one* and apply it consistently throughout your code." A rule where
+both answers are acceptable is a convention you keep, not a defect a machine can find.
 </Practice>
 
 ## 3.2 What the compiler can know

@@ -1,6 +1,6 @@
 // Greetings in a few languages.
 //
-// The language is a String here because it keeps this chapter short. It is
+// The language is a String here because it keeps this study short. It is
 // the wrong type for the job — Study 6 replaces it with an enum.
 
 // #region prefixes

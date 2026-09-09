@@ -316,8 +316,11 @@ existing transcripts and verified to reproduce.
   Never hand-written.
 - Sections are numbered `## N.1`, `## N.2`, …, then `## Wrapping up`, then
   `## Challenges` — three already-failing tests in `exercises/`. Study 1 is the
-  exception: it has no package tests and no challenges, because the reader has
-  not met `test()` yet. Every study from 2 onward has both.
+  exception on all three counts: unnumbered sections, no package tests and no
+  challenges, because the reader has not met `test()` yet. Every study from 2
+  onward has all of them.
+- `Wrapping up` closes with an `Also met:` line — that exact wording, in every
+  study from 2 onward.
 - Add the slug to `web/content/docs/foundations/meta.json`. A study that is not
   listed there does not appear in the rail, and nothing warns you.
 - The unit is a **study**. `chapter` survives in `PRODUCT.md`, the `chNN_`
@@ -328,5 +331,9 @@ existing transcripts and verified to reproduce.
   href="https://dart.dev/…">`. The candidate rules named above are starting
   points, not citations. A Practice with no citable source omits both props
   rather than inventing one — study 2 does exactly that.
-- `Wrapping up` closes with an "Also met:" line listing machinery introduced in
-  passing, so the reader can see what they picked up without being taught.
+- Deliberately-broken code that fails to **compile** cannot live in `lib/`: it
+  would put the workspace analyze above zero and contradict study 1's Practice.
+  Capture its transcript from a temporary state and inline the code in the MDX
+  (study 8 does this). Code that fails at **run time** may stay as a real file
+  (study 7's `bin/frozen.dart`, study 9's `bin/bang.dart`), which is better —
+  the transcript stays reproducible by just running it.
