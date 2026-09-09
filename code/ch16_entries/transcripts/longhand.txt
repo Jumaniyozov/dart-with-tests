@@ -1,0 +1,6 @@
+$ dart analyze lib/longhand.dart
+Analyzing longhand.dart...
+
+   info - longhand.dart:10:9 - Parameter 'text' could be a super parameter. Trying converting 'text' to a super parameter. - use_super_parameters
+
+1 issue found.

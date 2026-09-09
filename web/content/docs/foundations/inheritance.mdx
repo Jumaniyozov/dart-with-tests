@@ -1,0 +1,261 @@
+---
+title: Inheritance and interfaces
+study: 16
+direction: Write down what the family has in common, then let the compiler count the family.
+description: extends, implements and abstract; the four class modifiers; and the sealed families that finish the exhaustiveness story from study 14.
+---
+
+Study 14 switched over a record and got exhaustiveness because the compiler could count the
+shapes. It ended by promising the same guarantee for a family of classes, once classes existed.
+They do now.
+
+A ledger entry is one of three things, and every one of them has an amount:
+
+<include cwd lang="dart" meta='title="lib/entries.dart"'>../code/ch16_entries/lib/entries.dart#entry</include>
+
+<include cwd lang="dart" meta='title="lib/entries.dart"'>../code/ch16_entries/lib/entries.dart#family</include>
+
+<Drill n={1}>
+
+<Direction>Three types, one question each can answer.</Direction>
+
+<include cwd lang="dart" meta='title="test/first_test.dart"'>../code/ch16_entries/test/first_test.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch16_entries/transcripts/pass.txt</include>
+</Console>
+
+</Drill>
+
+## 16.1 Saying it once
+
+`class const Payment(super.pence, final String to) extends Entry {}` is a whole class, body and
+all, in one line. Three things are happening in it.
+
+**`extends Entry`** makes `Payment` an `Entry`. Not merely similar — a `Payment` can be passed,
+stored and returned anywhere an `Entry` is wanted, which is why `balanceOf` takes a
+`List<Entry>` and receives whatever mixture you like.
+
+**`super.pence`** is a **super parameter**: take an argument here and hand it straight to the
+parent's constructor. The longhand names the parameter, passes it, and declares it — three times for one value — and
+the analyzer would rather you did not:
+
+```dart title="lib/longhand.dart"
+class Note {
+  final String text;
+
+  const new(this.text);
+}
+
+class Reminder extends Note {
+  final int hour;
+
+  const new(String text, this.hour) : super(text);
+}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch16_entries/transcripts/longhand.txt</include>
+</Console>
+
+`use_super_parameters` ships in `package:lints/recommended.yaml`, so that advice is switched on
+in every package in this book.
+
+**`final String to`** adds a field only `Payment` has. Study 15's rules are unchanged: `final`
+makes it a field, `const` before the name makes the constructor constant.
+
+`pence` and `isDebit` are written once, in `Entry`, and all three classes have them:
+
+<include cwd lang="dart" meta='title="test/entries_test.dart"'>../code/ch16_entries/test/entries_test.dart#family</include>
+
+That is **inheritance**: the parent's implementation arrives in the child without being copied.
+
+## 16.2 The compiler counts the family
+
+`sealed` is the word that pays study 14's promise. It says the subtypes of `Entry` are exactly
+the ones in this file, and because the compiler can count them it can check a switch:
+
+<include cwd lang="dart" meta='title="lib/entries.dart"'>../code/ch16_entries/lib/entries.dart#describe</include>
+
+`Payment(:final to)` is an **object pattern**. It matches when the value is a `Payment` and, in
+the same breath, pulls out the field named `to` and calls it `to`. `:final to` is shorthand for
+`to: final to` — the field name and the variable name are usually the same, so Dart lets you
+write it once.
+
+There is no `default`, and there must not be. Delete a case:
+
+```dart title="lib/incomplete.dart"
+String describe(Entry entry) => switch (entry) {
+  Payment(:final to) => 'paid $to',
+  Refund(:final from) => 'refund from $from',
+};
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch16_entries/transcripts/incomplete.txt</include>
+</Console>
+
+`Interest()` by name, exactly as study 14's records were named. Add a fourth kind of entry and
+every switch that has not been told about it stops compiling — which is the entire reason to
+seal a family rather than leave it open.
+
+Guards work here too, and the rule study 14 measured still holds: a guarded case does not count
+towards exhaustiveness, so each one needs an unguarded case behind it.
+
+<include cwd lang="dart" meta='title="lib/entries.dart"'>../code/ch16_entries/lib/entries.dart#rate</include>
+
+<include cwd lang="dart" meta='title="test/entries_test.dart"'>../code/ch16_entries/test/entries_test.dart#switching</include>
+
+## 16.3 What `sealed` costs
+
+Two things follow from sealing a family, and the second is a real price.
+
+A `sealed` class is **abstract**: it has no instances of its own. `Entry(100)` is not an entry,
+it is a mistake, because an entry is one of the three concrete kinds.
+
+And nobody outside the file can join the family — including your own tests:
+
+```dart title="lib/closed.dart"
+import 'entries.dart';
+
+/// A stand-in for a test. Every real project wants one of these.
+class FakeEntry implements Entry {
+  @override
+  final int pence = 0;
+
+  @override
+  bool get isDebit => false;
+}
+
+/// And an Entry that is not any of the three.
+final plain = Entry(100);
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch16_entries/transcripts/closed.txt</include>
+</Console>
+
+`implements` is the other way to take on a type. Where `extends` inherits the parent's
+implementation, `implements` takes only its **interface** — the list of members you must
+provide — and gives you nothing. `FakeEntry` has to write `pence` and `isDebit` itself, which is
+exactly what a test double wants: the same shape, none of the behaviour.
+
+`sealed` forbids it. That is the trade, stated plainly: exhaustive switching in exchange for a
+closed family. It is the right trade for a ledger entry, which really is one of three things.
+It is the wrong trade for a type other people are meant to extend.
+
+## 16.4 Four modifiers, one sentence each
+
+Dart lets you choose exactly how open a class is. Here is every modifier misused from another
+library at once:
+
+```dart title="lib/modifiers.dart"
+import 'kinds.dart'; // sealed Sealed, final Final, base Base, interface Interface
+
+class A extends Sealed {}
+
+class B extends Final {}
+
+class C implements Final {}
+
+class D implements Base {}
+
+class E extends Interface {}
+
+// These two are fine.
+class F implements Interface {}
+
+base class G extends Base {}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch16_entries/transcripts/modifiers.txt</include>
+</Console>
+
+Read the errors and the two silences together and the whole system falls out:
+
+| Modifier | Outside its library you may | The point |
+| --- | --- | --- |
+| *(none)* | extend and implement | the default, and the most open |
+| `interface` | implement only | a contract, not a starting point |
+| `base` | extend only, and your class must be `base`, `final` or `sealed` too | the implementation is guaranteed to be inherited |
+| `final` | neither | the hierarchy is closed, but you may add subtypes later |
+| `sealed` | neither, and it is abstract | the compiler can count the subtypes |
+
+`base` is the fiddly one: `D implements Base` fails twice over, once because a `base` class
+cannot be implemented from outside and once because any subtype of it must carry a modifier
+that keeps the guarantee going.
+
+## 16.5 Enums with fields and methods
+
+Study 6 finished on a promise: an enum can carry data and behaviour of its own, once classes
+exist. Here it is, and it is the same syntax you have just learned:
+
+<include cwd lang="dart" meta='title="lib/entries.dart"'>../code/ch16_entries/lib/entries.dart#band</include>
+
+The constructor sits in the header exactly as it does on a class, and each value calls it —
+`incoming('Money in', 1)` is a constructor call. After the values comes a semicolon, and after
+that an ordinary class body: getters, methods, statics and overrides.
+
+<include cwd lang="dart" meta='title="test/entries_test.dart"'>../code/ch16_entries/test/entries_test.dart#band</include>
+
+Everything study 6 taught still works — `values`, `.name`, `.index`, dot shorthands, exhaustive
+switching. An enhanced enum adds to that; it takes nothing away.
+
+<Gloss title="A subclass inherits behaviour, not equality">
+`Payment(-2500, 'x') == Payment(-2500, 'x')` is `false`, and inheriting from `Entry` does not
+change that. Study 15's rule holds all the way down: `==` and `hashCode` are written or they are
+identity, and writing them on a family with subclasses is harder than it looks, because `==` has
+to stay symmetric across the whole family.
+
+The two `const` entries in that same test group *are* one object, though. Canonicalisation does
+not need `==` — it happens while the program compiles, before anything can be compared.
+</Gloss>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch16_entries/transcripts/all.txt</include>
+</Console>
+
+<Practice source="dart.dev — Class modifiers" href="https://dart.dev/language/class-modifiers#sealed">
+dart.dev states the choice in one pair of sentences, and it is the whole decision:
+
+**"To create a known, enumerable set of subtypes, use the `sealed` modifier."** And then:
+**"If you don't want exhaustive switching, or want to be able to add subtypes later without
+breaking the API, use the `final` modifier."**
+
+Read that second sentence as the warning it is. Sealing is not a way of being careful, it is a
+promise that the list is complete — and it is a promise to everyone who imports you, because
+adding a fourth subtype later breaks every switch they have written. That is a *feature* inside
+one program and a broken release for a published package.
+
+The default remains the right choice more often than the modifiers do. Reach for `sealed` when
+the family really is finite and you want the compiler to enforce it, as a ledger entry is.
+Reach for `final` when you simply do not want strangers in your hierarchy. Leave a class plain
+when you have no particular opinion — which is most of the time.
+</Practice>
+
+## Wrapping up
+
+`extends` inherits a parent's fields and implementation, and `super.pence` hands a constructor
+argument straight through. `implements` takes the interface and none of the behaviour, which is
+what a test double wants. `abstract` means no instances of its own.
+
+`sealed` is abstract plus closed, and closed is what lets the compiler count the subtypes and
+check a switch — the guarantee study 14 promised, now over classes. The price is that nobody,
+including your tests, can join the family from outside.
+
+Also met: object patterns, super parameters, the `base` / `interface` / `final` modifiers, and
+enums carrying fields, methods and statics.
+
+Study 17 shares behaviour between classes that are not related at all.
+
+## Challenges
+
+Three unfinished pieces of a support inbox. Make the tests pass one at a time. Do not edit the
+tests. There is no `default` and no `_` in the answers — the family is closed, so use all of it.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch16_entries/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch16_entries/exercises/challenges.dart</include>

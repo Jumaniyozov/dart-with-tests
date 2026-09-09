@@ -1,0 +1,11 @@
+$ dart analyze lib/modifiers.dart
+Analyzing modifiers.dart...
+
+  error - modifiers.dart:3:17 - The class 'Sealed' can't be extended, implemented, or mixed in outside of its library because it's a sealed class. - invalid_use_of_type_outside_library
+  error - modifiers.dart:5:17 - The class 'Final' can't be extended outside of its library because it's a final class. - invalid_use_of_type_outside_library
+  error - modifiers.dart:7:20 - The class 'Final' can't be implemented outside of its library because it's a final class. - invalid_use_of_type_outside_library
+  error - modifiers.dart:9:7 - The type 'D' must be 'base', 'final' or 'sealed' because the supertype 'Base' is 'base'. - subtype_of_base_or_final_is_not_base_final_or_sealed
+  error - modifiers.dart:9:20 - The class 'Base' can't be implemented outside of its library because it's a base class. - invalid_use_of_type_outside_library
+  error - modifiers.dart:11:17 - The class 'Interface' can't be extended outside of its library because it's an interface class. - invalid_use_of_type_outside_library
+
+6 issues found.

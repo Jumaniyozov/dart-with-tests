@@ -1,0 +1,7 @@
+$ dart analyze lib/closed.dart
+Analyzing closed.dart...
+
+  error - closed.dart:4:28 - The class 'Entry' can't be extended, implemented, or mixed in outside of its library because it's a sealed class. - invalid_use_of_type_outside_library
+  error - closed.dart:13:15 - Abstract classes can't be instantiated. Try creating an instance of a concrete subtype. - instantiate_abstract_class
+
+2 issues found.

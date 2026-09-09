@@ -1,0 +1,6 @@
+$ dart analyze lib/incomplete.dart
+Analyzing incomplete.dart...
+
+  error - incomplete.dart:3:33 - The type 'Entry' isn't exhaustively matched by the switch cases since it doesn't match the pattern 'Interest()'. Try adding a wildcard pattern or cases that match 'Interest()'. - non_exhaustive_switch_expression
+
+1 issue found.

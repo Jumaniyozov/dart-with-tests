@@ -15,6 +15,7 @@
     "iterables",
     "records",
     "patterns",
-    "classes"
+    "classes",
+    "inheritance"
   ]
 }

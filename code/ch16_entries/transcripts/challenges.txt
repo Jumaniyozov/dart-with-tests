@@ -1,0 +1,6 @@
+$ dart test exercises/
+00:00 +0: loading exercises/challenges_test.dart
+00:00 +0: exercises/challenges_test.dart: challenge 1 — one line of the listing reads each kind differently
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — one line of the listing reads each kind differently [E]
+  UnimplementedError: challenge 1
+00:00 +0 -1: exercises/challenges_test.dart: challenge 2 — how long it may wait gives each kind its own window
