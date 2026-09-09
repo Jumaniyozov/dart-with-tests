@@ -1,0 +1,198 @@
+---
+title: Null safety
+study: 9
+direction: Answer "or what?" once, at the edge, and never carry the question further in.
+description: What the question mark in int? means, the four ways to answer it, and why the analyzer could not help you in study 8.
+---
+
+Study 8 ended on an error nobody had met before: `counts[word]` is an `int?`, and you may
+not add one to it. This study is about that question mark.
+
+A missing key, a name nobody typed, a number that would not parse — every real program has
+places where there is honestly nothing. Dart's answer is to make "nothing" visible in the
+type, and then refuse to let you ignore it.
+
+## 9.1 A type that may hold nothing
+
+`int` and `int?` are two different types. The first always holds a number. The second holds
+a number **or** `null`, the value that means nothing is there.
+
+<include cwd lang="dart" meta='title="lib/lookup.dart"'>../code/ch09_lookup/lib/lookup.dart#find</include>
+
+<Drill n={1}>
+
+<Direction>Ask the directory two questions: one it can answer, one it cannot.</Direction>
+
+<include cwd lang="dart" meta='title="test/first_test.dart"'>../code/ch09_lookup/test/first_test.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch09_lookup/transcripts/pass.txt</include>
+</Console>
+
+</Drill>
+
+Now try to use the answer without saying what to do when it is nothing:
+
+```dart title="lib/noq.dart"
+int extensionLength(String name) {
+  final ext = extensionFor(name);
+  return ext.bitLength;
+}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch09_lookup/transcripts/unchecked.txt</include>
+</Console>
+
+> The property 'bitLength' can't be unconditionally accessed because the receiver can be
+> 'null'.
+
+**Unconditionally** is the word doing the work. Dart is not saying you may never touch it.
+It is saying you may not touch it *without a condition* — without first settling what
+happens in the other case.
+
+Here is the mechanism, and it is worth being precise about. Nullability lives entirely in
+the type system, at compile time. There is no run-time flag on the value. `int?` and `int`
+compile to the same thing; the difference is a promise the analyzer tracks through your
+code and refuses to let you break. It costs nothing when the program runs. It costs you
+answering one question while you write.
+
+## 9.2 Four ways to answer "or what?"
+
+<include cwd lang="dart" meta='title="test/lookup_test.dart"'>../code/ch09_lookup/test/lookup_test.dart#answers</include>
+
+**`??` supplies a value.** `directory[name] ?? fallback` reads as "that, or this if it is
+nothing". It takes a nullable left side and hands back a plain, non-nullable value — which
+is why the result can be used without further ceremony.
+
+<include cwd lang="dart" meta='title="lib/lookup.dart"'>../code/ch09_lookup/lib/lookup.dart#or</include>
+
+**`?.` asks conditionally.** `name?.trim()` calls `trim` if there is a name and produces
+nothing if there is not. It never crashes, and the result is itself nullable — you have
+postponed the question, not answered it.
+
+**`??=` fills a hole once.** `found ??= 'nobody'` assigns only when `found` is currently
+nothing. Both branches are in the test above.
+
+**`!` insists.** And this one is different from the other three.
+
+<include cwd lang="dart" meta='title="bin/bang.dart"'>../code/ch09_lookup/bin/bang.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch09_lookup/transcripts/bang.txt</include>
+</Console>
+
+Read the order. `ada` printed. The program was running, doing real work, and then it
+stopped.
+
+`!` is not a conversion and it does not check anything for you. It is you telling the
+compiler "I know this is not nothing" and taking responsibility for being right. When you
+are right it costs nothing. When you are wrong the program dies at exactly the moment
+someone is using it — which is the situation null safety exists to prevent, re-created by
+hand.
+
+Use `!` when you can point at the reason it cannot be null. Reach for `??` or a check
+otherwise.
+
+## 9.3 What the analyzer can prove
+
+You do not have to write `??` everywhere. Once the analyzer knows a value is not nothing,
+it lets you use it normally for the rest of the block. This is called **promotion**.
+
+<include cwd lang="dart" meta='title="lib/lookup.dart"'>../code/ch09_lookup/lib/lookup.dart#describe</include>
+
+After `if (name == null) return 'nobody';` there is only one way to reach the next line, and
+on that path `name` cannot be null. So from there down its type is `String`, not `String?`,
+and `name.length` needs no question mark, no `!`, and no apology.
+
+<include cwd lang="dart" meta='title="test/lookup_test.dart"'>../code/ch09_lookup/test/lookup_test.dart#promotion</include>
+
+This is also the answer to the puzzle study 8 left open. Promotion works on a **local
+variable**, because the analyzer can see every line that could change it between the check
+and the use. It does not work on `counts[word]`, because that is a method call — the map
+could return something different the second time, and nothing in the language promises
+otherwise. Two lookups are two questions.
+
+The fix in both cases is the same: ask once, put the answer in a local variable, and use
+that.
+
+<Gloss title="late — a promise to fill it in before anyone looks">
+`late` says a value will be set before it is read, so the type need not be nullable even
+though it has no value yet. `late final int size;` compiles, and reading it before it is
+assigned throws rather than handing you a `null`.
+
+It is a real tool and it is also a way of turning a compile-time check into a run-time one,
+which is the trade you spent this study learning to notice. Effective Dart draws the line
+at: **AVOID `late` variables if you need to check whether they are initialized.** If your
+code has to ask, the honest type was nullable all along.
+</Gloss>
+
+## 9.4 Skipping the nothings
+
+Building a list from things that might not exist used to need a loop and a condition. Since
+Dart 3.8 a `?` in front of an element does it:
+
+<include cwd lang="dart" meta='title="lib/lookup.dart"'>../code/ch09_lookup/lib/lookup.dart#roster</include>
+
+`?directory[name]` is a **null-aware element**: include this if it is something, and leave
+no gap if it is not. Combined with the collection-`for` from study 7, three names produce
+however many extensions actually exist.
+
+<include cwd lang="dart" meta='title="test/lookup_test.dart"'>../code/ch09_lookup/test/lookup_test.dart#roster</include>
+
+Note the second test. A roster with nothing in it is an empty list, not `null` — the rule
+study 8 quoted from Effective Dart, kept.
+
+<include cwd lang="dart" meta='title="lib/lookup.dart"'>../code/ch09_lookup/lib/lookup.dart#parse</include>
+
+`int.tryParse` is the other half of this. `int.parse('four')` throws; `int.tryParse('four')`
+hands back nothing. For text a person typed, nothing is a normal outcome rather than an
+emergency, so `tryParse` with a `??` is the right shape and errors are not involved at all.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch09_lookup/transcripts/all.txt</include>
+</Console>
+
+<Practice source="Effective Dart — Usage" href="https://dart.dev/effective-dart/usage#dont-explicitly-initialize-variables-to-null">
+Effective Dart's Null section is five short rules, and two of them are the habits worth
+taking from this study:
+
+- **CONSIDER type promotion or null-check patterns for using nullable types.** Check once,
+  let the analyzer promote, and use the plain type afterwards — rather than sprinkling `!`
+  or `?.` down every line that touches the value.
+- **AVOID `late` variables if you need to check whether they are initialized.**
+
+The other three are small and save you typing: **DON'T explicitly initialize variables to
+`null`** (a nullable variable already starts as nothing), **DON'T use an explicit default
+value of `null`**, and **DON'T use `true` or `false` in equality operations**.
+
+The rule this book adds is about where you answer the question. Take nullability at the
+edge — the lookup, the parse, the thing a person typed — answer it there with `??` or a
+check, and pass a plain type inwards. Every function that accepts a `String?` instead of a
+`String` makes its own callers answer the question again, and the answer gets less informed
+the further it travels from where the value came from.
+</Practice>
+
+## Wrapping up
+
+`int?` is a different type from `int`, and the difference exists only at compile time. `??`
+supplies a value, `?.` postpones the question, `??=` fills a hole once, and `!` insists and
+crashes if you were wrong. Checking a local variable promotes it; checking a map lookup
+does not, because a method call makes no promises about its next answer.
+
+Also met: `late`, null-aware elements, and `int.tryParse` against `int.parse`.
+
+That closes the first six studies on data. The next study leaves types behind and looks at
+how a program decides what to do.
+
+## Challenges
+
+Three tests are already written and already failing. Make them pass one at a time. Do not
+edit the tests. No `!` in any answer — every one of them has a `??`, a `?.` or a check that
+does the job without the crash.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch09_lookup/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch09_lookup/exercises/challenges.dart</include>

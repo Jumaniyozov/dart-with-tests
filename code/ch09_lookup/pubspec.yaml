@@ -1,0 +1,11 @@
+name: ch09_lookup
+description: Study 9 — nullable types, and the four ways to answer "or what?".
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.26.0

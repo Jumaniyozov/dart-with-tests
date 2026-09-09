@@ -1,0 +1,4 @@
+$ dart run bin/bang.dart
+ada is on 101
+Unhandled exception:
+Null check operator used on a null value

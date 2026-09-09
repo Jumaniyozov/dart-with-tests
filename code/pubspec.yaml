@@ -14,3 +14,4 @@ workspace:
   - ch06_language
   - ch07_basket
   - ch08_tally
+  - ch09_lookup
