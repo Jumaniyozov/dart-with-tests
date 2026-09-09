@@ -43,6 +43,7 @@ work: study 6 uses `switch` before study 10 formalises it, and study 7 uses
 | 16 | Inheritance and interfaces | `inheritance` | `ch16_entries` |
 | 17 | Mixins | `mixins` | `ch17_receipts` |
 | 18 | Generics | `generics` | `ch18_range` |
+| 19 | Extensions and extension types | `extension-types` | `ch19_pence` |
 
 ### Promises already in print
 
@@ -65,12 +66,15 @@ writing 15, 16 or 20; each is a sentence a reader has already been given.
 
 | Owed by | Made in | The reader was promised |
 | --- | --- | --- |
-| 19 | `generics.mdx` | a type that exists for the compiler and disappears before the program runs |
 | 20 | `control-flow.mdx` | errors as the run-time answer to bad input, against `assert` for programmer mistakes |
 | 20 | `classes.mdx` | the same, for text a person typed that an invariant must reject |
+| 20 | `extension-types.mdx` | the same again, named as the study that takes up both |
+| 23 | `extension-types.mdx` | how to hide a constructor, so an invariant cannot be walked past |
 
 Also paid since: 15→16 (a family that shares behaviour), 16→17 (sharing
-without a family), 17→18 (same behaviour, different type).
+without a family), 17→18 (same behaviour, different type), 18→19 (a type that
+exists for the compiler and disappears before the program runs), 4→19 (pence
+stop being an `int` by convention and become a type).
 
 Paid and verified: 2→6 (enum kills the stringly-typed parameter), 3→7
 (`final` list vs `const` list), 7→12 (the shorter way to sum, needing
@@ -83,9 +87,9 @@ the loops deleted), 12→13 and 12→14, 13→14, 3→15 (`const` constructors),
 
 ## To write
 
-Studies 4-18 are written and committed; their entries below are kept as the
+Studies 4-19 are written and committed; their entries below are kept as the
 record of what was intended, and each study's own commit message records what
-construction actually measured. **Study 19 is next.**
+construction actually measured. **Study 20 is next.**
 
 ### 4 — Numbers · `numbers` · `ch04_money`
 

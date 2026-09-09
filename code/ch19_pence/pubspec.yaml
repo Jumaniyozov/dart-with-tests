@@ -1,0 +1,11 @@
+name: ch19_pence
+description: Study 19 — a name the compiler enforces and the machine never sees.
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.26.0

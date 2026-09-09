@@ -1,0 +1,6 @@
+$ dart analyze lib/ambiguous.dart
+Analyzing ambiguous.dart...
+
+  error - ambiguous.dart:9:23 - A member named 'asMoney' is defined in 'extension Terse on int' and 'extension Loud on int', and neither is more specific. Try using an extension override to specify the extension you want to be chosen. - ambiguous_extension_member_access
+
+1 issue found.

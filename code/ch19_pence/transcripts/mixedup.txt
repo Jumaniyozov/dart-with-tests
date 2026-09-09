@@ -1,0 +1,7 @@
+$ dart analyze lib/mixedup.dart
+Analyzing mixedup.dart...
+
+  error - mixedup.dart:3:31 - The argument type 'Pounds' can't be assigned to the parameter type 'Pence'.  - argument_type_not_assignable
+  error - mixedup.dart:5:30 - The argument type 'int' can't be assigned to the parameter type 'Pence'.  - argument_type_not_assignable
+
+2 issues found.

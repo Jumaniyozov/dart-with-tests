@@ -1,0 +1,6 @@
+$ dart run bin/vanished.dart
+£12.34
+Unhandled exception:
+NoSuchMethodError: Class 'int' has no instance getter 'asMoney'.
+Receiver: 1234
+Tried calling: asMoney

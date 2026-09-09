@@ -80,6 +80,22 @@ the error is study 9's and not a generics error at all.
 One decision inside that block grew large enough to deserve its own record.
 Primary constructors as the default class syntax is now ADR 0002.
 
+Study 19 has since been written, and it turned out to be pinned harder than the
+outline guessed. It needs 18, but not for generics machinery: 18.3 proves a
+generic class carries its type argument into run time, and 19.3 is the same
+question asked of an extension type with the opposite answer. Read apart they
+are two facts; read in order they are one argument, and the order is the
+argument. It needs 15 for the class it is measured against and for the rule
+that a declaration with no initialiser list cannot check anything — a rule
+first drawn for primary constructors and reused unchanged for a second
+declaration form. It needs 4, whose "hold pence in an int" is the convention it
+finally makes enforceable. And its `Iterable<Pence>` extension is study 12's
+`fold` given a receiver.
+
+Study 19 also makes the first forward reference into Book II: hiding a
+constructor needs privacy, which opens at study 23. That is recorded as a debt
+rather than paid, because nothing in Book I can pay it.
+
 Reordering after several of these studies are written is expensive, because the
 studies carry forward references to each other by number — a published Gloss
 that says "Study 7" is a contract with the reader. One such promise was already

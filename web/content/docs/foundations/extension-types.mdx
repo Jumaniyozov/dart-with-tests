@@ -1,0 +1,290 @@
+---
+title: Extensions and extension types
+study: 19
+direction: Ask what the compiler knows and the machine does not. The gap between those two answers is the whole study.
+description: Adding methods to a type you do not own, and giving an int a name the compiler enforces and the running program has never heard of.
+---
+
+Study 4 settled how this book holds money: a whole number of pence in an `int`. It left one
+thing open. `int` belongs to the SDK. You cannot open it, so the arithmetic that turns `1234`
+into `£12.34` has sat in a function *beside* the value ever since — `format(pence)`, never
+`pence.format()`.
+
+`extension` closes that.
+
+<include cwd lang="dart" meta='title="lib/pence.dart"'>../code/ch19_pence/lib/pence.dart#formatting</include>
+
+`extension PenceFormatting on int` says: from here on, every `int` in this library has these
+members. `this` inside the body is the `int` itself. Nothing was added to `int` — 19.1 says
+what really happened — and yet:
+
+<Drill n={1}>
+
+<Direction>A method on a type whose source you will never see.</Direction>
+
+<include cwd lang="dart" meta='title="test/first_test.dart"'>../code/ch19_pence/test/first_test.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch19_pence/transcripts/pass.txt</include>
+</Console>
+
+</Drill>
+
+<include cwd lang="dart" meta='title="test/pence_test.dart"'>../code/ch19_pence/test/pence_test.dart#reach</include>
+
+## 19.1 Resolved before the program runs
+
+dart.dev says the mechanism in one line: **"Extension methods are resolved against the static
+type of the receiver."**
+
+So `1234.asMoney` is not a lookup. The compiler already knows the receiver is an `int`, finds
+the extension at compile time, and emits a call to an ordinary static function taking that
+`int`. No object was modified, nothing was registered, and the call costs what any function
+call costs. Three consequences follow, and none of them is optional.
+
+**A `dynamic` receiver finds nothing.** There is no static type to resolve against.
+
+<include cwd lang="dart" meta='title="bin/vanished.dart"'>../code/ch19_pence/bin/vanished.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch19_pence/transcripts/vanished.txt</include>
+</Console>
+
+Same value, same getter, one line apart. The analyzer reported nothing, because `dynamic` is
+the one type it agrees not to check. And read what the failure actually says: not "extension
+not found" but *"Class 'int' has no instance getter 'asMoney'"*. That is the literal truth.
+`int` never had one.
+
+**An instance member always wins — and where you write the name decides which member you
+meant.**
+
+<include cwd lang="dart" meta='title="lib/pence.dart"'>../code/ch19_pence/lib/pence.dart#shadow</include>
+
+<include cwd lang="dart" meta='title="test/pence_test.dart"'>../code/ch19_pence/test/pence_test.dart#shadowing</include>
+
+From outside, `Shop('Ada').name` is `'Ada'`: the real member wins and the extension's `name`
+can never be reached. From *inside* the extension, the bare `name` in `sign` resolves to the
+extension's own. One word, two answers, and no warning for either. The lesson is not to learn
+the rule — it is never to name an extension member after something the type already has.
+
+**Two extensions cannot both win.** This one is caught:
+
+```dart title="lib/ambiguous.dart"
+extension Terse on int {
+  String get asMoney => '$this p';
+}
+
+extension Loud on int {
+  String get asMoney => '$this PENCE';
+}
+
+String show() => 1234.asMoney;
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch19_pence/transcripts/ambiguous.txt</include>
+</Console>
+
+The fix is in the message. An **extension override** — the extension's name in front of the
+receiver, `Terse(1234).asMoney` — chooses one on purpose. The test above uses the same form as
+`PenceFormatting(1234).asMoney`, where there is nothing to disambiguate and it is merely legal.
+
+## 19.2 A convention the compiler cannot check
+
+Now the other half of the study. Here is study 4's rule written as code:
+
+<include cwd lang="dart" meta='title="lib/v1.dart"'>../code/ch19_pence/lib/v1.dart#loose</include>
+
+<include cwd lang="dart" meta='title="test/pence_test.dart"'>../code/ch19_pence/test/pence_test.dart#loose</include>
+
+That test passes. A count of overdue days went into a function about money and came out as
+seven pence, and nothing anywhere objected — because the parameter says `int`, and every `int`
+in the program is a candidate. There is no mistake to catch here. There is no rule to break.
+
+Study 15 would answer with a class, and a class would work. dart.dev names the cost of doing it
+that way: a wrapper class "requires the creation of an extra run-time object, which can get
+expensive when you need to wrap lots of objects" — one allocation per amount, each holding a
+single `int`.
+
+An **extension type** gives you the name without the object.
+
+<include cwd lang="dart" meta='title="lib/pence.dart"'>../code/ch19_pence/lib/pence.dart#pence</include>
+
+The first line declares the type *and* its constructor at once. `int` is the **representation
+type** — what a `Pence` really is — and `value` is the only way to reach it. Everything else in
+the body is yours to add.
+
+That first line also has no initialiser list, so it cannot check anything, and study 15's rule
+arrives unchanged in a new declaration form: **when a type must check something, write the
+constructor out.** Here that is a named one.
+
+<include cwd lang="dart" meta='title="test/pence_test.dart"'>../code/ch19_pence/test/pence_test.dart#named</include>
+
+Read the third test. `Pence(-150)` still compiles and still runs, because the unchecked
+constructor on line one never went away. Hold that thought until 19.4.
+
+Now the mix-up that started the section:
+
+<include cwd lang="dart" meta='title="lib/pence.dart"'>../code/ch19_pence/lib/pence.dart#pounds</include>
+
+<include cwd lang="dart" meta='title="lib/pence.dart"'>../code/ch19_pence/lib/pence.dart#receipt</include>
+
+```dart title="lib/mixedup.dart"
+import 'pence.dart';
+
+String pounds() => receiptFor(Pounds(12));
+
+String plain() => receiptFor(1234);
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch19_pence/transcripts/mixedup.txt</include>
+</Console>
+
+Both refused, and the second is the one that matters: a bare `int` is no longer good enough for
+a parameter that wants money. Twelve pounds still becomes twelve hundred pence, but only by
+saying so.
+
+<include cwd lang="dart" meta='title="test/pence_test.dart"'>../code/ch19_pence/test/pence_test.dart#closed</include>
+
+An extension can take the new type as its receiver too, type argument and all — which is how a
+list of amounts adds itself up without ever becoming a list of `int`:
+
+<include cwd lang="dart" meta='title="lib/pence.dart"'>../code/ch19_pence/lib/pence.dart#totals</include>
+
+<include cwd lang="dart" meta='title="test/pence_test.dart"'>../code/ch19_pence/test/pence_test.dart#totals</include>
+
+## 19.3 A wrapper that is not there
+
+dart.dev again, and this sentence is the one to keep: **"Extension types are a compile-time
+wrapping construct. At run time, there is absolutely no trace of the extension type."**
+
+Absolutely none. That is not a figure of speech.
+
+<include cwd lang="dart" meta='title="test/pence_test.dart"'>../code/ch19_pence/test/pence_test.dart#gone</include>
+
+`7 is Pence` is true. So is `7 is Pounds`. The same list of two values answers `2` to
+`whereType<Pence>()` **and** `2` to `whereType<Pounds>()`, because at run time there is one
+type in that list and it is `int`. `Pence(700).runtimeType` is `int`, and `toString` is the
+`int`'s.
+
+Set that beside 18.3. A `Range<int>` and a `Range<String>` are two different types while the
+program runs, and that is what turns covariance from a silent hole into a `TypeError` at the
+line that caused it. A generic class carries its type argument into run time. An extension type
+carries nothing at all.
+
+So the rule is one sentence. **An extension type is a promise to the compiler; never ask the
+running program about it.** Anything that consults a run-time type — `is`, `as`, `whereType`,
+a pattern that matches on the type — sees straight through the name to the `int` underneath.
+For a value you must be able to tell apart while the program runs, you want study 15's class.
+
+## 19.4 What you gain, and exactly what you gave up
+
+`Pence` is opaque on purpose: its only supertype is `Object?`, so it will not even go into an
+`Object`. You can trade that away.
+
+<include cwd lang="dart" meta='title="lib/pence.dart"'>../code/ch19_pence/lib/pence.dart#open</include>
+
+<include cwd lang="dart" meta='title="test/pence_test.dart"'>../code/ch19_pence/test/pence_test.dart#open</include>
+
+`implements int` hands back every `int` member and makes the type assignable to `int` again.
+dart.dev calls this *transparent*, and it is convenient right up to the moment you notice what
+it costs:
+
+```dart title="lib/limits.dart"
+import 'pence.dart';
+
+extension type Broken(int value) {
+  String toString() => 'nope';
+}
+
+final Object anything = Pence(1);
+
+final OpenPence bigger = OpenPence(1200) + 100;
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch19_pence/transcripts/limits.txt</include>
+</Console>
+
+Three refusals, three different lessons. An extension type may not redeclare `toString`, `==`
+or `hashCode` — those belong to `Object` and there is no object here to give them to, which is
+why study 15's `Money` could define equality and `Pence` cannot. `Pence` is not an `Object`,
+which is the compile-time face of the same coin whose run-time face is that it already *is* an
+`int`. And `OpenPence(1200) + 100` is an `int`: `+` came from the representation type and
+answers in the representation type, so a transparent extension type keeps its name for exactly
+one operation.
+
+Here is the whole trade in one place.
+
+| | class (study 15) | extension type |
+| --- | --- | --- |
+| A separate object at run time | yes | no |
+| Its own type at compile time | yes | yes |
+| Its own type at run time | yes | **no** |
+| Can define `==`, `hashCode`, `toString` | yes | no |
+| An invariant nothing can walk past | yes | **no** |
+
+The last row is the one to be honest about. `Pence.fromParts` checks, and `Pence(-150)` walks
+straight past it — and even if that constructor were hidden, `7 as Pence` succeeds, because the
+cast is checked against `int`. Study 23 will show how to hide a constructor; nothing will ever
+close the cast.
+
+<Gloss title="Which one do I reach for?">
+A class first, because it is the one that can promise things.
+
+An extension type when the value's type was not yours to choose — an `int` of pence, a `String`
+that is really an id, a `Map` that came out of a file — and what you want is a name the
+compiler will hold you to, at no run-time cost. That is exactly what study 4 left open, and it
+is a common enough want that the feature exists for it.
+</Gloss>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch19_pence/transcripts/all.txt</include>
+</Console>
+
+<Practice source="dart.dev — Extension types" href="https://dart.dev/language/extension-types">
+The page that teaches extension types also warns about them, in a sentence most tutorials leave
+out: **"This makes extension types an *unsafe* abstraction, because you can always find out the
+representation type at run time and access the underlying object."**
+
+Take that as the rule for choosing. An extension type is a *static* guarantee, and it is a very
+good one — inside code the compiler can see, `Pence` and `Pounds` cannot be confused. It is not
+a run-time guarantee of anything. So do not reach for one at a boundary where the values arrive
+from somewhere the compiler never saw: parsed text, decoded JSON, a `dynamic` from a plugin.
+There the type you want is a class, whose constructor runs, whose invariant holds, and whose
+identity survives the trip.
+
+The habit that follows is the same one study 18 asked for and the opposite of a style rule:
+before you rely on a type, ask *when* it is checked. `Pence` is checked while you write.
+`Money` is checked while you run. Both are useful. Confusing them is how a guarantee that was
+never there gets relied on.
+</Practice>
+
+## Wrapping up
+
+`extension` puts methods on a type you do not own, and does it by static resolution — which is
+why it is free, why `dynamic` cannot see it, and why an instance member of the same name always
+wins.
+
+An extension type gives a value its own compile-time type with no run-time object underneath.
+It closes what study 4 opened: an amount of pence is now a `Pence`, and no other `int` can be
+handed to a function that wants one. The price is that the name is gone by the time the program
+runs — `7 is Pence` is true, and no invariant survives a cast.
+
+Also met: representation types, `implements` on an extension type, extension overrides, and the
+`Object` members an extension type may not define.
+
+Study 20 takes up the promise studies 10 and 15 both made: what to do about a value that is
+wrong *while the program is running*, when an `assert` is not there and a type cannot help.
+
+## Challenges
+
+Three tests are already written and already failing. Make them pass one at a time. Do not edit
+the tests. Two of the three are about where the code lives, not what it computes.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch19_pence/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch19_pence/exercises/challenges.dart</include>
