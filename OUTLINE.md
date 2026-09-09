@@ -326,6 +326,17 @@ existing transcripts and verified to reproduce.
 - The unit is a **study**. `chapter` survives in `PRODUCT.md`, the `chNN_`
   directory prefix and two `pubspec.yaml` descriptions; prose, frontmatter and
   anything the reader can see say *study*.
+- **Every factual claim in the prose must be an assertion in a test.** Not a
+  guideline — the rule that catches the errors this book is most likely to make.
+  Audit of studies 4-9 found four false claims, and all four were sentences
+  written from knowledge rather than from a run: sets comparing by contents,
+  insertion order being a language guarantee, `int?` and `int` compiling
+  identically, and `List.filled`'s error message. Nothing that had been executed
+  was wrong. If a sentence states behaviour, `expect` it somewhere.
+- Beware the claim a passing test appears to support. `expect({'a','b'},
+  {'b','a'})` passes, and it does **not** mean `==` is true — the matcher
+  compares contents and ignores order for a set. A green test is evidence about
+  the matcher, not about the language.
 - One `<Practice>` per study. When it carries an attribution it must be a real
   link the writer has opened: `<Practice source="Effective Dart — Usage"
   href="https://dart.dev/…">`. The candidate rules named above are starting
