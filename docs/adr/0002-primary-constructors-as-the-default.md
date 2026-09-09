@@ -71,3 +71,40 @@ to fall back to.
 **Reversing this is expensive and gets more so.** Studies 15 to 22 declare classes
 and extension types this way. Reverting would mean rewriting every class in Book I
 and rewriting study 15 around a different spine.
+
+**Amended while outlining Book II: a factory may sit beside a primary constructor, and
+that is a third option this record missed.** The rule above was drawn from one route
+only — an `assert` in an initialiser list — and concluded that every class with an
+invariant must be written out in body form. Measured on Dart 3.13.2, the analyzer's
+actual rule is narrower:
+
+```
+error - Classes with primary constructors can't have non-redirecting generative
+        constructors. - non_redirecting_generative_constructor_with_primary
+```
+
+It names *generative* constructors. A **factory** is not one, and a factory has a body
+to check in. So a class may keep its primary constructor, make it private, and validate
+in a factory:
+
+```dart
+class const Money._(final int pence) {
+  factory Money.fromPence(int pence) {
+    if (pence < 0) throw ArgumentError.value(pence, 'pence', 'must not be negative');
+    return Money._(pence);
+  }
+}
+```
+
+Restated, the rule is: **a generative constructor cannot sit beside a primary
+constructor; a factory can.** Studies 15 and 18 are unaffected — `Split` and `Range`
+still want body form, because an `assert` is the right check for arguments that come
+from code.
+
+That distinction is the reason the two forms coexist rather than one replacing the
+other. Study 10's Gloss already told the reader `assert` is stripped from release
+builds, so an `assert` guards against the programmer's own mistake and nothing else.
+`Money.fromPence` takes a number a person typed at a terminal, which is a fact about the
+world arriving at run time, so it must throw. Book II's `Money` therefore uses the
+factory form and study 26 says why — which confirms study 10's Gloss rather than
+contradicting it.

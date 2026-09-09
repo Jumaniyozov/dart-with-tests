@@ -5,6 +5,11 @@ publish_to: none
 environment:
   sdk: ^3.13.0
 
+# The root package holds tool/ only. It needs the same lint set as every
+# study package, or tool/ is analysed under weaker rules than the book's code.
+dev_dependencies:
+  lints: ^6.0.0
+
 workspace:
   - ch01_hello
   - ch02_greeting
