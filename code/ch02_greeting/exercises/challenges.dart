@@ -1,4 +1,4 @@
-// Chapter 2 challenges.
+// Study 2 challenges.
 //
 // Each function below throws. Run `dart test exercises/` to see them fail,
 // then make them pass one at a time. Do not edit the tests.
