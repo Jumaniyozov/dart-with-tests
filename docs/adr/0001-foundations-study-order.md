@@ -115,6 +115,19 @@ sentence cannot be written before study 20 exists, and the study that follows
 it is left with only one thing to teach: what happens when the `await` is
 missing. Reversing the two would turn one lesson into two weaker ones.
 
+Study 22 has since been written and Book I is complete. The spine held. The
+last study needed three earlier ones at once and got all three where it wanted
+them: study 12 for the verbs (`where`, `take`, `fold` mean the same over a
+stream), study 21 for the waiting, and study 20 for the failure. Its own new
+material reduced to a single rule — one pass, only once — which is what a
+closing study should look like.
+
+The one ordering claim this ADR made and never tested is now testable and
+holds: nothing in studies 15-22 wanted a nullable type before study 9, a
+function literal before 11, or a class before 15. No study was moved after
+being written, and study 3's mis-aimed forward reference (corrected early) is
+still the only promise in the book that ever pointed at the wrong number.
+
 Reordering after several of these studies are written is expensive, because the
 studies carry forward references to each other by number — a published Gloss
 that says "Study 7" is a contract with the reader. One such promise was already

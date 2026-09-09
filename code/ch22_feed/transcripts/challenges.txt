@@ -1,0 +1,6 @@
+$ dart test exercises/
+00:00 +0: loading exercises/challenges_test.dart
+00:00 +0: exercises/challenges_test.dart: challenge 1 — every other value keeps the first, the third and the fifth
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — every other value keeps the first, the third and the fifth [E]
+  UnimplementedError: challenge 1
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — every other value and an empty feed sends nothing

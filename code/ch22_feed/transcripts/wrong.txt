@@ -1,0 +1,9 @@
+$ dart analyze lib/wrong.dart
+Analyzing wrong.dart...
+
+  error - wrong.dart:1:13 - The body might complete normally, causing 'null' to be returned, but the return type, 'Stream<int>', is a potentially non-nullable type. Try adding either a return or a throw statement at the end. - body_might_complete_normally
+  error - wrong.dart:3:5 - Yield statements must be in a generator function (one marked with either 'async*' or 'sync*'). Try adding 'async*' or 'sync*' to the enclosing function. - yield_in_non_generator
+  error - wrong.dart:9:3 - The async for-in loop can only be used in an async function. Try marking the function body with either 'async' or 'async*', or removing the 'await' before the for-in loop. - async_for_in_wrong_context
+  error - wrong.dart:16:9 - A yielded value of type 'Iterable<int>' must be assignable to 'int'. - yield_of_invalid_type
+
+4 issues found.

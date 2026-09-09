@@ -1,0 +1,2 @@
+$ dart test test/first_test.dart
+00:00 +2: All tests passed!

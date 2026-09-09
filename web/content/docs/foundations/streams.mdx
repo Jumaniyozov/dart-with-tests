@@ -1,0 +1,205 @@
+---
+title: Streams
+study: 22
+direction: The same shapes as study 12, and the same waiting as study 21. What is new is that you only get one pass, and it is going past whether you are ready or not.
+description: Many values arriving over time — async*, yield, await for, why nothing runs until something listens, and why a stream can be listened to only once.
+---
+
+Study 21's card machine answered once. A till does not send one payment; it sends payments all
+day, and there is no moment when they are all in.
+
+dart.dev puts it in one sentence: "a stream is a sequence of asynchronous events. It is like an
+asynchronous `Iterable` — where, instead of getting the next event when you ask for it, the
+stream tells you that there is an event when it is ready."
+
+<include cwd lang="dart" meta='title="lib/feed.dart"'>../code/ch22_feed/lib/feed.dart#feed</include>
+
+<Drill n={1}>
+
+<Direction>Two familiar shapes. Only the arrival times are new.</Direction>
+
+<include cwd lang="dart" meta='title="test/first_test.dart"'>../code/ch22_feed/test/first_test.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch22_feed/transcripts/pass.txt</include>
+</Console>
+
+</Drill>
+
+## 22.1 Three keywords
+
+<include cwd lang="dart" meta='title="lib/feed.dart"'>../code/ch22_feed/lib/feed.dart#totals</include>
+
+`async*` marks a function that hands back a `Stream`. `yield` puts one value on it and carries
+on. `await for` takes one value each time round the loop, pausing the function in between
+exactly as study 21's `await` did — and `runningTotalOf` does both at once: a stream in, a
+stream out, which is what most real stream code looks like.
+
+None of the three works without the others in place:
+
+```dart title="lib/wrong.dart"
+Stream<int> doubled(List<int> pence) {
+  for (final amount in pence) {
+    yield amount * 2;
+  }
+}
+
+int total(Stream<int> feed) {
+  var sum = 0;
+  await for (final amount in feed) {
+    sum += amount;
+  }
+  return sum;
+}
+
+Stream<int> onlyLarge(List<int> pence) async* {
+  yield pence.where((amount) => amount >= 1000);
+}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch22_feed/transcripts/wrong.txt</include>
+</Console>
+
+The first two are study 21's lesson again in a new spelling: the keyword on the signature is
+what builds the Stream, so without it the function has to return one itself, and the analyzer
+says both halves of that. The third names the fix for itself — `yield` sends **one** value, and
+an `Iterable<int>` is not one:
+
+<include cwd lang="dart" meta='title="lib/feed.dart"'>../code/ch22_feed/lib/feed.dart#every</include>
+
+## 22.2 Nothing runs until something listens
+
+<include cwd lang="dart" meta='title="test/feed_test.dart"'>../code/ch22_feed/test/feed_test.dart#lazy</include>
+
+Calling `feedOf` runs *none* of the body — `log` is empty, and the first line of the function is
+a `log.add`. This is not a small print in the API. It is the same laziness study 12 found in
+`map` and `where`, and it is why a stream that nobody listens to costs nothing.
+
+The two generator keywords are the same idea twice:
+
+<include cwd lang="dart" meta='title="lib/feed.dart"'>../code/ch22_feed/lib/feed.dart#sync</include>
+
+`sync*` hands back an `Iterable` and pauses at each `yield` until the caller asks for the next
+value. `async*` hands back a `Stream` and can also pause at an `await` while it waits for
+something. One star, one letter, two studies apart.
+
+## 22.3 The verbs are study 12's
+
+<include cwd lang="dart" meta='title="lib/feed.dart"'>../code/ch22_feed/lib/feed.dart#verbs</include>
+
+<include cwd lang="dart" meta='title="test/feed_test.dart"'>../code/ch22_feed/test/feed_test.dart#verbs</include>
+
+`where`, `take`, `map`, `fold`, `firstWhere`, `toList` — a `Stream` answers to all of them, with
+the same meanings. The second test is the interesting one: once `take(3)` has its three, the
+feed is never asked for `4000`. Study 12's laziness has become something stronger, because
+these values had not been computed *or even sent* yet.
+
+Leaving an `await for` does the same thing:
+
+<include cwd lang="dart" meta='title="lib/feed.dart"'>../code/ch22_feed/lib/feed.dart#leaving</include>
+
+<include cwd lang="dart" meta='title="test/feed_test.dart"'>../code/ch22_feed/test/feed_test.dart#leaving</include>
+
+The `return` cancels the subscription, and `'feed done'` never runs — the generator is suspended
+at its `yield` and simply never resumed. Compare the second test, which runs out of values
+instead and does reach the end. The two answers look the same from the caller and are very
+different from the feed's side.
+
+## 22.4 One listen, and it is going past whether you are ready or not
+
+This is the part of streams that catches everybody, and dart.dev states it plainly: a
+single-subscription stream "can only be listened to once."
+
+<include cwd lang="dart" meta='title="bin/twice.dart"'>../code/ch22_feed/bin/twice.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch22_feed/transcripts/twice.txt</include>
+</Console>
+
+The total printed. The second question was not a wrong answer, it was a `StateError` — because
+the values are gone. A `List` is a place where values are kept; a `Stream` is not, and asking
+it twice is asking for something it never had.
+
+The usual reflex is `asBroadcastStream()`, which allows many listeners. Read what it actually
+gives you:
+
+<include cwd lang="dart" meta='title="test/feed_test.dart"'>../code/ch22_feed/test/feed_test.dart#once</include>
+
+The second total is **zero**. Not a `StateError` — a wrong answer, quietly. A broadcast stream
+does not keep anything either; it sends each value to whoever is listening at that moment, and
+by the time the second listener arrived the till had finished. dart.dev warns about exactly
+this: you end up "missing out on initial events, and then the rest of the stream makes no
+sense."
+
+So `asBroadcastStream` fixes the exception and not the problem. When you need the values twice,
+`await stream.toList()` once and use the list — a `List` is the tool for going round twice.
+When you need two answers, get both in one pass, which is challenge 3.
+
+## 22.5 A failure in the middle
+
+<include cwd lang="dart" meta='title="lib/feed.dart"'>../code/ch22_feed/lib/feed.dart#fault</include>
+
+<include cwd lang="dart" meta='title="lib/feed.dart"'>../code/ch22_feed/lib/feed.dart#trouble</include>
+
+<include cwd lang="dart" meta='title="test/feed_test.dart"'>../code/ch22_feed/test/feed_test.dart#trouble</include>
+
+Study 20's `try` and `on` work here with nothing added, for the reason study 21 gave: the
+failure arrives at the point where you were waiting. dart.dev is precise about what it costs —
+"when reading events using an `await for` loop, the error is thrown by the loop statement. This
+ends the loop, as well."
+
+**The loop ends.** Not the value — the loop. `totalUntilFault` keeps the 950 it had counted, and
+the `1000` behind the fault is never seen, because there is no way to ask the stream to carry on
+from there. If a feed should survive a bad value, the survival has to be built inside the
+generator, before the value is ever sent.
+
+<Practice source="dart.dev — Asynchronous programming: Streams" href="https://dart.dev/libraries/async/using-streams">
+No lint in `package:lints` has anything to say about streams, so this one is a habit rather than
+a rule the analyzer will enforce.
+
+**Decide who owns the stream, and listen exactly once.** Almost every stream bug is really a
+question about ownership: two pieces of code both thought they were the listener. If a value is
+needed in two places, listen once and hand the value on — do not hand the *stream* on and hope.
+
+**Prefer `await for` to `listen` when you are in a position to wait.** `await for` gives you a
+loop, the study-20 `try` you already know, and cancellation when you leave it. `listen` gives
+you a subscription and a callback, and you own the cancelling. Reach for it when there is no
+function that can afford to sit in a loop.
+
+And read the return type. `Future<List<int>>` says every value, once they are all in.
+`Stream<int>` says one at a time, starting now, for as long as it goes on. Those are different
+programs, and the type is where the difference is written down.
+</Practice>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch22_feed/transcripts/all.txt</include>
+</Console>
+
+## Wrapping up
+
+A `Stream<T>` is many values over time. `async*` makes a function that returns one, `yield`
+sends a value, `yield*` sends every value of another stream, and `await for` reads them one at a
+time. Nothing in the generator runs until something listens, and leaving the loop cancels it.
+
+The verbs are study 12's and the waiting is study 21's. The genuinely new rule is that there is
+one pass: a single-subscription stream is a `StateError` the second time, a broadcast stream is
+a silent zero, and a `List` is what you want if you need to go round twice.
+
+Also met: `sync*` against `async*`, `Stream.fromIterable`, `asBroadcastStream`, and an error
+that ends a loop rather than a value.
+
+That closes Book I. You have the whole language a program needs: values, types, flow,
+functions, collections, patterns, objects, generics, failure and time. Book II starts putting
+it in files — libraries, imports, privacy, and a package somebody else can use.
+
+## Challenges
+
+Three challenges, six failing tests. Make them pass one at a time. Do not edit the tests. The
+third one has an obvious answer that throws; 22.4 says why.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch22_feed/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch22_feed/exercises/challenges.dart</include>

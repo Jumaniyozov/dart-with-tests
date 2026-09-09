@@ -1,0 +1,4 @@
+$ dart run bin/twice.dart
+1950
+Unhandled exception:
+Bad state: Stream has already been listened to.

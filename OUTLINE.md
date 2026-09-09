@@ -46,6 +46,7 @@ work: study 6 uses `switch` before study 10 formalises it, and study 7 uses
 | 19 | Extensions and extension types | `extension-types` | `ch19_pence` |
 | 20 | Errors and exceptions | `errors` | `ch20_till` |
 | 21 | Futures and async/await | `futures` | `ch21_payment` |
+| 22 | Streams | `streams` | `ch22_feed` |
 
 ### Promises already in print
 
@@ -76,7 +77,8 @@ exists for the compiler and disappears before the program runs), 4→19 (pence
 stop being an `int` by convention and become a type), 10→20 and 15→20 and
 19→20 (bad input answered at run time, all three promises paid by one study),
 9→20 (`tryParse`'s null against an exception that can say why), 20→21 (the
-failure that arrives after the function that caused it has returned).
+failure that arrives after the function that caused it has returned), 12→22
+and 21→22 (the same verbs and the same waiting, over many values).
 
 Paid and verified: 2→6 (enum kills the stringly-typed parameter), 3→7
 (`final` list vs `const` list), 7→12 (the shorter way to sum, needing
@@ -89,9 +91,14 @@ the loops deleted), 12→13 and 12→14, 13→14, 3→15 (`const` constructors),
 
 ## To write
 
-Studies 4-21 are written and committed; their entries below are kept as the
-record of what was intended, and each study's own commit message records what
-construction actually measured. **Study 22 is next, and closes Book I.**
+**Book I is written.** Studies 1-22 are committed; the entries below are kept
+as the record of what was intended, and each study's own commit message
+records what construction actually measured.
+
+**Book II is next, and has no outline yet.** It opens at study 23 with
+libraries, imports, `_` privacy and `part` / `export` — promised by name in
+`extension-types.mdx` and in study 22's closing line, and the only debt Book I
+leaves unpaid. Outline it the way 4-14 were outlined before writing any of it.
 
 ### 4 — Numbers · `numbers` · `ch04_money`
 

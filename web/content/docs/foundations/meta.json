@@ -21,6 +21,7 @@
     "generics",
     "extension-types",
     "errors",
-    "futures"
+    "futures",
+    "streams"
   ]
 }
