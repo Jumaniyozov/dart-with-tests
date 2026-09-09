@@ -46,10 +46,18 @@ class Split {
   final int pence;
 
   const new(this.pounds, this.pence)
-    : assert(pence >= 0 && pence < 100, 'pence must be a part of a pound');
+    : assert(pounds >= 0, 'a split describes an amount, not a direction'),
+      assert(pence >= 0 && pence < 100, 'pence must be a part of a pound');
 
   /// Breaks a whole number of pence into the two parts.
-  factory fromPence(int total) => Split(total ~/ 100, total % 100);
+  ///
+  /// Only for an amount of nothing or more. `-7` would split into `0` pounds
+  /// and `93` pence — Dart's `%` is never negative — which is a different
+  /// amount entirely, so the constructor refuses it rather than answering it.
+  factory fromPence(int total) {
+    assert(total >= 0, 'a split describes an amount, not a direction');
+    return Split(total ~/ 100, total % 100);
+  }
 
   /// The two parts back together.
   Money get amount => Money(pounds * 100 + pence);

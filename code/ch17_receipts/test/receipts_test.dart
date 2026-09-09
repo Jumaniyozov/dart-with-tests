@@ -16,6 +16,12 @@ void main() {
       expect(Receipt(-2500, 3, 'grocer').isWeekend, isFalse);
     });
 
+    test('and the class promises the day the mixin relies on', () {
+      expect(() => Receipt(-2500, 9, 'grocer'), throwsA(isA<AssertionError>()));
+      expect(() => Receipt(-2500, 0, 'grocer'), throwsA(isA<AssertionError>()));
+      expect(Receipt(-2500, 7, 'grocer').dayName, 'Sun');
+    });
+
     test('a mixin is a type, so both count as Signed', () {
       expect(Receipt(-2500, 6, 'grocer'), isA<Signed>());
       expect(Payslip(180000, 'acme'), isA<Signed>());

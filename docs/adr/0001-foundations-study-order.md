@@ -69,6 +69,17 @@ study breaks a build, which is the good kind of coupling.
 Studies 10 to 14 added no new forward loans. Study 8's borrowed `??` is still
 the largest in the book.
 
+Studies 15 to 18 have since been written, and the object block held together in
+the order the outline pinned. Study 16 genuinely needs both 15 and 14 — its
+subclasses are primary-constructor classes and its switch uses object patterns.
+Study 17 needs 16 to contrast against, and its `on` clause is only explicable
+once `extends` is. Study 18 needs 15, and it also reaches back to 9: the reason
+an unbounded `T` cannot be compared is that `T extends Object?` is nullable, so
+the error is study 9's and not a generics error at all.
+
+One decision inside that block grew large enough to deserve its own record.
+Primary constructors as the default class syntax is now ADR 0002.
+
 Reordering after several of these studies are written is expensive, because the
 studies carry forward references to each other by number — a published Gloss
 that says "Study 7" is a contract with the reader. One such promise was already

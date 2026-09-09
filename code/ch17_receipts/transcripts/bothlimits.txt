@@ -1,0 +1,7 @@
+$ dart analyze lib/bothlimits.dart
+Analyzing bothlimits.dart...
+
+  error - bothlimits.dart:4:19 - Expected 'extends' instead of this. - expected_instead
+  error - bothlimits.dart:4:22 - The class 'Wrong' can't be declared a mixin because it extends a class other than 'Object'. Try removing the 'mixin' modifier or changing the superclass to 'Object'. - mixin_class_declaration_extends_not_object
+
+2 issues found.

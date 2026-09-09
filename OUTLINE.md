@@ -67,6 +67,10 @@ writing 15, 16 or 20; each is a sentence a reader has already been given.
 | --- | --- | --- |
 | 19 | `generics.mdx` | a type that exists for the compiler and disappears before the program runs |
 | 20 | `control-flow.mdx` | errors as the run-time answer to bad input, against `assert` for programmer mistakes |
+| 20 | `classes.mdx` | the same, for text a person typed that an invariant must reject |
+
+Also paid since: 15→16 (a family that shares behaviour), 16→17 (sharing
+without a family), 17→18 (same behaviour, different type).
 
 Paid and verified: 2→6 (enum kills the stringly-typed parameter), 3→7
 (`final` list vs `const` list), 7→12 (the shorter way to sum, needing

@@ -44,6 +44,12 @@ the header parameter is how a primary constructor says "this field is the one yo
 `Dated` requires something else entirely, and only `Receipt` takes it. Mixins compose: take the
 ones you want, ignore the rest.
 
+Notice that `Receipt` is written out while `Payslip` keeps its one-line header. `Dated` reads a
+name out of a seven-element list, so a day outside 1 to 7 would crash it — and a mixin cannot
+check anything, because it has no constructor. Somebody has to promise it, and study 15 already
+settled who: a class that must check is written out. `Payslip` checks nothing, so it stays
+short.
+
 <include cwd lang="dart" meta='title="test/receipts_test.dart"'>../code/ch17_receipts/test/receipts_test.dart#sharing</include>
 
 A mixin is also a **type**. `Receipt` and `Payslip` are both `Signed`, so a function can take a
@@ -147,9 +153,24 @@ A `mixin class` can be used either way:
 <include cwd lang="dart" meta='title="test/receipts_test.dart"'>../code/ch17_receipts/test/receipts_test.dart#both</include>
 
 It is the right declaration when a thing is genuinely useful on its own *and* worth pouring into
-other classes. It gives up something in exchange: a `mixin class` may not have an `on` clause at
-all — the parser rejects the word — and it may not extend anything but `Object`. It has to work
-as an ordinary class, and an ordinary class has no `on`.
+other classes. It gives up something in exchange:
+
+```dart title="lib/bothlimits.dart"
+class Base {}
+
+// A mixin class has no `on` clause...
+mixin class Wrong on Base {
+  int get n => 2;
+}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch17_receipts/transcripts/bothlimits.txt</include>
+</Console>
+
+The parser rejects the word outright — it expected `extends` — and even written that way, a
+`mixin class` may not extend anything but `Object`. It has to work as an ordinary class, and an
+ordinary class has no `on`.
 </Gloss>
 
 <Console>

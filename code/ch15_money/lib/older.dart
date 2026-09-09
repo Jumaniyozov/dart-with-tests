@@ -8,9 +8,13 @@ class Split {
   final int pence;
 
   const Split(this.pounds, this.pence)
-    : assert(pence >= 0 && pence < 100, 'pence must be a part of a pound');
+    : assert(pounds >= 0, 'a split describes an amount, not a direction'),
+      assert(pence >= 0 && pence < 100, 'pence must be a part of a pound');
 
-  factory Split.fromPence(int total) => Split(total ~/ 100, total % 100);
+  factory Split.fromPence(int total) {
+    assert(total >= 0, 'a split describes an amount, not a direction');
+    return Split(total ~/ 100, total % 100);
+  }
 
   Money get amount => Money(pounds * 100 + pence);
 }

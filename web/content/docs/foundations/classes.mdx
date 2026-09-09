@@ -132,7 +132,8 @@ class const Money(final int pence) {
 A `Map` finds a key by hash first and `==` second, so an object with `==` and no `hashCode`
 lands in the wrong bucket and is never found — which the last test in that group measures:
 `Money` works as a key and `v1.Money` does not. One field hashes as `pence.hashCode`; for more
-than one, `Object.hash(day, hour)` combines them properly and you should not invent your own.
+than one, `Object.hash(day, hour)` combines them properly — order included, as the test above
+checks — and you should not invent your own.
 
 <Gloss title="Two const objects are one object">
 `identical(Money(250), Money(250))` is false — two calls, two objects, equal because you said
@@ -188,6 +189,12 @@ Written out, two pieces of syntax are new — and both are new to Dart 3.13, not
 A **factory** does not create the object itself; it decides which object to hand back and calls
 a real constructor to make it. `Split.fromPence(1234)` does the arithmetic and then goes in
 through the checked door like everyone else.
+
+It has a check of its own, and that is the other half of the rule above. A *redirecting*
+constructor may not assert, but a factory has an ordinary body and may do anything a function
+can. `fromPence` needs it: Dart's `%` is never negative, so `-7` would truncate to `0` pounds
+and `93` pence — an amount of *plus* ninety-three pence, with the sign silently gone. The
+factory refuses it rather than answering it.
 
 `: assert(…)` is an **initializer list**: work that happens after the arguments arrive and
 before the body runs. Study 10 said `assert` is for programmer mistakes rather than user input,

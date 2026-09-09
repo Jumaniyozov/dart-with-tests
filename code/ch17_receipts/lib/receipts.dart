@@ -31,11 +31,23 @@ mixin Dated {
 
 // #region users
 /// A shop receipt. Money out, on a day.
-class const Receipt(
-  @override final int pence,
-  @override final int day,
-  final String shop,
-) with Signed, Dated {}
+///
+/// `Dated` reads a name out of a seven-element list, so a day outside 1..7
+/// would crash it. Something has to promise that, and study 15 settled where:
+/// a primary constructor cannot check anything, so a class that must check is
+/// written out.
+class Receipt with Signed, Dated {
+  @override
+  final int pence;
+
+  @override
+  final int day;
+
+  final String shop;
+
+  const new(this.pence, this.day, this.shop)
+    : assert(day >= 1 && day <= 7, 'a day of the week is 1 to 7');
+}
 
 /// A payslip. Money in, and nothing to do with a receipt.
 class const Payslip(@override final int pence, final String employer)
@@ -92,7 +104,10 @@ class const TaxThenDiscount(@override final int base)
 /// A `mixin class` works either way: mixed into another class, or built and
 /// used on its own.
 mixin class Rounding {
-  int toNearest(int pence, int step) => ((pence + step ~/ 2) ~/ step) * step;
+  int toNearest(int pence, int step) {
+    assert(step > 0, 'rounding to a step of nothing is not a question');
+    return ((pence + step ~/ 2) ~/ step) * step;
+  }
 }
 
 class Till with Rounding {}

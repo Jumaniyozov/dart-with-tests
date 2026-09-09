@@ -1,0 +1,6 @@
+$ dart analyze lib/constcheck.dart
+Analyzing constcheck.dart...
+
+  error - constcheck.dart:6:14 - Invalid constant value. - invalid_constant
+
+1 issue found.

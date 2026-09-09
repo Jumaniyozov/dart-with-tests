@@ -48,6 +48,11 @@ void main() {
       expect(identical(a, b), isTrue);
     });
 
+    test('Object.hash combines more than one field into one code', () {
+      expect(Object.hash(12, 34), Object.hash(12, 34));
+      expect(Object.hash(12, 34) == Object.hash(34, 12), isFalse);
+    });
+
     test('and a hashCode to match makes it a usable key', () {
       expect({Money(250): 'coffee'}[Money(250)], 'coffee');
       expect({v1.Money(250): 'coffee'}[v1.Money(250)], isNull);
@@ -68,6 +73,14 @@ void main() {
       expect(older.Split.fromPence(1234).amount, Split.fromPence(1234).amount);
       expect(older.Split(3, 50).amount, Split(3, 50).amount);
       expect(() => older.Split(3, 150), throwsA(isA<AssertionError>()));
+    });
+
+    test('and refuses an amount it cannot describe', () {
+      // -7 would truncate to 0 pounds and, because Dart's % is never
+      // negative, 93 pence — an amount of +93p. Refused, not answered.
+      expect(() => Split.fromPence(-7), throwsA(isA<AssertionError>()));
+      expect(() => Split.fromPence(-1234), throwsA(isA<AssertionError>()));
+      expect(Split.fromPence(0).amount, Money(0));
     });
 
     test('and refuses to be built any other way', () {

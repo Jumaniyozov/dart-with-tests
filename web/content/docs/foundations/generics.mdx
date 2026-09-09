@@ -64,9 +64,25 @@ everything the bound provides.
 
 <include cwd lang="dart" meta='title="test/range_test.dart"'>../code/ch18_range/test/range_test.dart#oneshape</include>
 
-Note that `Range` is not `const`, unlike every class since study 15. A `const` constructor is
-evaluated while the program compiles, and `assert(low.compareTo(high) <= 0)` calls a method —
-which compile-time evaluation cannot do. The invariant and `const` are a genuine either/or here.
+Note that `Range` is not `const`, unlike every class since study 15. That is not an oversight:
+
+```dart title="lib/constcheck.dart"
+class Range<T extends Comparable<Object>> {
+  final T low;
+  final T high;
+
+  const new(this.low, this.high)
+    : assert(low.compareTo(high) <= 0, 'low must not be above high');
+}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch18_range/transcripts/constcheck.txt</include>
+</Console>
+
+A `const` constructor is evaluated while the program compiles, and compile-time evaluation cannot
+call a method. Study 15's `Split` could assert because `>=` and `<` on an `int` are constant
+operations; `compareTo` is not. The invariant and `const` are a genuine either/or here.
 
 ## 18.2 The bound you would write first is wrong
 
@@ -94,7 +110,11 @@ the code carries on:
 
 <include cwd lang="dart" meta='title="test/range_test.dart"'>../code/ch18_range/test/range_test.dart#bound</include>
 
-The widening is not harmless. `largestOf([3, 9, 2])` under that bound infers `T = num`, hands
+The widening is not harmless. Here is the same function under the same bound:
+
+<include cwd lang="dart" meta='title="lib/v1.dart"'>../code/ch18_range/lib/v1.dart#largest</include>
+
+`largestOf([3, 9, 2])` then infers `T = num`, hands
 `List<int>.reduce` a `(num, num) => num` where it wanted `(int, int) => int`, and dies at run
 time on a list of three small numbers. `Comparable<Object>` has neither problem: it admits
 `int`, `String` and anything else that can compare itself, and `compareTo` takes an `Object`

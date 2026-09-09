@@ -64,7 +64,10 @@ in every package in this book.
 **`final String to`** adds a field only `Payment` has. Study 15's rules are unchanged: `final`
 makes it a field, `const` before the name makes the constructor constant.
 
-`pence` and `isDebit` are written once, in `Entry`, and all three classes have them:
+`pence` and `isDebit` are written once, in `Entry`, and all three classes have them — which is
+what lets a function take the whole family at once:
+
+<include cwd lang="dart" meta='title="lib/entries.dart"'>../code/ch16_entries/lib/entries.dart#total</include>
 
 <include cwd lang="dart" meta='title="test/entries_test.dart"'>../code/ch16_entries/test/entries_test.dart#family</include>
 
@@ -99,8 +102,23 @@ String describe(Entry entry) => switch (entry) {
 every switch that has not been told about it stops compiling — which is the entire reason to
 seal a family rather than leave it open.
 
-Guards work here too, and the rule study 14 measured still holds: a guarded case does not count
-towards exhaustiveness, so each one needs an unguarded case behind it.
+Guards work here too, and the rule study 14 measured over records holds over classes as well. Take
+the unguarded `Payment()` away and leave only the guarded one:
+
+```dart title="lib/guarded.dart"
+int handlingFee(Entry entry) => switch (entry) {
+  Payment(:final to) when to == 'self' => 0,
+  Refund() => 0,
+  Interest() => 50,
+};
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch16_entries/transcripts/guarded.txt</include>
+</Console>
+
+A guarded case does not count towards exhaustiveness, so each one needs an unguarded case
+behind it.
 
 <include cwd lang="dart" meta='title="lib/entries.dart"'>../code/ch16_entries/lib/entries.dart#rate</include>
 
@@ -141,7 +159,8 @@ provide — and gives you nothing. `FakeEntry` has to write `pence` and `isDebit
 exactly what a test double wants: the same shape, none of the behaviour.
 
 `sealed` forbids it. That is the trade, stated plainly: exhaustive switching in exchange for a
-closed family. It is the right trade for a ledger entry, which really is one of three things.
+closed family. (For `implements` succeeding, look ahead one section: `class F implements
+Interface {}` is one of the two lines in 16.4 that produce no error.) It is the right trade for a ledger entry, which really is one of three things.
 It is the wrong trade for a type other people are meant to extend.
 
 ## 16.4 Four modifiers, one sentence each
@@ -208,8 +227,10 @@ change that. Study 15's rule holds all the way down: `==` and `hashCode` are wri
 identity, and writing them on a family with subclasses is harder than it looks, because `==` has
 to stay symmetric across the whole family.
 
-The two `const` entries in that same test group *are* one object, though. Canonicalisation does
-not need `==` — it happens while the program compiles, before anything can be compared.
+The two `const` entries below *are* one object, though. Canonicalisation does not need `==` — it
+happens while the program compiles, before anything can be compared.
+
+<include cwd lang="dart" meta='title="test/entries_test.dart"'>../code/ch16_entries/test/entries_test.dart#inherited</include>
 </Gloss>
 
 <Console>
