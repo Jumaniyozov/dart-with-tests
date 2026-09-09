@@ -1,0 +1,209 @@
+---
+title: Generics
+study: 18
+direction: Write it once for every type, and let the compiler check every use. Then check what survives to run time.
+description: Generic classes and functions, why the obvious bound is the wrong one, and what it means that Dart keeps type arguments while the program runs.
+---
+
+Study 8 wrote a function that counted how often each word appeared, and it worked on `String`
+and nothing else. Counting has nothing to do with strings.
+
+<include cwd lang="dart" meta='title="lib/range.dart"'>../code/ch18_range/lib/range.dart#tally</include>
+
+`<T>` after the name declares a **type parameter**: a stand-in for a type the caller supplies.
+`tallyOf(['a', 'b', 'a'])` makes `T` be `String`; `tallyOf([1, 1])` makes it `int`. One
+function, and every use of it fully checked.
+
+A class can take one too, and this is where it earns its keep:
+
+<include cwd lang="dart" meta='title="lib/range.dart"'>../code/ch18_range/lib/range.dart#range</include>
+
+<Drill n={1}>
+
+<Direction>One class. Two types that have nothing in common.</Direction>
+
+<include cwd lang="dart" meta='title="test/first_test.dart"'>../code/ch18_range/test/first_test.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch18_range/transcripts/pass.txt</include>
+</Console>
+
+</Drill>
+
+## 18.1 A bound is a promise about T
+
+`Range` compares its bounds, so `T` cannot be *any* type — it has to be one that knows how to
+compare itself. `T extends Comparable<Object>` is a **bound**, and it says so.
+
+Without it, `low.compareTo(value)` does not compile — and the reason is not the one you would
+guess:
+
+```dart title="lib/unbounded.dart"
+class Range<T> {
+  final T low;
+  final T high;
+
+  new(this.low, this.high);
+
+  bool contains(T value) => low.compareTo(value) <= 0;
+}
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch18_range/transcripts/unbounded.txt</include>
+</Console>
+
+Not "there is no `compareTo`" — *"the receiver can be null"*. An unbounded `T` means
+`T extends Object?`, the **nullable** top type, so as far as the compiler knows `low` might be
+nothing at all, and study 9's rule bites before any question of comparing arises.
+
+A bound is the answer to that. It narrows what `T` can be, and in exchange you may use
+everything the bound provides.
+
+<include cwd lang="dart" meta='title="lib/range.dart"'>../code/ch18_range/lib/range.dart#largest</include>
+
+<include cwd lang="dart" meta='title="test/range_test.dart"'>../code/ch18_range/test/range_test.dart#oneshape</include>
+
+Note that `Range` is not `const`, unlike every class since study 15. A `const` constructor is
+evaluated while the program compiles, and `assert(low.compareTo(high) <= 0)` calls a method —
+which compile-time evaluation cannot do. The invariant and `const` are a genuine either/or here.
+
+## 18.2 The bound you would write first is wrong
+
+Here is the bound almost everyone writes, and it reads better than the one above:
+
+<include cwd lang="dart" meta='title="lib/v1.dart"'>../code/ch18_range/lib/v1.dart#range</include>
+
+"`T` is something that can be compared to a `T`." It compiles. It is wrong, and nothing warns
+you at the point where you write it.
+
+```dart title="lib/naive.dart"
+import 'v1.dart';
+
+final prices = Range<int>(100, 500);
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch18_range/transcripts/naive.txt</include>
+</Console>
+
+**`int` does not implement `Comparable<int>`.** It implements `Comparable<num>`, because you
+can compare an `int` to a `double`. So `Range<int>` is not a legal type under that bound at
+all — and if you never write the type argument down, inference quietly picks `num` instead and
+the code carries on:
+
+<include cwd lang="dart" meta='title="test/range_test.dart"'>../code/ch18_range/test/range_test.dart#bound</include>
+
+The widening is not harmless. `largestOf([3, 9, 2])` under that bound infers `T = num`, hands
+`List<int>.reduce` a `(num, num) => num` where it wanted `(int, int) => int`, and dies at run
+time on a list of three small numbers. `Comparable<Object>` has neither problem: it admits
+`int`, `String` and anything else that can compare itself, and `compareTo` takes an `Object`
+anyway.
+
+This is the sharpest lesson in the study, and it is not about generics being hard. It is that a
+bound is a *claim about every type that will ever be substituted*, and the obvious wording of
+that claim happens to be false for the most common type in the language.
+
+## 18.3 The type argument survives
+
+dart.dev puts it plainly: "Dart generic types are *reified*, which means that they carry their
+type information around at runtime." Java does the opposite — it erases them — and the
+difference is visible in ordinary code.
+
+<include cwd lang="dart" meta='title="test/range_test.dart"'>../code/ch18_range/test/range_test.dart#reified</include>
+
+<include cwd lang="dart" meta='title="test/range_test.dart"'>../code/ch18_range/test/range_test.dart#ours</include>
+
+Two things to notice in those tests.
+
+The lists are held in an `Object` variable on purpose. Ask `prices is List<int>` where the
+analyzer already knows the answer and it tells you the check is unnecessary — quite rightly.
+Hiding the static type is how you get the *run-time* question asked.
+
+And this applies to your own types. A `Range<int>` and a `Range<String>` are two different
+types at run time, not one `Range` that has forgotten.
+
+## 18.4 The check that catches you
+
+Reification is not a curiosity. It is what stops a hole in the type system from becoming a bug.
+
+`List<int>` is a `List<num>`, because `int` is a `num`. That is **covariance**, and it is
+convenient — a function taking `List<num>` accepts your list of prices. It is also unsound, and
+here is exactly how:
+
+<include cwd lang="dart" meta='title="bin/reified.dart"'>../code/ch18_range/bin/reified.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch18_range/transcripts/reified.txt</include>
+</Console>
+
+Read the second line. Seen through a `List<num>`, the object is *still* a `List<int>` — the view
+changed and the object did not. So when `add(1.5)` arrives, the list checks the value against
+the type it actually holds and throws.
+
+The static type said this was fine. The run-time type knew better. In a language with erasure
+the same code puts a `double` inside a list of `int` and the failure surfaces somewhere else
+entirely, much later, with nothing pointing back here.
+
+<Gloss title="A generic without its argument">
+`List` on its own means `List<dynamic>`, which switches off checking for everything that comes
+out of it. This book's `analysis_options.yaml` has `strict-raw-types: true` — one of the three
+switches study 1 turned on — so writing one is not allowed to pass quietly:
+
+```dart title="lib/raw.dart"
+int howMany(List items) => items.length;
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch18_range/transcripts/raw.txt</include>
+</Console>
+
+Write `List<Object>` when you genuinely accept anything. It is one word longer and it keeps
+every check you would otherwise have thrown away.
+</Gloss>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch18_range/transcripts/all.txt</include>
+</Console>
+
+<Practice source="dart.dev — Generics" href="https://dart.dev/language/generics#generic-collections-and-the-types-they-contain">
+The reason to be exact is on that page in one line: **"Dart generic types are reified, which
+means that they carry their type information around at runtime."**
+
+A type argument is therefore not documentation. `List<String>` costs nothing extra to write and
+buys a check at compile time *and* a check while the program runs; `List` buys neither. That is
+the whole argument for spelling them out, and it is why `strict-raw-types` is on in this book.
+
+The habit for bounds is different, and this study earned it the hard way. Write the loosest
+bound that gives you what you need, and check what it admits before you rely on it. The natural
+`T extends Comparable<T>` is tighter than it looks and excludes `int`, which is a strange
+sentence to have to write and exactly the kind of thing a test will tell you in a second and a
+signature will not tell you at all.
+</Practice>
+
+## Wrapping up
+
+A type parameter lets one class or function serve every type, with every use still checked. A
+bound narrows what may be substituted and, in exchange, lets you use what the bound provides —
+without one, `T` is `Object?` and you cannot call anything on it.
+
+Dart keeps type arguments at run time. A `List<int>` knows it is a `List<int>` even while being
+used as a `List<num>`, which is what turns covariance from a silent hole into a `TypeError` at
+the line that caused it.
+
+Also met: `Comparable`, why a `const` constructor cannot assert with a method call, and
+`strict-raw-types`.
+
+Study 19 takes the opposite approach to a wrapper: a type that exists for the compiler and
+disappears before the program runs.
+
+## Challenges
+
+Three signatures, no bodies. Make the tests pass one at a time. Do not edit the tests. No
+concrete type belongs in any of the three answers.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch18_range/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch18_range/exercises/challenges.dart</include>

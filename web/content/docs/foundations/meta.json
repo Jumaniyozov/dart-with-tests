@@ -17,6 +17,7 @@
     "patterns",
     "classes",
     "inheritance",
-    "mixins"
+    "mixins",
+    "generics"
   ]
 }

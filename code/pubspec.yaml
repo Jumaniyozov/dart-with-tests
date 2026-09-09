@@ -23,3 +23,4 @@ workspace:
   - ch15_money
   - ch16_entries
   - ch17_receipts
+  - ch18_range

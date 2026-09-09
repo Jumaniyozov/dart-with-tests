@@ -39,6 +39,10 @@ work: study 6 uses `switch` before study 10 formalises it, and study 7 uses
 | 12 | Iterables | `iterables` | `ch12_report` |
 | 13 | Records | `records` | `ch13_split` |
 | 14 | Patterns and switch | `patterns` | `ch14_command` |
+| 15 | Classes and constructors | `classes` | `ch15_money` |
+| 16 | Inheritance and interfaces | `inheritance` | `ch16_entries` |
+| 17 | Mixins | `mixins` | `ch17_receipts` |
+| 18 | Generics | `generics` | `ch18_range` |
 
 ### Promises already in print
 
@@ -61,25 +65,23 @@ writing 15, 16 or 20; each is a sentence a reader has already been given.
 
 | Owed by | Made in | The reader was promised |
 | --- | --- | --- |
-| 15 | `variables.mdx` | `const` constructors get their own study |
-| 15 | `records.mdx` (×2) | a class supplies the three things a record cannot: a name, methods, and invariants |
-| 15 | `patterns.mdx` | study 16 "needs study 15 first" — so 15 must land classes before 16 can seal them |
-| 16 | `enums.mdx` | enums carrying fields and methods of their own |
-| 16 | `patterns.mdx` | `sealed` lets a family of classes be switched over exhaustively, the way an enum is |
+| 19 | `generics.mdx` | a type that exists for the compiler and disappears before the program runs |
 | 20 | `control-flow.mdx` | errors as the run-time answer to bad input, against `assert` for programmer mistakes |
 
 Paid and verified: 2→6 (enum kills the stringly-typed parameter), 3→7
 (`final` list vs `const` list), 7→12 (the shorter way to sum, needing
 closures), 8→9 (the question mark), 10→11 and 10→12 (functions named, then
-the loops deleted), 12→13 and 12→14, 13→14.
+the loops deleted), 12→13 and 12→14, 13→14, 3→15 (`const` constructors),
+13→15 (name, methods, invariants), 6→16 (enums with fields and methods),
+14→16 (`sealed` closes exhaustive switching).
 
 ---
 
 ## To write
 
-Studies 4-14 are written and committed; their entries below are kept as the
+Studies 4-18 are written and committed; their entries below are kept as the
 record of what was intended, and each study's own commit message records what
-construction actually measured. **Study 15 is next.**
+construction actually measured. **Study 19 is next.**
 
 ### 4 — Numbers · `numbers` · `ch04_money`
 

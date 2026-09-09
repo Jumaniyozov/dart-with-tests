@@ -1,0 +1,5 @@
+$ dart run bin/reified.dart
+the list knows what it holds: List<int>
+seen as a List<num>, it is still List<int>
+Unhandled exception:
+type 'double' is not a subtype of type 'int' of 'value'

@@ -1,0 +1,11 @@
+name: ch18_range
+description: Study 18 — one piece of code, many types, checked both times.
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.26.0

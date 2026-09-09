@@ -1,0 +1,6 @@
+$ dart analyze lib/naive.dart
+Analyzing naive.dart...
+
+  error - naive.dart:3:22 - 'int' doesn't conform to the bound 'Comparable<int>' of the type parameter 'T'. Try using a type that is or is a subclass of 'Comparable<int>'. - type_argument_not_matching_bounds
+
+1 issue found.

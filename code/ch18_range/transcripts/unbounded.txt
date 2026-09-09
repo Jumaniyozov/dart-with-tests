@@ -1,0 +1,6 @@
+$ dart analyze lib/unbounded.dart
+Analyzing unbounded.dart...
+
+  error - unbounded.dart:7:33 - The method 'compareTo' can't be unconditionally invoked because the receiver can be 'null'. Try making the call conditional (using '?.') or adding a null check to the target ('!'). - unchecked_use_of_nullable_value
+
+1 issue found.

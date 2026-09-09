@@ -1,0 +1,6 @@
+$ dart analyze lib/raw.dart
+Analyzing raw.dart...
+
+warning - raw.dart:1:13 - The generic type 'List<dynamic>' should have explicit type arguments but doesn't. Use explicit type arguments for 'List<dynamic>'. - strict_raw_type
+
+1 issue found.
