@@ -56,21 +56,21 @@
     <option name="INLINE_REFACTORING_SETTINGS_DEFAULT" value="20312a" />
     <option name="INLINE_REFACTORING_SETTINGS_FOCUSED" value="2d3f38" />
     <option name="INLINE_REFACTORING_SETTINGS_HOVERED" value="2d3f38" />
-    <option name="CONSOLE_BACKGROUND_KEY" value="010604" />
-    <option name="TERMINAL_BACKGROUND" value="010604" />
-    <option name="BLOCK_TERMINAL_DEFAULT_BACKGROUND" value="010604" />
+    <option name="CONSOLE_BACKGROUND_KEY" value="0e1c17" />
+    <option name="TERMINAL_BACKGROUND" value="0e1c17" />
+    <option name="BLOCK_TERMINAL_DEFAULT_BACKGROUND" value="0e1c17" />
     <option name="BLOCK_TERMINAL_DEFAULT_FOREGROUND" value="cdd8ce" />
-    <option name="BLOCK_TERMINAL_BLOCK_BACKGROUND_START" value="010604" />
-    <option name="BLOCK_TERMINAL_BLOCK_BACKGROUND_END" value="010604" />
-    <option name="BLOCK_TERMINAL_SELECTED_BLOCK_BACKGROUND" value="0b1510" />
-    <option name="BLOCK_TERMINAL_INACTIVE_SELECTED_BLOCK_BACKGROUND" value="080f0b" />
+    <option name="BLOCK_TERMINAL_BLOCK_BACKGROUND_START" value="0e1c17" />
+    <option name="BLOCK_TERMINAL_BLOCK_BACKGROUND_END" value="0e1c17" />
+    <option name="BLOCK_TERMINAL_SELECTED_BLOCK_BACKGROUND" value="16251f" />
+    <option name="BLOCK_TERMINAL_INACTIVE_SELECTED_BLOCK_BACKGROUND" value="0e1c17" />
     <option name="BLOCK_TERMINAL_SELECTED_BLOCK_STROKE_COLOR" value="c3a76b" />
-    <option name="BLOCK_TERMINAL_INACTIVE_SELECTED_BLOCK_STROKE_COLOR" value="8c958d" />
+    <option name="BLOCK_TERMINAL_INACTIVE_SELECTED_BLOCK_STROKE_COLOR" value="909c93" />
     <option name="BLOCK_TERMINAL_ERROR_BLOCK_STROKE_COLOR" value="f17166" />
-    <option name="BLOCK_TERMINAL_PROMPT_SEPARATOR_COLOR" value="8c958d" />
-    <option name="BLOCK_TERMINAL_HOVERED_BLOCK_BACKGROUND_START" value="080f0b" />
-    <option name="BLOCK_TERMINAL_HOVERED_BLOCK_BACKGROUND_END" value="080f0b" />
-    <option name="BLOCK_TERMINAL_GENERATE_COMMAND_PLACEHOLDER_FOREGROUND" value="8c958d" />
+    <option name="BLOCK_TERMINAL_PROMPT_SEPARATOR_COLOR" value="909c93" />
+    <option name="BLOCK_TERMINAL_HOVERED_BLOCK_BACKGROUND_START" value="12201b" />
+    <option name="BLOCK_TERMINAL_HOVERED_BLOCK_BACKGROUND_END" value="12201b" />
+    <option name="BLOCK_TERMINAL_GENERATE_COMMAND_PLACEHOLDER_FOREGROUND" value="909c93" />
     <option name="BLOCK_TERMINAL_GENERATE_COMMAND_CARET_COLOR" value="76e5ad" />
     <option name="ADDED_LINES_COLOR" value="6eeeab" />
     <option name="DELETED_LINES_COLOR" value="eb8373" />
@@ -388,7 +388,7 @@
     <option name="BLOCK_TERMINAL_CURRENT_SEARCH_ENTRY">
       <value>
         <option name="BACKGROUND" value="e8c67d" />
-        <option name="FOREGROUND" value="010604" />
+        <option name="FOREGROUND" value="0e1c17" />
       </value>
     </option>
     <option name="BLOCK_TERMINAL_CYAN">
@@ -662,7 +662,7 @@
     </option>
     <option name="CONSOLE_SYSTEM_OUTPUT">
       <value>
-        <option name="FOREGROUND" value="8c958d" />
+        <option name="FOREGROUND" value="909c93" />
       </value>
     </option>
     <option name="CONSOLE_USER_INPUT">
@@ -3185,7 +3185,7 @@
     </option>
     <option name="LOGCAT_DEBUG_OUTPUT">
       <value>
-        <option name="FOREGROUND" value="8c958d" />
+        <option name="FOREGROUND" value="909c93" />
       </value>
     </option>
     <option name="LOGCAT_FILTER_KEY">
@@ -3215,7 +3215,7 @@
     </option>
     <option name="LOGCAT_VERBOSE_OUTPUT">
       <value>
-        <option name="FOREGROUND" value="8c958d" />
+        <option name="FOREGROUND" value="909c93" />
       </value>
     </option>
     <option name="LOGCAT_WARNING_OUTPUT">
@@ -3225,7 +3225,7 @@
     </option>
     <option name="LOG_DEBUG_OUTPUT">
       <value>
-        <option name="FOREGROUND" value="8c958d" />
+        <option name="FOREGROUND" value="909c93" />
       </value>
     </option>
     <option name="LOG_ERROR_OUTPUT">
@@ -3235,7 +3235,7 @@
     </option>
     <option name="LOG_EXPIRED_ENTRY">
       <value>
-        <option name="FOREGROUND" value="8c958d" />
+        <option name="FOREGROUND" value="909c93" />
       </value>
     </option>
     <option name="LOG_INFO_OUTPUT">
@@ -3245,7 +3245,7 @@
     </option>
     <option name="LOG_VERBOSE_OUTPUT">
       <value>
-        <option name="FOREGROUND" value="8c958d" />
+        <option name="FOREGROUND" value="909c93" />
       </value>
     </option>
     <option name="LOG_WARNING_OUTPUT">

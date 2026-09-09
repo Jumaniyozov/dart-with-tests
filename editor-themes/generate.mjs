@@ -57,7 +57,7 @@ const UI = {
     emerald: '#005037', accent: '#00422C',
     brass: '#95753C', brassBright: '#C3A76B', brassInk: '#744C0E',
     correction: '#9E2D28', ok: '#006432', info: '#0059A2',
-    selection: '#C3E8D7', caretRow: '#F0F5F2', hairline: '#E0DDD1',
+    selection: '#BFE6D0', caretRow: '#F0F5F2', hairline: '#E0DDD1',
     onAccent: '#FFFFFF',
   },
   dark: {
@@ -95,7 +95,7 @@ const TERM = {
     },
   },
   dark: {
-    ground: '#010604', ink: '#CDD8CE', dim: '#8C958D',
+    ground: '#0E1C17', ink: '#CDD8CE', dim: '#909C93',
     prompt: '#C3A76B', command: '#F1F7F2', pass: '#6EEEAB', fail: '#F17166',
     ref: '#E8C67D', path: '#A4D1AC', caret: '#76E5AD',
     ansi: {
@@ -106,6 +106,67 @@ const TERM = {
       brightCyan: '#85E3E8', brightWhite: '#F1F7F2',
     },
   },
+};
+
+/**
+ * Where machine output is painted, on every surface.
+ *
+ * The console used to sit at `oklch(11% …)` in dark, and that is why it read as
+ * plain black: the sRGB chroma ceiling at that lightness is 0.023, so no amount
+ * of chroma could make the green visible. It is a ceiling, not a choice. The
+ * page rung doubles it to 0.042 and the green reads.
+ *
+ * Dark now agrees exactly — the book's whole dark ladder was lifted so its
+ * console could come up to this value, so `TERM.dark.ground === TERMINAL_GROUND
+ * .dark`. Light still differs: its console is a slab recessed inside a white
+ * page, and its page rung is already near white, so there is nowhere for the two
+ * to meet. `assertMatchesBook` keeps `TERM[mode].ground` honest either way.
+ */
+const TERMINAL_GROUND = { light: UI.light.page, dark: UI.dark.page };
+
+
+/**
+ * The block ladder, all of it brighter than the ground in both modes.
+ *
+ * These were hand-picked hexes sitting a shade off the old near-black ground.
+ * A hand-picked hex does not move when the ground moves: with the terminal on
+ * the page rung the dark ones would have gone *darker* than their ground while
+ * the selected block went lighter, so hover and selection pointed opposite ways.
+ * Derived from the ladder now, so they follow the ground wherever it goes.
+ */
+const TERMINAL_BLOCK = { light: UI.light.surface, dark: UI.dark.surface };
+const TERMINAL_HOVER = {
+  light: '#F3F7F5', // oklch(97.3% 0.005 165)  midway page -> surface
+  dark: '#12201B', //  oklch(23% 0.023 169)    midway page -> surface
+};
+
+/**
+ * And the terminal's selection is not the book's selection either.
+ *
+ * `UI.light.selection` sits 3.0 OKLab units from the console slab — against the
+ * dark theme's 14.2 it is barely a wash at all, and on the page ground it only
+ * reaches 7.5. This is a light-specific problem: a pale ground leaves almost no
+ * room below it, so the selection has to buy its visibility with chroma rather
+ * than lightness. There is plenty to spend — the ceiling at L86 is 0.201 and
+ * this uses 0.060 — which is the opposite of the syntax roles' predicament at
+ * reading lightness. Measured, like everything else here.
+ */
+/** src over dst at `a`. `dim` is a composite, so it belongs to a ground. */
+const composite = (src, dst, a) => {
+  const ch = (h, i) => Number.parseInt(h.slice(1 + i * 2, 3 + i * 2), 16);
+  return `#${[0, 1, 2]
+    .map((i) => Math.round(a * ch(src, i) + (1 - a) * ch(dst, i)).toString(16).padStart(2, '0'))
+    .join('')
+    .toUpperCase()}`;
+};
+const DIM_ALPHA = 0.68;
+const TERMINAL_DIM = Object.fromEntries(
+  ['light', 'dark'].map((m) => [m, composite(TERM[m].ink, TERMINAL_GROUND[m], DIM_ALPHA)]),
+);
+
+const TERMINAL_SELECTION = {
+  light: '#B1DEC2', // oklch(86% 0.060 158)  dE 11.7 from the ground
+  dark: UI.dark.selection, //                dE 14.2, already correct
 };
 
 // ── Guard: the themes may not drift from what the book renders ───────────────
@@ -128,17 +189,87 @@ function assertMatchesBook() {
     }
   };
   const card = Object.keys(SYNTAX.light);
-  const term = ['ground', 'ink', 'dim', 'prompt', 'command', 'pass', 'fail', 'ref', 'path', 'caret'];
+  // `dim` is deliberately absent: it is a composite, so it belongs to whichever
+  // ground it is painted on, and the book's console slab is not the terminals'
+  // ground. Comparing the literals would only assert that one of them is wrong.
+  const term = ['ground', 'ink', 'prompt', 'command', 'pass', 'fail', 'ref', 'path', 'caret'];
   check('cardLight', 'light', SYNTAX, card);
   check('cardDark', 'dark', SYNTAX, card);
   check('consoleLight', 'light', TERM, term);
   check('consoleDark', 'dark', TERM, term);
+  // Stronger than comparing hexes: prove the book's `dim` really is its own ink
+  // composited over its own ground, so a hand-edit that breaks the rule is caught.
+  for (const [block, mode] of [['consoleLight', 'light'], ['consoleDark', 'dark']]) {
+    const want = composite(TERM[mode].ink, TERM[mode].ground, DIM_ALPHA);
+    const got = section(block).match(/\bdim:\s*'(#[0-9A-Fa-f]{6})'/)?.[1];
+    if (got?.toUpperCase() !== want) {
+      problems.push(`${block}.dim: book has ${got}, ink at ${DIM_ALPHA} over its ground is ${want}`);
+    }
+  }
   if (problems.length) {
     console.error(`The editor themes have drifted from the book:\n  ${problems.join('\n  ')}`);
     process.exit(1);
   }
   console.log('palette matches web/src/lib/saff/palette.ts');
 }
+
+/**
+ * The CSS custom properties must agree with the palette they claim to be.
+ *
+ * `palette.ts` names its two grounds after the tokens that paint them —
+ * `--porcelain-2` for the card, `--console` for the slab — but nothing checked
+ * that the tokens still held those values. Lifting the dark ladder moved
+ * `--porcelain-2` eight points and split the book's code card from the editor
+ * background it is supposed to be identical to; both files stayed internally
+ * consistent and every existing assertion passed. This closes that seam.
+ */
+function assertCssMatchesPalette() {
+  const css = readFileSync(join(HERE, '../web/src/app/global.css'), 'utf8');
+  // `:root` carries light; `.dark` overrides it. Read each block on its own.
+  const block = (name) => {
+    const i = css.indexOf(name);
+    return css.slice(i, css.indexOf('\n}', i));
+  };
+  const value = (text, token) =>
+    text.match(new RegExp(`--${token}:\\s*(oklch\\([^)]*\\));`))?.[1];
+
+  const problems = [];
+  for (const [mode, scope] of [['light', ':root {'], ['dark', '.dark {']]) {
+    for (const [token, hex, what] of [
+      ['porcelain-2', SYNTAX[mode].ground, 'the editor ground'],
+      ['console', TERM[mode].ground, 'the terminal ground'],
+    ]) {
+      const declared = value(block(scope), token);
+      if (!declared) {
+        problems.push(`${scope} --${token} not found in global.css`);
+      } else if (measured(declared) !== hex) {
+        problems.push(
+          `${scope} --${token} is ${declared} = ${measured(declared) ?? '?'}, but ${what} is ${hex}`,
+        );
+      }
+    }
+  }
+  if (problems.length) {
+    console.error(
+      `global.css and palette.ts disagree about a ground:\n  ${problems.join('\n  ')}`,
+    );
+    process.exit(1);
+  }
+  console.log('global.css grounds match the palette');
+}
+
+/**
+ * OKLCH strings are compared through a table of values measured in a browser,
+ * never converted — several roles fall outside sRGB and Chrome clips per channel
+ * rather than reducing chroma, so converting would disagree with the page.
+ */
+const MEASURED = {
+  'oklch(98.2% 0.004 165)': '#F7FAF8',
+  'oklch(25% 0.024 168)': '#16251F',
+  'oklch(90% 0.016 162)': '#D5E1DB',
+  'oklch(21% 0.022 170)': '#0E1C17',
+};
+const measured = (s) => MEASURED[s.replace(/\s+/g, ' ').trim()];
 
 // ── IntelliJ colour scheme (.icls) ───────────────────────────────────────────
 
@@ -184,9 +315,11 @@ function syntaxAttributes(mode) {
 function terminalAttributes(mode) {
   const t = TERM[mode];
   const a = t.ansi;
+  const tg = TERMINAL_GROUND[mode];
+  const td = TERMINAL_DIM[mode];
   const pairs = {
     CONSOLE_NORMAL_OUTPUT: t.ink, CONSOLE_USER_INPUT: t.command,
-    CONSOLE_SYSTEM_OUTPUT: t.dim, CONSOLE_ERROR_OUTPUT: t.fail,
+    CONSOLE_SYSTEM_OUTPUT: td, CONSOLE_ERROR_OUTPUT: t.fail,
     CONSOLE_BLACK_OUTPUT: a.black, CONSOLE_RED_OUTPUT: a.red,
     CONSOLE_GREEN_OUTPUT: a.green, CONSOLE_YELLOW_OUTPUT: a.yellow,
     CONSOLE_BLUE_OUTPUT: a.blue, CONSOLE_MAGENTA_OUTPUT: a.magenta,
@@ -196,10 +329,10 @@ function terminalAttributes(mode) {
     CONSOLE_YELLOW_BRIGHT_OUTPUT: a.brightYellow, CONSOLE_BLUE_BRIGHT_OUTPUT: a.brightBlue,
     CONSOLE_MAGENTA_BRIGHT_OUTPUT: a.brightMagenta, CONSOLE_CYAN_BRIGHT_OUTPUT: a.brightCyan,
     LOG_ERROR_OUTPUT: t.fail, LOG_WARNING_OUTPUT: a.yellow, LOG_INFO_OUTPUT: t.ink,
-    LOG_DEBUG_OUTPUT: t.dim, LOG_VERBOSE_OUTPUT: t.dim, LOG_EXPIRED_ENTRY: t.dim,
+    LOG_DEBUG_OUTPUT: td, LOG_VERBOSE_OUTPUT: td, LOG_EXPIRED_ENTRY: td,
     LOGCAT_ASSERT_OUTPUT: t.fail, LOGCAT_ERROR_OUTPUT: t.fail,
     LOGCAT_WARNING_OUTPUT: a.yellow, LOGCAT_INFO_OUTPUT: t.ink,
-    LOGCAT_DEBUG_OUTPUT: t.dim, LOGCAT_VERBOSE_OUTPUT: t.dim,
+    LOGCAT_DEBUG_OUTPUT: td, LOGCAT_VERBOSE_OUTPUT: td,
     // The Terminal tool window is not the console. It reads its own
     // BLOCK_TERMINAL_* keys, so CONSOLE_* alone leaves it on the parent scheme.
     BLOCK_TERMINAL_BLACK: a.black, BLOCK_TERMINAL_BLACK_BRIGHT: a.brightBlack,
@@ -216,8 +349,8 @@ function terminalAttributes(mode) {
   };
   // Search hits are a background wash, so they cannot come from `pairs`.
   const highlights = {
-    BLOCK_TERMINAL_SEARCH_ENTRY: { BACKGROUND: UI[mode].selection, FOREGROUND: t.ink },
-    BLOCK_TERMINAL_CURRENT_SEARCH_ENTRY: { BACKGROUND: t.ref, FOREGROUND: t.ground },
+    BLOCK_TERMINAL_SEARCH_ENTRY: { BACKGROUND: TERMINAL_SELECTION[mode], FOREGROUND: t.ink },
+    BLOCK_TERMINAL_CURRENT_SEARCH_ENTRY: { BACKGROUND: t.ref, FOREGROUND: tg },
   };
   const out = { ...highlights };
   for (const [k, v] of Object.entries(pairs)) if (k in KEYS.attributes) out[k] = { FOREGROUND: v };
@@ -385,6 +518,7 @@ function iclsColors(mode) {
   const u = UI[mode];
   const s = SYNTAX[mode];
   const t = TERM[mode];
+  const tg = TERMINAL_GROUND[mode];
   const caret = mode === 'light' ? u.brassInk : u.brassBright;
   const fade = mode === 'light' ? '#0000000D' : '#FFFFFF0D';
   return {
@@ -433,21 +567,21 @@ function iclsColors(mode) {
 
     // Both terminals. CONSOLE_BACKGROUND_KEY is the Run/Debug console;
     // TERMINAL_BACKGROUND and the BLOCK_TERMINAL_* pair are the tool window.
-    CONSOLE_BACKGROUND_KEY: t.ground,
-    TERMINAL_BACKGROUND: t.ground,
-    BLOCK_TERMINAL_DEFAULT_BACKGROUND: t.ground,
+    CONSOLE_BACKGROUND_KEY: tg,
+    TERMINAL_BACKGROUND: tg,
+    BLOCK_TERMINAL_DEFAULT_BACKGROUND: tg,
     BLOCK_TERMINAL_DEFAULT_FOREGROUND: t.ink,
-    BLOCK_TERMINAL_BLOCK_BACKGROUND_START: t.ground,
-    BLOCK_TERMINAL_BLOCK_BACKGROUND_END: t.ground,
-    BLOCK_TERMINAL_SELECTED_BLOCK_BACKGROUND: mode === 'light' ? '#C8D4CE' : '#0B1510',
-    BLOCK_TERMINAL_INACTIVE_SELECTED_BLOCK_BACKGROUND: mode === 'light' ? '#CDD9D3' : '#080F0B',
+    BLOCK_TERMINAL_BLOCK_BACKGROUND_START: tg,
+    BLOCK_TERMINAL_BLOCK_BACKGROUND_END: tg,
+    BLOCK_TERMINAL_SELECTED_BLOCK_BACKGROUND: TERMINAL_BLOCK[mode],
+    BLOCK_TERMINAL_INACTIVE_SELECTED_BLOCK_BACKGROUND: tg,
     BLOCK_TERMINAL_SELECTED_BLOCK_STROKE_COLOR: t.prompt,
-    BLOCK_TERMINAL_INACTIVE_SELECTED_BLOCK_STROKE_COLOR: t.dim,
+    BLOCK_TERMINAL_INACTIVE_SELECTED_BLOCK_STROKE_COLOR: TERMINAL_DIM[mode],
     BLOCK_TERMINAL_ERROR_BLOCK_STROKE_COLOR: t.fail,
-    BLOCK_TERMINAL_PROMPT_SEPARATOR_COLOR: t.dim,
-    BLOCK_TERMINAL_HOVERED_BLOCK_BACKGROUND_START: mode === 'light' ? '#CEDBD5' : '#080F0B',
-    BLOCK_TERMINAL_HOVERED_BLOCK_BACKGROUND_END: mode === 'light' ? '#CEDBD5' : '#080F0B',
-    BLOCK_TERMINAL_GENERATE_COMMAND_PLACEHOLDER_FOREGROUND: t.dim,
+    BLOCK_TERMINAL_PROMPT_SEPARATOR_COLOR: TERMINAL_DIM[mode],
+    BLOCK_TERMINAL_HOVERED_BLOCK_BACKGROUND_START: TERMINAL_HOVER[mode],
+    BLOCK_TERMINAL_HOVERED_BLOCK_BACKGROUND_END: TERMINAL_HOVER[mode],
+    BLOCK_TERMINAL_GENERATE_COMMAND_PLACEHOLDER_FOREGROUND: TERMINAL_DIM[mode],
     BLOCK_TERMINAL_GENERATE_COMMAND_CARET_COLOR: t.caret,
 
     // Version control
@@ -605,7 +739,7 @@ function themeJson(mode) {
       hover: u.caretRow,
       onAccent: u.onAccent,
       error: u.correction,
-      terminalGround: t.ground,
+      terminalGround: TERMINAL_GROUND[mode],
       terminalInk: t.ink,
     },
     ui: {
@@ -868,9 +1002,9 @@ function zedTheme(mode) {
       'version_control.conflict_marker.ours': alpha(ok, 0.18),
       'version_control.conflict_marker.theirs': alpha(info, 0.18),
       'debugger.accent': u.brass,
-      'terminal.background': t.ground, 'terminal.foreground': t.ink,
-      'terminal.dim_foreground': t.dim, 'terminal.bright_foreground': t.command,
-      'terminal.ansi.background': t.ground,
+      'terminal.background': TERMINAL_GROUND[mode], 'terminal.foreground': t.ink,
+      'terminal.dim_foreground': TERMINAL_DIM[mode], 'terminal.bright_foreground': t.command,
+      'terminal.ansi.background': TERMINAL_GROUND[mode],
       'terminal.ansi.black': t.ansi.black, 'terminal.ansi.red': t.ansi.red,
       'terminal.ansi.green': t.ansi.green, 'terminal.ansi.yellow': t.ansi.yellow,
       'terminal.ansi.blue': t.ansi.blue, 'terminal.ansi.magenta': t.ansi.magenta,
@@ -902,9 +1036,46 @@ function zedTheme(mode) {
   };
 }
 
+// ── Ghostty ─────────────────────────────────────────────────────────────────
+
+/**
+ * A Ghostty theme is a config fragment whose *filename* is the theme name —
+ * no extension, no name field, and only the colour keys are accepted. Ghostty
+ * reads user themes from `~/.config/ghostty/themes` even on macOS, where the
+ * config file itself lives under `~/Library/Application Support`.
+ *
+ * The sixteen slots are the same ANSI table the IntelliJ terminal and Zed are
+ * handed, so one `dart test` run is the same colours in all three.
+ */
+const ANSI = [
+  'black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white',
+  'brightBlack', 'brightRed', 'brightGreen', 'brightYellow',
+  'brightBlue', 'brightMagenta', 'brightCyan', 'brightWhite',
+];
+
+function ghostty(mode) {
+  const t = TERM[mode];
+  const ground = TERMINAL_GROUND[mode];
+  const low = (hex) => hex.toLowerCase();
+  return `${[
+    `# SAFF ${mode === 'light' ? 'Light' : 'Dark'} — generated by editor-themes/generate.mjs.`,
+    '# Edit web/src/lib/saff/palette.ts and re-run. Do not edit this file.',
+    '',
+    ...ANSI.map((name, i) => `palette = ${i}=${low(t.ansi[name])}`),
+    '',
+    `background = ${low(ground)}`,
+    `foreground = ${low(t.ink)}`,
+    `cursor-color = ${low(t.caret)}`,
+    `cursor-text = ${low(ground)}`,
+    `selection-background = ${low(TERMINAL_SELECTION[mode])}`,
+    `selection-foreground = ${low(t.ink)}`,
+  ].join('\n')}\n`;
+}
+
 // ── Emit ─────────────────────────────────────────────────────────────────────
 
 assertMatchesBook();
+assertCssMatchesPalette();
 
 const light = icls('light');
 const dark = icls('dark');
@@ -957,4 +1128,10 @@ writeFileSync(
   )}\n`,
 );
 
-console.log(`wrote SAFF-Light.icls, SAFF-Dark.icls, saff.json, SAFF-theme-${VERSION}.jar`);
+mkdirSync(join(HERE, 'ghostty'), { recursive: true });
+writeFileSync(join(HERE, 'ghostty/SAFF Light'), ghostty('light'));
+writeFileSync(join(HERE, 'ghostty/SAFF Dark'), ghostty('dark'));
+
+console.log(
+  `wrote SAFF-Light.icls, SAFF-Dark.icls, saff.json, ghostty/SAFF {Light,Dark}, SAFF-theme-${VERSION}.jar`,
+);

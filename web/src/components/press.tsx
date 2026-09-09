@@ -70,13 +70,20 @@ export function Direction({
   );
 }
 
-/** A note that must not be skimmed. A stone card, bookmarked in emerald. */
+/**
+ * A note that must not be skimmed. A stone card, bookmarked in emerald.
+ *
+ * Stone, not `--porcelain-2`: that token is now the ground every editor paints
+ * on, so in dark it sits *below* the page and a note wearing it reads as a code
+ * block. Both asides take `--stone` and are told apart by their accent — emerald
+ * bookmark here, brass rule on `Practice`.
+ */
 export function Gloss({ title, children }: { title: string; children: ReactNode }) {
   return (
     <aside
       className="rounded-card my-7 px-5 py-4"
       style={{
-        background: 'var(--porcelain-2)',
+        background: 'var(--stone)',
         border: '1px solid var(--hairline)',
         boxShadow: '0 1px 2px oklch(24% 0.03 170 / 0.05)',
       }}
@@ -99,6 +106,15 @@ export function Gloss({ title, children }: { title: string; children: ReactNode 
  * because a best practice is earned knowledge rather than a language rule.
  * Cite the source when the guidance has one; leave it off for a house rule,
  * so an uncited note visibly claims less.
+ *
+ * The ground is plain `--stone`, the same panel every other raised surface in
+ * the book uses, and brass appears only in the rule and the label. It used to be
+ * a brass wash fading into `--porcelain-2`, which failed twice over: the fade
+ * left the bottom edge 1.8 OKLab units from the page, so the box dissolved
+ * before the last line, and in dark a warm tint over a green ground can only
+ * land in the olive band — `--brass-pale` is L85, and composited down onto an
+ * L29 page there is nowhere else for it to go. Brass stays an accent, which is
+ * what the palette says it is for.
  */
 export function Practice({
   source,
@@ -126,8 +142,7 @@ export function Practice({
     <aside
       className="rounded-card my-7 px-5 py-4"
       style={{
-        background:
-          'linear-gradient(180deg, oklch(from var(--brass-pale) l c h / 0.22), var(--porcelain-2))',
+        background: 'var(--stone)',
         border: '1px solid var(--hairline)',
         borderLeft: '1px solid var(--brass)',
       }}

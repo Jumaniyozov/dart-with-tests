@@ -91,7 +91,7 @@ user has never authorised a commit or push. Ask before the first one.
 **refuses to run if the two disagree**, so the book and the editors cannot drift.
 
 ```bash
-node editor-themes/generate.mjs        # rewrites both .icls, the JAR, and saff.json
+node editor-themes/generate.mjs   # rewrites both .icls, the JAR, saff.json, both Ghostty themes
 ```
 
 Three things about this system are counterintuitive enough to be worth knowing
@@ -127,7 +127,34 @@ The user raised this three times. The measurements and rejected variants are in
 ### Installing the editor themes
 
 Zed picks up `~/.config/zed/themes/saff.json` live. IntelliJ needs the JAR
-installed from disk plus a restart.
+installed from disk plus a restart. Ghostty reads `~/.config/ghostty/themes/`
+(that path even on macOS, where its config file lives under Application Support)
+and the filename *is* the theme name — `theme = dark:SAFF Dark,light:SAFF Light`.
+
+### Terminals are their own surface
+
+All three terminals — Ghostty, the IntelliJ Terminal tool window, Zed's terminal —
+sit on the **page** rung. In dark the book joined them: its console was at
+`oklch(11% …)`, where the sRGB chroma ceiling is 0.023 and no green can be seen,
+and it could not be lifted alone because the old page was exactly where it needed
+to go. So the whole dark ladder moved up (page 21→29%, card 25→33%, stone 29.5→37%,
+stone-2 35→42%, ink-3 67→70%) and the console rose to `oklch(21% 0.022 170)`. The
+book, the IDE, Zed and Ghostty now paint machine output on one colour, `#0E1C17`.
+
+Two grounds are now defined as equalities, and a generator assertion enforces
+them across the CSS/TS boundary: `--console` == the ground every terminal paints
+on, `--porcelain-2` == the ground every editor paints on. Only the prose page
+moved, so in dark the card is recessed below it rather than raised above it.
+
+`--rail` did not move, on purpose: it is an unbordered floating panel whose edge is
+only its colour difference from the page, it is shared with the light theme, and
+`--on-rail-*` assumes it never flips. Light is unchanged and cannot converge — its
+console is a slab inside a white page and its page rung is already near white.
+
+Selection is matched light-to-dark as OKLab ΔE per surface (editor 10.2/10.7,
+panels 5.3/6.3, terminal 11.7/14.2). Terminals carry a deeper light selection than
+the editor because selected *code* has to stay readable and every syntax role sits
+on top of the editor's. The measurements are in `editor-themes/README.md`.
 
 **Install the plugin or import the `.icls` — never both.** An imported `.icls`
 lands in `~/Library/Application Support/JetBrains/<IDE>/colors/` and *shadows* the

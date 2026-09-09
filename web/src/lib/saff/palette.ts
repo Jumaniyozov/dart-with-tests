@@ -116,9 +116,9 @@ export const consoleLight: ConsolePalette = {
 };
 
 export const consoleDark: ConsolePalette = {
-  ground: '#010604', //  oklch(11% 0.018 172)
+  ground: '#0E1C17', //  oklch(21% 0.022 170)  the ground every terminal uses
   ink: '#CDD8CE', //     oklch(87% 0.018 148)
-  dim: '#8C958D', //     ink at 68% over ground, composited
+  dim: '#909C93', //     ink at 68% over ground, composited
   prompt: '#C3A76B', //  oklch(74% 0.085 85)   brass, on a dark ground
   command: '#F1F7F2', // oklch(97% 0.01 150)
   pass: '#6EEEAB', //    oklch(86% 0.15 158)   +N

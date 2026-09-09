@@ -91,31 +91,51 @@
 .dark {
   /* The same room after sunset. Values are Stonelight's own dark map, not an
      inversion: the page sinks, the card lifts off it, the console sinks below
-     both, and the rail keeps its colour the way book cloth does under any lamp. */
-  --color-fd-background: oklch(21% 0.022 170);
+     both, and the rail keeps its colour the way book cloth does under any lamp.
+
+     The prose page sits eight points higher than it once did so that the two
+     machine surfaces could come up under it and meet their editors exactly:
+     `--console` is the ground every terminal paints on, `--porcelain-2` is the
+     ground every editor paints on. Neither could be lifted on its own — at the
+     old page of 21% the console would have merged into it.
+
+     So in dark the stack is ordered by how machine-made the content is, and the
+     card is recessed rather than raised:
+
+       console  21%   dart test output   = Ghostty, IDE terminal, Zed terminal
+       card     25%   authored source    = IntelliJ editor, Zed editor
+       page     29%   prose
+       stone    37%   panels
+
+     `--color-fd-card` and `--color-fd-popover` are UI chrome, not content, and
+     stay above the page at 33%. They only ever shared `--porcelain-2`'s value by
+     coincidence. The rail is deliberately left where it was: it is an unbordered
+     floating panel whose edge is nothing but this colour difference, it is shared
+     with the light theme, and `--on-rail-*` assumes it never moves. */
+  --color-fd-background: oklch(29% 0.024 168);
   --color-fd-foreground: oklch(93% 0.012 150);
-  --color-fd-muted: oklch(29.5% 0.026 168);
-  --color-fd-muted-foreground: oklch(67% 0.02 158);
-  --color-fd-card: oklch(25% 0.024 168);
+  --color-fd-muted: oklch(37% 0.026 168);
+  --color-fd-muted-foreground: oklch(70% 0.02 158);
+  --color-fd-card: oklch(33% 0.024 168);
   --color-fd-card-foreground: oklch(93% 0.012 150);
-  --color-fd-popover: oklch(25% 0.024 168);
+  --color-fd-popover: oklch(33% 0.024 168);
   --color-fd-popover-foreground: oklch(93% 0.012 150);
   --color-fd-border: oklch(48% 0.04 95 / 0.45);
   --color-fd-primary: oklch(79% 0.1 158);
   --color-fd-primary-foreground: oklch(16% 0.04 172);
-  --color-fd-secondary: oklch(29.5% 0.026 168);
+  --color-fd-secondary: oklch(37% 0.026 168);
   --color-fd-secondary-foreground: oklch(93% 0.012 150);
-  --color-fd-accent: oklch(30% 0.05 166);
+  --color-fd-accent: oklch(38% 0.05 166);
   --color-fd-accent-foreground: oklch(93% 0.012 150);
   --color-fd-ring: oklch(70% 0.085 82);
 
-  --porcelain: oklch(21% 0.022 170);
+  --porcelain: oklch(29% 0.024 168);
   --porcelain-2: oklch(25% 0.024 168);
-  --stone: oklch(29.5% 0.026 168);
-  --stone-2: oklch(35% 0.026 168);
+  --stone: oklch(37% 0.026 168);
+  --stone-2: oklch(42% 0.026 168);
   --ink: oklch(93% 0.012 150);
   --ink-2: oklch(81% 0.018 155);
-  --ink-3: oklch(67% 0.02 158);
+  --ink-3: oklch(70% 0.02 158);
   --emerald: oklch(79% 0.1 158);
   --emerald-strong: oklch(38% 0.082 166);
   --emerald-deep: oklch(28% 0.05 168);
@@ -128,7 +148,7 @@
   --hairline: oklch(48% 0.04 95 / 0.45);
   --hairline-soft: oklch(45% 0.035 110 / 0.35);
   --correction: oklch(72% 0.13 30);
-  --console: oklch(11% 0.018 172);
+  --console: oklch(21% 0.022 170);
   --console-ink: oklch(87% 0.018 148);
   /* Same cloth under any lamp — identical to :root on purpose. */
   --rail: oklch(25% 0.045 168);
