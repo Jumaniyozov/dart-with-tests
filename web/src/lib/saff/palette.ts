@@ -23,6 +23,7 @@ export interface CardPalette {
   interpolation: string;
   annotation: string;
   comment: string;
+  field: string;
   identifier: string;
   punctuation: string;
 }
@@ -59,6 +60,7 @@ export const cardLight: CardPalette = {
   interpolation: '#C10002', // oklch(51% 0.209 29)   +15% chroma, same trade
   annotation: '#717500', //    oklch(54% 0.120 112)  hue pushed off `type`
   comment: '#587A6C', //       oklch(55% 0.045 167)
+  field: '#6F530A', //         oklch(46% 0.090 85)   members, not variables
   identifier: '#2E493F', //    oklch(38% 0.037 169)  lifted off near-black
   punctuation: '#5B6E67', //   oklch(52% 0.025 171)
 };
@@ -73,6 +75,7 @@ export const cardDark: CardPalette = {
   interpolation: '#E57431', // oklch(68% 0.160 48)
   annotation: '#E1DC85', //    oklch(88% 0.110 106)
   comment: '#7C9A8E', //       oklch(66% 0.038 168)
+  field: '#CFBE7E', //         oklch(80% 0.085 95)   members, not variables
   identifier: '#DFE7E0', //    oklch(92% 0.012 150)
   punctuation: '#96A29A', //   oklch(70% 0.018 158)
 };
@@ -116,9 +119,9 @@ export const consoleLight: ConsolePalette = {
 };
 
 export const consoleDark: ConsolePalette = {
-  ground: '#010604', //  oklch(11% 0.018 172)
+  ground: '#0E1C17', //  oklch(21% 0.022 170)  the ground every terminal uses
   ink: '#CDD8CE', //     oklch(87% 0.018 148)
-  dim: '#8C958D', //     ink at 68% over ground, composited
+  dim: '#909C93', //     ink at 68% over ground, composited
   prompt: '#C3A76B', //  oklch(74% 0.085 85)   brass, on a dark ground
   command: '#F1F7F2', // oklch(97% 0.01 150)
   pass: '#6EEEAB', //    oklch(86% 0.15 158)   +N
