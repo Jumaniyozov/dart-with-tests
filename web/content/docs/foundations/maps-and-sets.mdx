@@ -137,8 +137,12 @@ this is the first time in the book that a perfectly correct program has produced
 `containsKey` asks the question without reading the value, which is what you want when the
 value itself might legitimately be nothing.
 
-Maps keep their keys in the order you first inserted them. That is a guarantee in Dart, not
-an accident, so a tally printed back reads in the order the words were first seen.
+A map **literal** keeps its keys in the order you first inserted them, so a tally printed
+back reads in the order the words were first seen. That comes from the literal, not from
+`Map`: `{}` builds a `LinkedHashMap`, and insertion order is what that particular map
+promises. Other maps in `dart:collection` are `Map`s too and promise something else, or
+nothing at all. Rely on the order when you built the map yourself; not when someone handed
+you a `Map` and told you nothing more.
 
 ## 8.3 Sets
 
@@ -159,8 +163,18 @@ Sets answer questions about membership, and combine with three operations:
 in the first and not the second. `exclusive` above builds the fourth combination out of
 those: in one or the other, but not both.
 
-Note the last test. Two sets with the same members are equal whatever order you wrote them
-in, which is not true of lists — study 7 showed `[1, 2] == [1, 2]` is `false`.
+Look carefully at the last two tests, because the obvious reading of them is wrong.
+
+`{'a', 'b'} == {'b', 'a'}` is **false**. A `Set` does not compare by its contents any more
+than a `List` does — study 7 showed `[1, 2] == [1, 2]` is `false`, and sets behave exactly
+the same way. Both compare by identity: two different objects are two different objects,
+whatever they hold.
+
+What differs is the **matcher**. `expect(a, b)` does not use `==` on a collection. It
+compares the contents, element by element — and for a set, where order carries no meaning,
+it compares them without regard to order. That is a fact about `package:test`, not about
+Dart, and it is worth knowing precisely because a passing test would otherwise teach you
+something false about `==`.
 
 <Console>
 <include cwd lang="saff-console" meta='title="terminal"'>../code/ch08_tally/transcripts/all.txt</include>

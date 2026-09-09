@@ -34,6 +34,22 @@ void main() {
       expect(identical(a, b), isTrue);
     });
 
+    test('a fixed-length list refuses to grow, with its own message', () {
+      final fixed = List<int>.filled(2, 0);
+      fixed[0] = 99;
+      expect(fixed, [99, 0]);
+      expect(
+        () => fixed.add(1),
+        throwsA(
+          isA<UnsupportedError>().having(
+            (e) => e.message,
+            'message',
+            'Cannot add to a fixed-length list',
+          ),
+        ),
+      );
+    });
+
     test('two identical ordinary lists are two objects', () {
       final a = [1, 2];
       final b = [1, 2];

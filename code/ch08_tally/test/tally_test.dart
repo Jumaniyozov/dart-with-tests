@@ -32,7 +32,7 @@ void main() {
   // #endregion lookup
 
   group('map order and size', () {
-    test('keeps the order keys were first inserted', () {
+    test('a map literal keeps the order keys were first inserted', () {
       final counts = tally(['pear', 'apple', 'pear', 'fig']);
       expect(counts.keys.toList(), ['pear', 'apple', 'fig']);
     });
@@ -56,8 +56,15 @@ void main() {
       expect(exclusive({'a', 'b', 'c'}, {'b', 'c', 'd'}), {'a', 'd'});
     });
 
-    test('a set has no order guarantee for equality', () {
-      expect({'a', 'b'}, {'b', 'a'});
+    test('== on a set is identity, exactly as it is on a list', () {
+      expect({'a', 'b'} == {'b', 'a'}, isFalse);
+      expect([1, 2] == [1, 2], isFalse);
+    });
+
+    test('the matcher compares contents, and ignores order only for a set', () {
+      expect({'a', 'b'}, equals({'b', 'a'}));
+      expect([1, 2], equals([1, 2]));
+      expect([1, 2], isNot(equals([2, 1])));
     });
   });
   // #endregion sets

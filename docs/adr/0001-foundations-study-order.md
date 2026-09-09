@@ -38,8 +38,19 @@ the outline cold.
 Studies 6 and 7 use `switch` and `for-in` before study 10 formalises them. This
 is accepted and consistent with how studies 2 and 3 already work.
 
-There is no arithmetic study until 4 and no numbers depth until 11, which is
-unusual for a beginner book. Accepted: `int` and `count++` appear from study 3.
+Functions are not taught until study 11, although the reader has been writing
+them since study 2 and meets `=>`, named parameters and defaults in passing long
+before that. This is the cost of choosing nouns first, and it was the rejected
+spine's strongest argument. Accepted: light-use-then-deepen is how studies 2 and
+3 already work, and a functions study at slot 4 would have had no interesting
+data to work on.
+
+Studies 4 to 9 have since been written against this order, and two things
+confirmed it. Maps really cannot be taught without `int?` — and more sharply
+than expected, because `containsKey` does not promote, so the obvious workaround
+fails with the same error one line lower. Study 8 does borrow `??` from study 9
+for a single line, flagged in the prose; that is the largest forward loan in the
+book so far and the place to look first if this ordering is ever revisited.
 
 Reordering after several of these studies are written is expensive, because the
 studies carry forward references to each other by number — a published Gloss

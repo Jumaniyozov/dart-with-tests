@@ -51,11 +51,14 @@ int extensionLength(String name) {
 It is saying you may not touch it *without a condition* — without first settling what
 happens in the other case.
 
-Here is the mechanism, and it is worth being precise about. Nullability lives entirely in
-the type system, at compile time. There is no run-time flag on the value. `int?` and `int`
-compile to the same thing; the difference is a promise the analyzer tracks through your
-code and refuses to let you break. It costs nothing when the program runs. It costs you
-answering one question while you write.
+Here is the mechanism, and it is worth being precise about. Nullability is checked while
+your code is compiled. The number `7` carries no extra marker saying which of `int` and
+`int?` it came from — `7 is int` and `7 is int?` are both true, and it is the same value
+either way. The two types differ only on whether `null` is allowed to be there as well, and
+`null` is an ordinary value a program can test for: `null is int` is false.
+
+So the checking costs nothing while the program runs. It costs you answering one question
+while you write.
 
 ## 9.2 Four ways to answer "or what?"
 
