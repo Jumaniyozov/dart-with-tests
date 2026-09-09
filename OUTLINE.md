@@ -28,6 +28,17 @@ work: study 6 uses `switch` before study 10 formalises it, and study 7 uses
 | 1 | Hello, Dart | `hello-dart` | `ch01_hello` |
 | 2 | Your first test | `your-first-test` | `ch02_greeting` |
 | 3 | Variables | `variables` | `ch03_variables` |
+| 4 | Numbers | `numbers` | `ch04_money` |
+| 5 | Strings and text | `strings` | `ch05_label` |
+| 6 | Enums | `enums` | `ch06_language` |
+| 7 | Lists | `lists` | `ch07_basket` |
+| 8 | Maps and sets | `maps-and-sets` | `ch08_tally` |
+| 9 | Null safety | `null-safety` | `ch09_lookup` |
+| 10 | Control flow | `control-flow` | `ch10_ledger` |
+| 11 | Functions and closures | `functions` | `ch11_pipeline` |
+| 12 | Iterables | `iterables` | `ch12_report` |
+| 13 | Records | `records` | `ch13_split` |
+| 14 | Patterns and switch | `patterns` | `ch14_command` |
 
 ### Promises already in print
 
@@ -47,6 +58,10 @@ the reader, not suggestions.
 ---
 
 ## To write
+
+Studies 4-14 are written and committed; their entries below are kept as the
+record of what was intended, and each study's own commit message records what
+construction actually measured. **Study 15 is next.**
 
 ### 4 — Numbers · `numbers` · `ch04_money`
 
