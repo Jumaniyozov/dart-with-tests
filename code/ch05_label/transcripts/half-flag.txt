@@ -1,0 +1,14 @@
+$ dart test test/first_test.dart
+00:00 +0: loading test/first_test.dart
+00:00 +0: cuts a long label and marks the cut
+00:00 +1: never leaves half an emoji
+00:00 +2: never leaves half a flag
+00:00 +2 -1: never leaves half a flag [E]
+  Expected: 'Go 🇬🇧…'
+    Actual: 'Go 🇬…'
+     Which: is different.
+            Expected: Go 🇬🇧…
+              Actual: Go 🇬…
+                           ^
+             Differ at offset 5
+00:00 +2 -1: Some tests failed.

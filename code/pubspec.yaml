@@ -10,3 +10,4 @@ workspace:
   - ch02_greeting
   - ch03_variables
   - ch04_money
+  - ch05_label

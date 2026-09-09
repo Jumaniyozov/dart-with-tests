@@ -1,0 +1,225 @@
+---
+title: Strings and text
+study: 5
+direction: Ask the string what it thinks it contains. It will not be what you assumed.
+description: Writing strings down, and the three different answers Dart gives when you ask how long one is.
+---
+
+You have been using strings since study 1. This study is about what one actually is,
+because a `String` is not a row of characters, and every bug in this study comes from
+believing that it is.
+
+## 5.1 Writing a string down
+
+Quotes can be single or double. Pick one and stay with it; the formatter does not care and
+neither should you.
+
+```dart
+const single = 'Dart';
+const double = "Dart";
+```
+
+You already know `$name` puts a value inside a string. Braces are for when the value is an
+expression, or when the name runs into the text after it:
+
+```dart
+const name = 'Ada';
+const decade = 1840;
+final greeting = 'Hi, $name! You are ${name.length} letters and it is the ${decade}s.';
+```
+
+Three more forms are worth knowing now, because you will want them within a study or two.
+
+```dart
+// Adjacent literals join with no operator at all.
+const warning = 'The label is longer than the column. '
+    'It will be cut, and the cut will be marked.';
+
+// A raw string takes backslashes literally. Useful for paths and patterns.
+const path = r'C:\Users\ada\notes.txt';
+
+// Three quotes hold the line breaks you type.
+const help = '''
+usage: label <text> <width>
+  width  how many characters to keep
+''';
+
+// A string multiplied by a number repeats.
+const rule = '-' * 20;
+```
+
+## 5.2 A string is not a row of characters
+
+Dart stores a `String` as a sequence of **UTF-16 code units**: sixteen-bit numbers.
+`length` tells you how many of those there are. That is a fact about storage, and for
+plain English text it happens to match the number of letters — which is exactly why the
+mismatch is a surprise when it arrives.
+
+There are three questions you can ask, and they give three different numbers:
+
+<include cwd lang="dart" meta='title="lib/label.dart"'>../code/ch05_label/lib/label.dart#widths</include>
+
+- `length` counts **code units** — storage.
+- `runes` counts **code points** — one Unicode value, which may take two code units.
+- `characters` counts **grapheme clusters** — what a person points at and calls a letter.
+
+Here is what they answer. These are not claims; they are the assertions in the study's own
+test file:
+
+<include cwd lang="dart" meta='title="test/label_test.dart"'>../code/ch05_label/test/label_test.dart#widths</include>
+
+Read the flag line twice. `🇬🇧` is **four** code units, **two** code points and **one**
+character. It is built from two "regional indicator" symbols, G and B, which your screen
+draws as a single flag. No amount of counting code points will ever see that as one thing.
+
+`characters` is not built into the language. It comes from a package the Dart team
+maintains:
+
+```bash
+dart pub add characters
+```
+
+<Gloss title="What study 3 got away with">
+Study 3 wrote `name.split('')` to count characters, and for the names in that study it was
+right. `'café'.split('')` gives 4 when the é is a single code point. It gives 5 when the é
+is written as `e` plus a combining accent, and it gives surrogate halves for any emoji.
+`split('')` cuts on storage boundaries. Those stop matching characters the moment text
+leaves plain English, which is most text.
+</Gloss>
+
+## 5.3 Cutting a label without breaking it
+
+A label is too long for its column. Keep the first few characters and mark the cut.
+
+<Drill n={1}>
+
+<Direction>Start in English, where every counting method agrees.</Direction>
+
+<include cwd lang="dart" meta='title="test/first_test.dart"'>../code/ch05_label/test/first_test.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch05_label/transcripts/undefined.txt</include>
+</Console>
+
+</Drill>
+
+<Drill n={2}>
+
+<Direction tone="pass">The obvious version, and it works.</Direction>
+
+<include cwd lang="dart" meta='title="lib/label.dart"'>../code/ch05_label/lib/v1.dart#truncate</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch05_label/transcripts/pass.txt</include>
+</Console>
+
+Green, and wrong. It is wrong in a way no English test will ever show you, which is the
+point of the next drill.
+
+</Drill>
+
+<Drill n={3}>
+
+<Direction>Now a label with an emoji in it.</Direction>
+
+```dart title="test/first_test.dart"
+test('never leaves half an emoji', () {
+  expect(truncate('Hi 👋 there', 4), 'Hi 👋…');
+});
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch05_label/transcripts/broken.txt</include>
+</Console>
+
+`Hi �…`. The replacement character is your screen admitting it was handed half a letter.
+`👋` is two code units, `substring(0, 4)` kept the first of them, and one half of a
+surrogate pair is not a character in any encoding. The matcher even points at the offset.
+
+</Drill>
+
+<Drill n={4}>
+
+<Direction tone="pass">Count code points instead. Then push once more.</Direction>
+
+<include cwd lang="dart" meta='title="lib/label.dart"'>../code/ch05_label/lib/v2.dart#truncate</include>
+
+`writeCharCode` appends one code point to a `StringBuffer`, and the loop stops at `width`.
+The emoji test passes now. So add the flag:
+
+```dart title="test/first_test.dart"
+test('never leaves half a flag', () {
+  expect(truncate('Go 🇬🇧 now', 4), 'Go 🇬🇧…');
+});
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch05_label/transcripts/half-flag.txt</include>
+</Console>
+
+`Go 🇬…` — half a flag. Counting code points fixed one problem and not the other, because a
+flag is two code points that mean one character together.
+
+</Drill>
+
+<Drill n={5}>
+
+<Direction tone="pass">Ask for characters, and stop guessing.</Direction>
+
+<include cwd lang="dart" meta='title="lib/label.dart"'>../code/ch05_label/lib/label.dart#truncate</include>
+
+The shape did not change. `text.characters` hands back the grapheme clusters, `write` takes
+a whole one, and now the two tests that failed both pass along with everything else.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch05_label/transcripts/all.txt</include>
+</Console>
+
+</Drill>
+
+<Gloss title="Why a StringBuffer and not `+=`">
+Strings in Dart cannot be changed after they are made. `result += letter` does not add a
+letter to `result`; it builds a brand new string containing everything `result` had plus
+one more, and throws the old one away. Do that inside a loop over a long text and you
+allocate a new string on every pass. A `StringBuffer` keeps one growing space and turns it
+into a `String` once, at the end. For three letters it does not matter. For a file it is
+the difference between fast and unusable.
+</Gloss>
+
+<Practice source="Effective Dart — Usage" href="https://dart.dev/effective-dart/usage#strings">
+Effective Dart has three rules for strings, and all three are about writing less:
+
+- **DO use adjacent strings to concatenate string literals.** Two literals side by side
+  join at compile time. `+` between literals does the same job at run time and reads worse.
+- **PREFER using interpolation to compose strings and values.** `'Hi, $name'` over
+  `'Hi, ' + name`.
+- **AVOID using curly braces in interpolation when not needed.** `'$name'`, not
+  `'${name}'`. Braces are for expressions and for when the name touches letters after it,
+  as in `'${decade}s'`.
+
+The rule this book adds, which is not in Effective Dart: when you count text, say which
+kind of count you mean. `length` is the right answer for a buffer size and the wrong answer
+for anything a person will read.
+</Practice>
+
+## Wrapping up
+
+A `String` is UTF-16 code units. `length` counts those, `runes` counts code points, and
+`characters` counts what a reader calls a letter — and for anything beyond plain English
+the three disagree. Cut text with `characters` and the cut lands between letters instead of
+inside one.
+
+Also met: adjacent literals, raw strings, triple-quoted strings, `${}` when braces are
+needed, `*` to repeat a string, `StringBuffer`, and `dart pub add` for a normal dependency
+rather than a dev one.
+
+## Challenges
+
+Three tests are already written and already failing. Make them pass one at a time. Do not
+edit the tests. `length` is the wrong tool in all three.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch05_label/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch05_label/exercises/challenges.dart</include>
