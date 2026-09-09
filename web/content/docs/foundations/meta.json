@@ -20,6 +20,7 @@
     "mixins",
     "generics",
     "extension-types",
-    "errors"
+    "errors",
+    "futures"
   ]
 }

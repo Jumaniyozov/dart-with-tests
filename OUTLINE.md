@@ -45,6 +45,7 @@ work: study 6 uses `switch` before study 10 formalises it, and study 7 uses
 | 18 | Generics | `generics` | `ch18_range` |
 | 19 | Extensions and extension types | `extension-types` | `ch19_pence` |
 | 20 | Errors and exceptions | `errors` | `ch20_till` |
+| 21 | Futures and async/await | `futures` | `ch21_payment` |
 
 ### Promises already in print
 
@@ -67,7 +68,6 @@ writing 15, 16 or 20; each is a sentence a reader has already been given.
 
 | Owed by | Made in | The reader was promised |
 | --- | --- | --- |
-| 21 | `errors.mdx` | failure that arrives after the function that caused it has returned |
 | 23 | `extension-types.mdx` | how to hide a constructor, so an invariant cannot be walked past |
 
 Also paid since: 15→16 (a family that shares behaviour), 16→17 (sharing
@@ -75,7 +75,8 @@ without a family), 17→18 (same behaviour, different type), 18→19 (a type tha
 exists for the compiler and disappears before the program runs), 4→19 (pence
 stop being an `int` by convention and become a type), 10→20 and 15→20 and
 19→20 (bad input answered at run time, all three promises paid by one study),
-9→20 (`tryParse`'s null against an exception that can say why).
+9→20 (`tryParse`'s null against an exception that can say why), 20→21 (the
+failure that arrives after the function that caused it has returned).
 
 Paid and verified: 2→6 (enum kills the stringly-typed parameter), 3→7
 (`final` list vs `const` list), 7→12 (the shorter way to sum, needing
@@ -88,9 +89,9 @@ the loops deleted), 12→13 and 12→14, 13→14, 3→15 (`const` constructors),
 
 ## To write
 
-Studies 4-20 are written and committed; their entries below are kept as the
+Studies 4-21 are written and committed; their entries below are kept as the
 record of what was intended, and each study's own commit message records what
-construction actually measured. **Study 21 is next.**
+construction actually measured. **Study 22 is next, and closes Book I.**
 
 ### 4 — Numbers · `numbers` · `ch04_money`
 

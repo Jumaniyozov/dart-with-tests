@@ -1,0 +1,6 @@
+$ dart test exercises/
+00:00 +0: loading exercises/challenges_test.dart
+00:00 +0: exercises/challenges_test.dart: challenge 1 — all the waiting at once adds up every answer
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — all the waiting at once adds up every answer [E]
+  UnimplementedError: challenge 1
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — all the waiting at once and every job starts before any of them finishes

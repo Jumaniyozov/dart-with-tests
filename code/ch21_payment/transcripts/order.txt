@@ -1,0 +1,5 @@
+$ dart run bin/order.dart
+1 straight line
+2 straight line
+3 microtask queue
+4 event queue

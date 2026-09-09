@@ -1,0 +1,206 @@
+---
+title: Futures and async/await
+study: 21
+direction: The value is late. The object standing for it is not. Everything in this study follows from that one sentence.
+description: What a Future is, what async and await actually do, why waiting does not block, and where a failure goes when nobody is waiting for it.
+---
+
+Every function in this book has answered immediately. A card machine does not. It has a wire, a
+bank at the other end, and a second or two of its own opinion, and the function that asks it
+cannot sit there holding up the program until it replies.
+
+So the answer comes back in two parts. **Now** you get a `Future<int>` — a real object, in your
+hand, that stands for an `int` you do not have yet. **Later** that object completes, with the
+value or with a failure.
+
+<include cwd lang="dart" meta='title="lib/payment.dart"'>../code/ch21_payment/lib/payment.dart#declined</include>
+
+<include cwd lang="dart" meta='title="lib/payment.dart"'>../code/ch21_payment/lib/payment.dart#authorise</include>
+
+<Drill n={1}>
+
+<Direction>Note the `async` on the test bodies. A test may wait too.</Direction>
+
+<include cwd lang="dart" meta='title="test/first_test.dart"'>../code/ch21_payment/test/first_test.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch21_payment/transcripts/pass.txt</include>
+</Console>
+
+</Drill>
+
+<include cwd lang="dart" meta='title="lib/payment.dart"'>../code/ch21_payment/lib/payment.dart#take</include>
+
+## 21.1 The future is here; the value is not
+
+dart.dev says what `async` does, and the sentence is worth reading twice: an "`async` function
+executes only until it encounters its first `await` expression. Then it returns a `Future`
+object, resuming execution only after the `await` expression completes."
+
+Both halves are measurable.
+
+<include cwd lang="dart" meta='title="test/payment_test.dart"'>../code/ch21_payment/test/payment_test.dart#now</include>
+
+Calling `step('a', log)` runs its first line — `log` holds `'a start'` on the very next
+statement — and then stops at the `await` and hands back a future. Nothing was queued for
+later; the body genuinely ran. It simply did not finish.
+
+`async` is not decoration on the signature. It is what makes the function return a future at
+all, and `await` is only legal inside one:
+
+```dart title="lib/missing.dart"
+import 'payment.dart';
+
+Future<String> takePayment(int pence) {
+  final authorised = await authorise(pence);
+  return 'authorised $authorised';
+}
+
+Future<int> doubled(int pence) async => await pence * 2;
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch21_payment/transcripts/missing.txt</include>
+</Console>
+
+Three complaints, and the middle one is the interesting one. Take `async` off and the function
+still promises a `Future<String>`, but now `return 'authorised …'` is returning a plain
+`String` — because `async` was the thing wrapping it. And the third is a lint: `await` on
+something that is not a future does nothing at all, so writing it means you believed something
+untrue about the value.
+
+## 21.2 `await` does not block
+
+Nothing waits. Dart runs your code on one thread with an **event loop**: straight-line code
+runs to the end, and only then does the loop start handing out what has been queued up. There
+are two queues, and `Future(…)` and `scheduleMicrotask(…)` are named after them.
+
+<include cwd lang="dart" meta='title="bin/order.dart"'>../code/ch21_payment/bin/order.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch21_payment/transcripts/order.txt</include>
+</Console>
+
+The source says 1, 4, 3, 2. The program says 1, 2, 3, 4. Nothing in `main` was interrupted —
+`main` ran to its last line first, because that is the rule — and then the loop drained the
+microtask queue before it touched the event queue.
+
+(`unawaited` on line 6 says "this is a future and I am deliberately not waiting for it". It
+does nothing at run time. Without it the line reads like an accident, and 21.3 is about the
+times when it is one.)
+
+So `await` does not stop the program; it stops *this function* and gives the thread back. Which
+means two slow things can be out at once, if you let them:
+
+<include cwd lang="dart" meta='title="lib/payment.dart"'>../code/ch21_payment/lib/payment.dart#steps</include>
+
+<include cwd lang="dart" meta='title="test/payment_test.dart"'>../code/ch21_payment/test/payment_test.dart#order</include>
+
+Read the two logs. `oneAtATime` finishes `a` before `b` begins, because `await` on the first
+line means exactly that. `together` starts both — `Future.wait` takes a list of futures, and
+the futures exist as soon as `step` is *called* — so both starts come out before either end.
+Same work, same functions, half the waiting.
+
+The mistake to avoid is `await` inside a loop over independent work. It reads fine and it is
+`oneAtATime`, once per item.
+
+## 21.3 Where a failure goes when nobody is waiting
+
+Study 20's rules did not change. What changed is *when* the failure happens, and that turns out
+to matter more than it sounds.
+
+**An `async` function never throws at the caller.** It hands back a future, and the failure is
+inside it:
+
+<include cwd lang="dart" meta='title="test/payment_test.dart"'>../code/ch21_payment/test/payment_test.dart#failing</include>
+
+Look at the first test. `authorise(0)` fails its argument check *before* its first `await` — and
+the call still returns, and the next line still runs. There is no way to make an `async`
+function throw at the point of call. The failure is in the future, and it reaches you when you
+await it.
+
+Which is why `takePayment` works at all: `await` puts the value back into this function, and it
+puts the failure back inside this `try`. Study 20's `on` clause needs nothing new.
+
+Take the `await` away and that stops being true:
+
+<include cwd lang="dart" meta='title="lib/v1.dart"'>../code/ch21_payment/lib/v1.dart#forgotten</include>
+
+<include cwd lang="dart" meta='title="bin/forgotten.dart"'>../code/ch21_payment/bin/forgotten.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch21_payment/transcripts/forgotten.txt</include>
+</Console>
+
+It printed `authorised`. The card was refused, the customer was told it went through, and *then*
+the program died — after `takePayment` had returned, after its `try` was over, with nothing
+left on the stack that knows what the payment was for. The last line of `forgotten.dart` never
+runs.
+
+This is the failure studies 10, 15 and 20 kept pointing forward to, in its worst form: not a
+failure you did not handle, but one you *did* handle, in a handler that had already finished.
+
+<include cwd lang="dart" meta='title="test/payment_test.dart"'>../code/ch21_payment/test/payment_test.dart#missing</include>
+
+`runZonedGuarded` is the last thing standing between an orphaned failure and the program, and
+it is the only reason that test is green rather than a crash. Zones are Book IV. Take two
+things from it here: the failure did arrive, and nothing inside `takePayment` was ever going to
+see it.
+
+<Gloss title="The word to watch for is the missing one">
+Nothing in `package:lints` catches `authorise(pence);` with no `await`. The line is legal, it
+type-checks, and dropping a `Future` on the floor is sometimes exactly what you meant.
+
+There is a lint for it — `unawaited_futures` — and it is not in `core.yaml` or
+`recommended.yaml`, so it is not on in this book and it will not be on in a project made by
+`dart create`. If your program does real work over a wire, turn it on in
+`analysis_options.yaml` and use `unawaited(…)` for the ones you meant. Until then, the check is
+you: every call to an `async` function either has `await` in front of it or has a reason.
+</Gloss>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch21_payment/transcripts/all.txt</include>
+</Console>
+
+<Practice source="dart.dev — Asynchrony support" href="https://dart.dev/language/async">
+`await_only_futures` ships in `package:lints/core.yaml` and is therefore already on here. It
+catches `await` in front of something that was never a future — a call you thought was
+asynchronous and is not, which is worth being told about.
+
+The habit underneath it is the one this study is really about: **know which of your functions
+are late.** A `Future<int>` and an `int` are different types and the analyzer will hold you to
+it, but only if the types are written where a reader can see them. Give an async function an
+explicit `Future<…>` return type rather than letting inference put it there quietly, and the
+call sites that forgot to wait become visible in the diff.
+
+And prefer starting the slow things and then awaiting them, over awaiting each in turn. That is
+not a performance micro-optimisation. `oneAtATime` and `together` above do identical work and
+one of them takes twice as long, and which one you wrote is decided by where the `await` went.
+</Practice>
+
+## Wrapping up
+
+A `Future<T>` is an object you have now that stands for a `T` you will have later. `async` makes
+a function hand one back, and makes its body pause-able; `await` unpacks one, and gives the
+thread back while it waits. Straight-line code always finishes first, then the microtask queue,
+then the event queue — one thread, no blocking, no threads to reason about.
+
+An `async` function never throws at the caller. It returns a future that fails, so the failure
+arrives at the `await` — which is the whole reason study 20's `try` still works here, and the
+whole reason a missing `await` is so much worse than it looks.
+
+Also met: `Future.wait`, `Future.delayed`, `unawaited`, the event loop, and a stack trace that
+had already unwound.
+
+Study 22 asks the same question about many values instead of one, and closes Book I.
+
+## Challenges
+
+Three challenges, six failing tests. Make them pass one at a time. Do not edit the tests. The
+third one is already written and already wrong; it needs one word, not a rewrite.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch21_payment/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch21_payment/exercises/challenges.dart</include>

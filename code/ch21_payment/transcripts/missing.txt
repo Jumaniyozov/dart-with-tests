@@ -1,0 +1,8 @@
+$ dart analyze lib/missing.dart
+Analyzing missing.dart...
+
+  error - missing.dart:4:22 - The await expression can only be used in an async function. Try marking the function body with either 'async' or 'async*'. - await_in_wrong_context
+  error - missing.dart:5:10 - A value of type 'String' can't be returned from the function 'takePayment' because it has a return type of 'Future<String>'. - return_of_invalid_type
+   info - missing.dart:8:41 - Uses 'await' on an instance of 'int', which is not a subtype of 'Future'. Try removing the 'await' or changing the expression. - await_only_futures
+
+3 issues found.

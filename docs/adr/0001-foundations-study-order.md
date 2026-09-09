@@ -107,6 +107,14 @@ is that `tryParse`'s `null` and a thrown `FormatException` are the same
 decision made two ways. A study 20 placed before 9 would have had nothing to
 compare against.
 
+Study 21 has since been written and is the strongest confirmation of the
+20-before-21 order in the book. Its central lesson is not that async code
+needs new error handling — it is that study 20's error handling is *unchanged*
+and still works, because `await` puts the failure back inside the `try`. That
+sentence cannot be written before study 20 exists, and the study that follows
+it is left with only one thing to teach: what happens when the `await` is
+missing. Reversing the two would turn one lesson into two weaker ones.
+
 Reordering after several of these studies are written is expensive, because the
 studies carry forward references to each other by number — a published Gloss
 that says "Study 7" is a contract with the reader. One such promise was already
