@@ -1,0 +1,6 @@
+$ dart analyze bin/buckets.dart
+Analyzing buckets.dart...
+
+   info - buckets.dart:8:17 - Missing a corresponding override of 'hashCode'. Try overriding 'hashCode' or removing '=='. - hash_and_equals
+
+1 issue found.

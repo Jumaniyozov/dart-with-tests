@@ -1,0 +1,11 @@
+name: ch25_expenses
+description: Study 25 — what has identity, and what only has contents.
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.26.0

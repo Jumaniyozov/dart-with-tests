@@ -1,0 +1,2 @@
+$ dart run bin/buckets.dart
+{food: 100, food: 250, bus: 300}

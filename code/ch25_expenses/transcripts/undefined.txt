@@ -1,0 +1,5 @@
+$ dart test test/values_test.dart
+00:00 +0: loading test/values_test.dart
+00:00 +0 -1: loading test/values_test.dart [E]
+  Failed to load "test/values_test.dart":
+  lib/src/expense.dart:18:9: Error: Type 'Category' not found.

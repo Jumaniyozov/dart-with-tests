@@ -2,6 +2,7 @@
   "title": "Book II: Writing good Dart",
   "pages": [
     "libraries",
-    "a-program-that-runs"
+    "a-program-that-runs",
+    "values-and-entities"
   ]
 }

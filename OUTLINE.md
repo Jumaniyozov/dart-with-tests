@@ -445,7 +445,13 @@ it does not, this study's `<Practice>` omits both props the way study 2's does.
 Gloss: `dart run` compiles to a kernel snapshot each time; `dart compile exe` is what
 you ship. Named now, met in study 34. *Unverified — measure the two before writing.*
 
-### 25 — Values and entities · `values-and-entities` · `ch25_expenses`
+### 25 — Values and entities · `values-and-entities` · `ch25_expenses` — **WRITTEN**
+
+Shipped: 27 green, 3 challenges at 8 failing, 8 transcripts. The outline's planned
+`<Practice>` was wrong — study 15 already cites *DO override `hashCode` if you override
+`==`*, so this study cites *AVOID defining custom equality for mutable classes* instead,
+which is the value/entity lesson rather than a repeat. A book-wide duplicate-citation
+check now runs with the other audits.
 
 Teaches `Category` and `Expense`; normalising on construction; `operator ==` and
 `hashCode`; immutability, `final` fields and unmodifiable collection views; and the
@@ -904,14 +910,16 @@ existing transcripts and verified to reproduce.
   not named there is identical to the previous study's copy, and that every file
   named there genuinely differs. A stale manifest fails as loudly as a stray edit,
   for the same reason a wrong challenge count does.
-- **Book II only — the orphan-`#region` rule is scoped by `SLICE`.** A snapshot carries
-  every earlier study's files, so every carried-forward region would read as an orphan in
-  every later package — by study 34, dozens of them, and a check that cries wolf is a
-  check nobody runs. The rule for Book II is therefore: **for each region in a file this
-  study's `SLICE` names, some MDX must include it.** Regions in files carried forward
-  unchanged were shown in the study that introduced them and are not orphans. Found while
-  writing study 24, where `money.dart#money` was flagged and `lib/expenses.dart#barrel`
-  and `command.dart#usage` were genuinely missing.
+- **Book II only — the orphan-`#region` rule is by region, not by file.** A snapshot
+  carries every earlier study's regions, so every one of them would read as an orphan in
+  every later package — dozens by study 34, and a check that cries wolf is a check nobody
+  runs. Scoping by `SLICE` is not enough either: study 25 changed `run` inside
+  `command.dart` and left `codes`, `outcome` and `parse` alone, and only the first needed
+  showing again. The rule is therefore: **a region must be on a page if it is new in this
+  study, or if its text differs from the previous study's copy.**
+  `dart run tool/check_regions.dart` enforces it and normalises the package name first.
+  It found the file-scoped version's four true misses in study 25 and cleared its three
+  false alarms.
 - **Book II only — the domain never holds a `DateTime`.** Measured: for one
   instant `local == utc` is `false` while their hash codes are equal,
   `toIso8601String()` drops the offset, and `DateTime(2026, 2, 31)` is the 3rd of

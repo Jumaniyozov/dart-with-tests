@@ -1,0 +1,243 @@
+---
+title: Values and entities
+study: 25
+direction: Ask of every type whether two of them with the same contents are one thing or two. The answer decides everything else about it.
+description: Category, Day and Expense — normalising once on the way in, why hashCode picks the bucket, and the difference between a thing and a description of a thing.
+---
+
+Study 24's program takes an amount and a note and prints them back. It records nothing, because
+there is nothing yet to record into and nothing to record.
+
+This study writes the domain: what a spend is made of, and what it means for two of them to be
+the same. That second question sounds academic until a `Map` gets involved, at which point it
+decides whether your totals are right.
+
+<Drill n={1}>
+
+<Direction>Two categories written differently. One is a test of typing; the other is a test of what the type believes.</Direction>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch25_expenses/transcripts/undefined.txt</include>
+</Console>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch25_expenses/transcripts/pass.txt</include>
+</Console>
+
+</Drill>
+
+## 25.1 Normalise once, on the way in
+
+A person types `Food`, then `food`, then ` FOOD `. They mean one category. The program has to
+agree with them.
+
+<include cwd lang="dart" meta='title="lib/src/category.dart"'>../code/ch25_expenses/lib/src/category.dart#category</include>
+
+The tidying happens in the factory, which study 23 established is the only way in. So there is
+no such thing as an un-normalised `Category`. Nothing downstream has to remember to call
+`.trim().toLowerCase()` before comparing, because there is nothing left to trim.
+
+That is the shape to look for. **A rule applied once at construction is a rule; a rule applied
+at every call site is a habit, and habits get skipped.**
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch25_expenses/transcripts/add.txt</include>
+</Console>
+
+`Food` went in and `food` came out.
+
+That line is longer than study 24's because the program now has something to say. `add` takes a
+category, builds an `Expense`, and hands it to a store; `list` reads them back.
+
+<include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch25_expenses/lib/src/command.dart#run</include>
+
+<include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch25_expenses/lib/src/command.dart#usage</include>
+
+Two things there are worth naming out loud, because both are debts.
+
+The `Store` arrives as a parameter rather than being built inside `run`. That is what lets a
+test hand in a store with expenses already in it — and it is the first, smallest shape of the
+idea study 27 builds properly.
+
+`Day.on(DateTime.now())` is the opposite. It reads the clock in the middle of the work, so
+`_add` cannot be tested for the day it records: the answer changes tomorrow. Study 27 fixes
+that one too, and this is the line it fixes.
+
+## 25.2 `hashCode` picks the bucket, `==` searches it
+
+`Category` overrides two things, and the second one is the one people forget.
+
+A `Map` does not compare your key against every key it holds — that would be slow. It asks the
+key for its `hashCode`, uses that number to pick one **bucket** out of many, and then uses `==`
+to search only inside that bucket.
+
+Both halves have to agree. If two objects are equal but hash differently, they go to different
+buckets and `==` is never even asked.
+
+Here is the same idea with `hashCode` left out:
+
+```dart title="bin/buckets.dart"
+class Sloppy {
+  Sloppy(this.name);
+
+  final String name;
+
+  @override
+  bool operator ==(Object other) => other is Sloppy && other.name == name;
+
+  @override
+  String toString() => name;
+}
+```
+
+The analyzer sees it coming:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch25_expenses/transcripts/hash_and_equals.txt</include>
+</Console>
+
+That is a lint, not an error, so the program still runs. Total three spends across two
+categories:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch25_expenses/transcripts/buckets.txt</include>
+</Console>
+
+`food` appears twice. Not a wrong total — **two** totals, each of them right about half the
+data, in a map that thinks it has three keys. Nothing threw. Nothing was reported. The report
+is simply wrong.
+
+This is why `Store.totals` can be four lines and still be trustworthy:
+
+<include cwd lang="dart" meta='title="lib/src/store.dart"'>../code/ch25_expenses/lib/src/store.dart#store</include>
+
+<Gloss title="Object.hash, and why not to invent your own">
+`Object.hash(year, month, day)` combines several fields into one hash code. Use it rather than
+adding or XOR-ing fields yourself: `a + b` gives the same answer for `(1, 2)` and `(2, 1)`, and
+every collision costs a search.
+
+For a single field, delegate — `Category` returns `name.hashCode`, because `String` already
+answers this well.
+</Gloss>
+
+## 25.3 A thing, or a description of a thing
+
+`Category` is a **value**. Two categories with the same name are not two categories that happen
+to match; they are the same category. Values have no identity of their own, and that is why
+giving them `==` is right.
+
+`Expense` is an **entity**.
+
+<include cwd lang="dart" meta='title="lib/src/expense.dart"'>../code/ch25_expenses/lib/src/expense.dart#expense</include>
+
+Look at what is missing: no `operator ==`. Buy a coffee for £3.20, then buy another coffee for
+£3.20 on the same day. Every field matches. They are still two expenses, and you spent £6.40.
+
+If `Expense` had value equality, `{first, second}` would be a set of one and the second coffee
+would vanish. So an `Expense` is equal only to itself, which is what Dart gives you when you
+override nothing.
+
+The test to apply to any new type is one question: **if two of these have identical contents,
+is that one thing or two?** One thing means a value and `==`. Two things means an entity and
+silence.
+
+## 25.4 A day is not an instant
+
+`Expense` carries a `Day`, not a `DateTime`.
+
+<include cwd lang="dart" meta='title="lib/src/day.dart"'>../code/ch25_expenses/lib/src/day.dart#day</include>
+
+`DateTime` is an instant: a point on a timeline, which belongs to a place as much as to a date.
+A day is not. The 9th of September is the 9th of September everywhere, and an expense happened
+on a day.
+
+Study 30 measures four separate ways `DateTime` gets this wrong. Here is the one that belongs
+to this study, because it is about `==`:
+
+<include cwd lang="dart" meta='title="test/values_test.dart"'>../code/ch25_expenses/test/values_test.dart</include>
+
+Read the last group. The local time and the UTC time are **the same instant** — the microsecond
+counts match — and `==` says they are not equal. `isAtSameMomentAs` is the one that answers the
+question you meant.
+
+And their hash codes are equal anyway. That is legal: unequal objects are allowed to share a
+hash code, and every `Map` handles it. But it is a warning about tests. **Equal hash codes are
+not evidence of equality.** A test that compares only hash codes has proved nothing, in the same
+way study 8's set comparison passed without proving anything about `==`.
+
+## 25.5 Two ways a list escapes
+
+`Store` holds a `List<Expense>` and hands it out. Both directions leak if you let them.
+
+The way out is `List.unmodifiable`, which copies once and returns a list that throws on `add`.
+Return `_recorded` itself and callers get the store's own list, and can change what it holds
+without the store ever knowing.
+
+The way in is the same problem mirrored, and `Store` does not have it yet only because it takes
+expenses one at a time. Challenge 3 has it.
+
+And the program's edges moved to fit. The barrel offers the new types, and `main` builds the
+store the run needs:
+
+<include cwd lang="dart" meta='title="lib/expenses.dart"'>../code/ch25_expenses/lib/expenses.dart#barrel</include>
+
+<include cwd lang="dart" meta='title="bin/expenses.dart"'>../code/ch25_expenses/bin/expenses.dart#main</include>
+
+Still nine lines, still the only file in the package that has heard of a terminal. The store it
+builds is empty every time, and forgets everything when the program stops — which makes `list`
+useless today and is exactly what study 28 repairs.
+
+<Practice source="Effective Dart — Design" href="https://dart.dev/effective-dart/design#avoid-defining-custom-equality-for-mutable-classes">
+**AVOID defining custom equality for mutable classes.**
+
+The reason is a `Map`. A key is filed in its bucket when you put it in; change a field the
+`hashCode` is built from, and the key is now in the wrong bucket. It is still in the map, and
+the map can no longer find it — not with `[]`, not with `containsKey`, not with the very object
+you used as the key.
+
+Every field of `Category` and `Day` is `final`, so neither can drift out of its bucket. That is
+not a coincidence: **immutability is what makes value equality safe**, and a type that wants
+`==` should be asked whether it can also be frozen.
+
+Study 15's Practice covers the companion rule — override `hashCode` if you override `==` —
+which the `hash_and_equals` lint enforces, and which 25.2 shows failing.
+</Practice>
+
+The whole study, run at once:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch25_expenses/transcripts/all.txt</include>
+</Console>
+
+## Wrapping up
+
+Normalise once, in the factory, and there is no un-normalised value anywhere in the program.
+
+A `Map` asks `hashCode` for the bucket and `==` to search it, so the two must agree or equal
+keys land apart — one category becomes two rows, nothing throws, and the total is quietly
+wrong. `hash_and_equals` catches the omission; nothing catches a `hashCode` that merely
+disagrees, so keep it built from the same fields `==` reads.
+
+A value is equal by contents and should be immutable. An entity is equal only to itself, and
+`Expense` gets no `==` because two identical coffees are two coffees. Ask the question of every
+new type before you write a line of it.
+
+`DateTime` is an instant and a `Day` is not, which is why the domain holds the second one. The
+same instant in two zones is not `==` — and their hash codes match anyway, which is the reminder
+that equal hashes prove nothing.
+
+Also met: `Object.hash`, `List.unmodifiable`, `isAtSameMomentAs`, `setUp`, and a store that
+forgets everything when the program stops — study 28 gives it a file.
+
+Study 26 goes back to `penceFrom` and asks whether `null` was ever an adequate answer.
+
+## Challenges
+
+Three challenges, eight failing tests. Make them pass one at a time. Do not edit the tests. The
+second is the one to slow down on: it looks like the first and the rule is the opposite.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch25_expenses/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch25_expenses/exercises/challenges.dart</include>

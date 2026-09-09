@@ -1,0 +1,97 @@
+import 'package:ch25_expenses/expenses.dart';
+import 'package:test/test.dart';
+
+void main() {
+  group('a category is a value', () {
+    test('and is normalised once, on the way in', () {
+      expect(Category('  Food  ').name, 'food');
+      expect(Category('FOOD'), Category('food'));
+    });
+
+    test('so two spellings are one key in a map', () {
+      final counts = <Category, int>{};
+      counts[Category('Food')] = 1;
+      counts[Category(' food ')] = 2;
+      expect(counts, hasLength(1), reason: 'the same category, written twice');
+      expect(counts[Category('FOOD')], 2);
+    });
+
+    test('and equal categories agree about their hash code', () {
+      expect(Category('Food').hashCode, Category('food').hashCode);
+    });
+
+    test('a category with no name in it is refused', () {
+      expect(() => Category('   '), throwsArgumentError);
+    });
+  });
+
+  group('an expense is an entity', () {
+    final day = Day(2026, 9, 9);
+    Expense coffee() =>
+        Expense(Money.fromPence(320), Category('food'), day, 'coffee');
+
+    test('two of the same thing are two things, not one', () {
+      expect(coffee() == coffee(), isFalse);
+    });
+
+    test('and it is equal to itself', () {
+      final one = coffee();
+      expect(one, one);
+    });
+
+    test('so a set of them counts both', () {
+      expect({coffee(), coffee()}, hasLength(2));
+    });
+  });
+
+  group('a day is a value and not an instant', () {
+    test('two days with the same parts are the same day', () {
+      expect(Day(2026, 9, 9), Day(2026, 9, 9));
+      expect(Day(2026, 9, 9).hashCode, Day(2026, 9, 9).hashCode);
+    });
+
+    test('and it reads the way a date reads', () {
+      expect(Day(2026, 9, 9).asText, '2026-09-09');
+      expect(Day(2026, 12, 25).asText, '2026-12-25');
+    });
+
+    test('a month that is not a month is refused', () {
+      expect(() => Day(2026, 13, 1), throwsArgumentError);
+      expect(() => Day(2026, 2, 32), throwsArgumentError);
+    });
+  });
+
+  group('what DateTime does that a value must not', () {
+    // The reason Day exists. Study 30 has the other three.
+    final local = DateTime(2026, 9, 9);
+    final utc = local.toUtc();
+
+    test('the same instant, and yet not equal', () {
+      expect(local.microsecondsSinceEpoch, utc.microsecondsSinceEpoch);
+      expect(local == utc, isFalse);
+      expect(local.isAtSameMomentAs(utc), isTrue);
+    });
+
+    test('and their hash codes agree anyway', () {
+      // Equal hash codes are not a promise of equality. A test that compares
+      // only hash codes proves nothing about `==`.
+      expect(local.hashCode, utc.hashCode);
+    });
+  });
+
+  group('the store hands out a list nobody can change', () {
+    test('adding to what it returns throws', () {
+      final store = Store()
+        ..record(
+          Expense(
+            Money.fromPence(100),
+            Category('food'),
+            Day(2026, 9, 9),
+            'apple',
+          ),
+        );
+      expect(() => store.all.add(store.all.first), throwsUnsupportedError);
+      expect(store.all, hasLength(1));
+    });
+  });
+}
