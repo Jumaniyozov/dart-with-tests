@@ -1,0 +1,6 @@
+$ dart analyze lib/language.dart
+Analyzing language.dart...
+
+  error - language.dart:7:40 - The type 'Language' isn't exhaustively matched by the switch cases since it doesn't match the pattern 'Language.german'. Try adding a wildcard pattern or cases that match 'Language.german'. - non_exhaustive_switch_expression
+
+1 issue found.

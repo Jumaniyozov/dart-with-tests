@@ -1,0 +1,169 @@
+---
+title: Enums
+study: 6
+direction: Let the compiler hold the list. It never forgets a case.
+description: Turning a parameter that accepts every string into one that accepts exactly four values, and letting exhaustiveness do the checking.
+---
+
+Study 2 left something uncomfortable in the code, and said so at the time. This study
+fixes it.
+
+## 6.1 A parameter that accepts nonsense
+
+Here is the greeting as study 2 left it:
+
+<include cwd lang="dart" meta='title="lib/v1.dart"'>../code/ch06_language/lib/v1.dart#hello</include>
+
+`language` is a `String`, so it accepts every string there has ever been, and exactly three
+of them do anything. The other billions all quietly mean English. Nothing warns you,
+because as far as the compiler is concerned nothing is wrong: you asked for a `String` and
+you got one.
+
+<include cwd lang="dart" meta='title="test/stages_test.dart"'>../code/ch06_language/test/stages_test.dart</include>
+
+Read those first two tests again. They **pass**. A language that does not exist and a
+simple lowercase typo produce the same result as asking for English, and the only way to
+find out is to notice the greeting is in the wrong language.
+
+The type is too loose. It permits values that have no meaning.
+
+## 6.2 Close the set
+
+An **enum** is a type whose values you write out in full. Once you have done that, no
+fourth value exists — not "no fourth value is allowed", but no fourth value can be
+constructed at all.
+
+<Drill n={1}>
+
+<Direction>Ask for a language that is a language, not a string that might be one.</Direction>
+
+<include cwd lang="dart" meta='title="test/first_test.dart"'>../code/ch06_language/test/first_test.dart</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch06_language/transcripts/undefined.txt</include>
+</Console>
+
+</Drill>
+
+<Drill n={2}>
+
+<Direction tone="pass">Three languages, written down once.</Direction>
+
+<include cwd lang="dart" meta='title="lib/language.dart"'>../code/ch06_language/lib/v2.dart#enum</include>
+
+<include cwd lang="dart" meta='title="lib/language.dart"'>../code/ch06_language/lib/v2.dart#hello</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch06_language/transcripts/pass.txt</include>
+</Console>
+
+Two things changed and both matter. `language` is now a `Language`, so
+`language: 'Klingon'` no longer compiles — there is nothing to write there that is not one
+of the three. And the `switch` has no `_` case, because there is nothing left for it to
+catch.
+
+</Drill>
+
+<Gloss title="Why the cases start with a dot">
+`.english` is a **dot shorthand**, added in Dart 3.10. Where the compiler already knows
+which type is expected — a `switch` on a `Language`, a parameter declared `Language`, a
+default value — you may leave the type name off and write only the member. `Language.english`
+and `.english` mean the same thing. Write the full name when the type is not obvious from
+the line you are reading, and the shorthand when repeating it adds nothing.
+</Gloss>
+
+## 6.3 What the compiler now does for you
+
+Add German. Change the enum and nothing else:
+
+```dart title="lib/language.dart"
+enum Language { english, spanish, french, german }
+```
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch06_language/transcripts/exhaustive.txt</include>
+</Console>
+
+That is the whole reason to prefer an enum, and it is worth reading the message slowly:
+
+> The type 'Language' isn't exhaustively matched by the switch cases since it doesn't match
+> the pattern 'Language.german'.
+
+The program did not run. No test failed. You have not shipped a greeting in the wrong
+language to anybody. The compiler read every `switch` over a `Language` in the whole
+program, found the one that no longer covers every case, and named the missing member.
+
+This is called **exhaustiveness checking**, and it is only possible because the set is
+closed. A `String` switch can never be exhaustive — there is always another string — so
+the compiler cannot help. With an enum it can enumerate the possibilities, compare them
+against your cases, and refuse to build until they match.
+
+Add the case and it compiles again:
+
+<include cwd lang="dart" meta='title="lib/language.dart"'>../code/ch06_language/lib/language.dart#prefix</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch06_language/transcripts/all.txt</include>
+</Console>
+
+## 6.4 What each member knows about itself
+
+Every enum member carries two things without you writing them:
+
+<include cwd lang="dart" meta='title="test/language_test.dart"'>../code/ch06_language/test/language_test.dart#values</include>
+
+`values` is every member in the order you declared them. `name` is the identifier from your
+source, as text. `index` is the position, counting from zero.
+
+`name` is the useful one, and it is worth seeing what it saves you: printing an enum
+without it means writing a second `switch` that maps each member to its own name, and that
+switch is one more place to forget German.
+
+<Gloss title="index is a trap in disguise">
+`index` is a position, not an identity. Reorder the members — put `german` second because
+it reads better — and every `index` changes. If you have written those numbers into a file
+or a database, you have just renamed everybody's saved language. Store `name` instead.
+It only changes when you rename the member, which is a change you can see.
+</Gloss>
+
+<Practice source="dart.dev — Exhaustiveness checking" href="https://dart.dev/language/branches#exhaustiveness-checking">
+Do not write a default case in a `switch` over an enum.
+
+The Dart docs put the mechanism plainly: "A default case (`default` or `_`) covers all
+possible values that can flow through a switch. This makes a switch on any type
+exhaustive." That sounds like a feature and here it is the opposite. A `_` case makes the
+switch exhaustive artificially, so adding a member to the enum no longer breaks anything —
+and the error you just watched the compiler produce never appears. You traded a
+compile-time error for a wrong answer at run time.
+
+The same page explains why enums can do without one: "Enums and sealed types are
+particularly useful for switches because, even without a default case, their possible
+values are known and fully enumerable."
+
+So: `_` only when the value genuinely could be anything. Over an enum, list every member,
+and let the next person who adds one be told exactly where to go.
+</Practice>
+
+## Wrapping up
+
+A `String` parameter accepts every string and means only a few of them. An enum writes the
+possibilities down once and makes the rest unconstructable. In exchange the compiler
+checks, at build time, that every `switch` over it handles every case — so adding a member
+is a list of errors to fix rather than a bug to discover.
+
+Also met: `values`, `name` and `index`, dot shorthands, and the reason a `_` case is
+sometimes the wrong kind of convenience.
+
+Enums can carry fields and methods of their own. That needs classes, so it waits for
+Study 16.
+
+## Challenges
+
+Three tests are already written and already failing. Make them pass one at a time. Do not
+edit the tests. If you write a `_` case, you have given away the thing the enum was for.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch06_language/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch06_language/exercises/challenges.dart</include>
