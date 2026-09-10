@@ -1192,8 +1192,10 @@ Run on Dart 3.13.2 stable (macos_arm64), in a throwaway package outside the work
 | --- | --- |
 | `dart pub add shelf shelf_router sqlite3` | `shelf` **1.4.2**, `shelf_router` **1.1.4**, `sqlite3` **3.5.2** |
 | `sqlite3` 3.5.2 on **stable** 3.13.2 | Runs. **No `--enable-experiment` flag.** |
-| What `sqlite3` 3.5.2 pulls in | `native_toolchain_c`, and it **compiles SQLite from source** via Dart build hooks |
-| The SQLite it binds | **Bundled 3.53.4**, not the host's — so it is the same on every reader's machine |
+| What `sqlite3` 3.5.2 pulls in | `native_toolchain_c` — which it **does not use by default**. Outlining wrote "compiles SQLite from source" from that dependency's presence; the spike found it false |
+| What the build hook actually does | **Downloads a prebuilt binary** from the package's GitHub releases. Measured: `.dart_tool/hooks_runner/shared/sqlite3/build/download-*/libsqlite3.dylib`, a **1.6 MB Mach-O arm64** library, and **zero `.o` files** anywhere |
+| The prerequisite this creates | **Network on first build, not a C toolchain.** Verified by shadowing `clang`, `cc`, `gcc` and `xcrun` with failing stubs: the build still succeeded. `hooks: user_defines: sqlite3: source:` opts into `system`, `process` or a local `sqlite3.c` |
+| The SQLite it binds | **Prebuilt 3.53.4**, not the host's — so it is the same on every reader's machine |
 | `sqlite3` as a **pub workspace** member | Works. `dart pub get` at the root and `dart test` in the member both succeed, so study 39 is possible in this repo's layout |
 | `Running build hooks...` | Printed **twice, on stdout, on every run** — warm and cold alike, byte-identical across consecutive runs |
 | Where that lands in `dart test` output | Prefixed to the **first progress line**, with no newline after it. The **last** line is clean: `00:00 +1: All tests passed!` |
@@ -1217,29 +1219,127 @@ each of these is a claim to be executed, not quoted.
 | `Handler` is `FutureOr<Response> Function(Request)` | That a handler is callable in a test with a constructed `Request` and no socket |
 | `serve` adds `Date` and `X-Powered-By` | Both, and that `poweredByHeader: null` omits the second. This is study 35's measured difference between the hand-rolled server and `shelf` |
 
-### Facts the spike must measure before any title is fixed
+### What the spike measured
 
-The spike is the smallest real `shelf` server standing in front of `ch34_expenses`'s
-`Store`. It runs **before** study 35 is written, and it is allowed to rename studies.
+**RUN.** A `shelf` server in front of a copy of `ch34_expenses`'s real `lib/`, outside
+`code/`, never committed. Book III's spine survives; two of this outline's own claims did
+not.
 
-1. **Whether a handler awaiting an `InMemoryStore` can interleave with another request.**
-   An `await` on an already-completed future resumes on the microtask queue, and that
-   queue drains before the event loop takes the next socket event — so the prediction is
-   *no*, and interleaving needs a real suspension. If that is wrong, study 40's argument
-   belongs at study 35 and this book is ordered differently. This is the single
-   load-bearing measurement in Book III.
-2. Whether two concurrent requests genuinely lose the budget update, and at what
-   concurrency it first happens.
-3. What the hand-rolled `dart:io` server costs in lines against the `shelf` one, and what
-   `shelf` adds that it did not have.
-4. `sqlite3`'s transaction API — whether a `BEGIN`/`COMMIT` pair is `db.execute`, and what
-   it does on a failure.
-5. What a machine with no C toolchain reports, and how early. Book III has to print this
-   as a prerequisite rather than let a reader discover it at study 39.
-6. Whether a counting double can prove study 37's bound is cosmetic — identical work for
-   `limit=1` and `limit=1000`.
-7. Six `<Practice>` citations with no reused `href`. Grep every `.mdx` first; the outline
-   has named a guideline an earlier study already used twice now.
+**1. Interleaving — the load-bearing one. Prediction confirmed, and sharper than predicted.**
+Two requests written to two already-open sockets before either response is read:
+
+| The handler awaits | Verdict, five passes |
+| --- | --- |
+| `InMemoryStore` — already-complete futures | **SEQUENTIAL**, 5/5 — one request always finishes before the next is entered |
+| `FileStore` — real disk I/O | **INTERLEAVED**, 5/5 |
+| `Future.delayed(Duration.zero)` — a timer | **INTERLEAVED**, 5/5 |
+
+**Print the verdict, never the trace.** The verdicts are stable; the trace is not. An
+interleaved run is sometimes `A enter, B enter, A exit, B exit` and sometimes
+`B enter, A enter, B exit, A exit` — which request wins the race varies between runs, and
+a first draft of this section published one of the two orders as though it were the
+result. A transcript of a trace would fail `check_transcripts` on somebody's second run.
+
+So an `await` on a completed future really does resume on the microtask queue, which
+drains before the event loop takes the next socket event. **Study 40 keeps its argument.**
+
+The first harness said all three were sequential and was wrong: it `await`ed
+`Socket.connect` for B, which yields, letting the server finish A before B existed. It was
+measuring the client's pacing. Connect both first, then write with no `await` between.
+
+**2. The lost update is real, and it will not hold still.** The prose says *two requests
+both check, both pass, both record*. Against `FileStore` with a 1000p limit and 600p per
+request, that happens **sometimes**, and how often is not a number this book can print.
+Three runs of the identical 40-trial experiment:
+
+| Concurrency | run 1 | run 2 | run 3 |
+| --- | --- | --- | --- |
+| 2 | 11 / 40 | 10 / 40 | 4 / 40 |
+| 3 | 32 / 40 | 20 / 40 | 7 / 40 |
+| 4 | 39 / 40 | 17 / 40 | 27 / 40 |
+
+Not even monotonic in concurrency — run 1 breaches *less* at four callers than at three.
+**The unreproducibility is the finding**, and the ratios above are printed only to show
+that it is real; none of them is a fact about the program.
+
+The first draft of this section published run 1 alone, as three measured facts, in the
+same commit that corrected the book for writing counts from impression. Before that, six
+consecutive clean runs at concurrency two nearly established "two callers are safe" as a
+rule. **So study 40 cannot assert a breach from concurrency alone** — a flaky test in a
+book about testing is not a trade this book makes.
+
+**The mechanism is narrower than "concurrency", and this is study 40's real thesis.** A
+lost update needs a suspension **between the decision and the write** — not merely a
+suspension somewhere:
+
+| Where the store suspends | Concurrency 2 | Concurrency 3 |
+| --- | --- | --- |
+| in the **read** (`all`) | 1 recorded, **30/30** | 1 recorded, **30/30** |
+| in the **write** (`record`) | 2 recorded, **30/30** | 3 recorded, **30/30** |
+
+A suspension before the decision is harmless: every request resumes with the same answer,
+and the first to resume runs decision-and-write to completion because nothing after the
+read yields. **Put the suspension in the write and the breach is deterministic** — 90
+trials per configuration across three passes, identical every time — which is how study 40
+gets a reproducible transcript and a test that is not a coin.
+
+*"`FileStore` breaches only because `record` touches a disk"* started as an inference from
+that table and is now measured: a store that reads from a real file and records into
+memory — genuine disk I/O before the decision, none after it — recorded **one expense in
+40 trials** at two and three callers. The disk read is not what breaks the rule.
+
+**3. Hand-rolled against `shelf`.** Same endpoint, both analyzing clean: **18 lines** of
+`dart:io` against **11** of `shelf` + `shelf_router`, counting imports and discounting
+blanks and comments. **State the asymmetry with the number or do not print it**: the
+`shelf` side returns a `Handler` and still needs an `io.serve(…)` call the raw side already
+contains, and the raw side hand-writes the 404 that `Router` gives away. Roughly one line
+back to `shelf`, and a saving that is real but smaller than 18-against-11 sounds. A line
+count comparing two things that do not do quite the same thing is the kind of number this
+book has been wrong with before. On the wire, `shelf` adds `date` and
+`x-powered-by: Dart with package:shelf`; `poweredByHeader: null` drops the second and
+nothing else. `x-frame-options`, `x-xss-protection` and `x-content-type-options` come from
+`dart:io` and are present either way.
+
+**One difference here was a confound, and the corrected version is the better lesson.**
+The hand-rolled server sent `transfer-encoding: chunked` where `shelf` sent
+`content-length`, and a first draft called that something `shelf` does to `dart:io`. It is
+not: measured, a raw `HttpResponse` sends `content-length` as soon as you set
+`contentLength` yourself, and chunks only because the hand-rolled version never did. So
+the honest claim is about **who computes it** — `shelf` buffers the body and works the
+length out for you, and the eighteen-line version quietly shipped a different wire format
+because nobody told it to. That is a better argument for the dependency than a header
+count, and it is the kind of thing only a comparison on the wire finds.
+
+**4. `sqlite3` transactions, and a trap worth a section.** `BEGIN` / `COMMIT` / `ROLLBACK`
+are plain `db.execute` — there is no transaction helper. A failing statement throws
+`SqliteException` carrying `message`, `extendedResultCode` (275 for a `CHECK` violation)
+and `causingStatement`, and **leaves the transaction open** (`db.autocommit` is `false`).
+**It does not roll back for you**: measured, catching the exception and committing anyway
+commits the partial write. A nested `BEGIN` fails with *cannot start a transaction within
+a transaction*.
+
+**5. The C-toolchain question was the wrong question.** See the facts table: the hook
+downloads a prebuilt library, so the prerequisite is **network on first build**. Book III
+prints that instead.
+
+**6. The counting double works.** A `CountingStore` proves study 37's bound is cosmetic in
+one green test: `limit=1` and `limit=1000` both make the store hand over **1000 expenses in
+1 read**. The response differs and the work does not.
+
+**7. Thirty `<Practice>` hrefs are already spent** across 34 studies — 34 Practice blocks
+for 34 pages, so the one-per-study rule holds and four carry no attribution. Book III needs
+six outside that set. Regenerate the exclusion list rather than trusting this sentence:
+`grep -rhoE 'href="[^"]+"' web/content/docs/ | sort -u`.
+
+### What the spike did not settle
+
+- **`FileStore` interleaves, so studies 35–37 have live concurrency** if the server reads
+  and writes a file. The outline assumed concurrency arrives at 38. It arrives with the
+  first real I/O in the request path, which is study 35 if study 35 uses `FileStore`. Either
+  35–37 serve from an `InMemoryStore` and the file arrives at 38 with the caching argument,
+  or the race is named early and left unfixed until 40. **This needs a decision before
+  study 35 is written**, and it is the one structural question the spike opened rather than
+  closed.
 
 ### 35 — A server that answers · `a-server-that-answers` · `ch35_expenses`
 
@@ -1341,9 +1441,11 @@ change it.
 
 `sqlite3` 3.5.2. What it is for: durability, a schema, and a store that can keep a bound.
 
-The parts that are already known: build hooks compile SQLite from source and bundle
-**3.53.4**, so it is the same everywhere and the reader needs a C toolchain — Book III
-prints that rather than letting study 39 discover it. `SqliteStore implements Store`. The
+The parts that are already known: the build hook **downloads a prebuilt 3.53.4**, so it is
+the same on every reader's machine and the prerequisite is **network on first build, not a
+C compiler** — Book III prints that rather than letting study 39 discover it, and the
+outline's earlier guess at a toolchain requirement is what the spike corrected.
+`SqliteStore implements Store`. The
 reader's existing `.jsonl` moves into a table, once; a schema that evolves twice is not in
 this book. Study 38's cache is **deleted**, and why is the lesson — it existed because
 reading a file meant reading all of it, and a database reads what you ask for. A cache you
@@ -1365,11 +1467,24 @@ single-isolate server is not "two callers"; it is a real suspension in the middl
 request. Parallelism is a different thing and is Book IV's — that is a promise this study
 makes and the promise table will hold it to.
 
-Then break something with it. Two requests both read the budget, both find room, both
-record, and the limit is breached — study 32's aggregate, which is the only invariant in
-the tracker spanning more than one object, losing an update. A transaction is the fix, and
-`Tracker` is where a transaction boundary can be spoken about at all, which is what study
-36 was for.
+Then break something with it — and be exact about *what*, because the spike measured this
+entry's first draft to be wrong. That draft said two requests both read the budget, both
+find room, both record. Against `FileStore` that happens **11 times in 40** at concurrency
+two, which is not a fact, it is a coin. The lesson is narrower and better:
+
+**a lost update needs a suspension between the decision and the write.** A suspension
+before the decision is harmless — every request resumes with the same answer, and the
+first to resume runs decision-and-write to completion because nothing after the read
+yields. Measured 30/30 both ways: suspend the *read* and one expense is recorded; suspend
+the *write* and every concurrent request records. `FileStore` breaches only because
+`record` touches a disk.
+
+That is also what makes the study testable. A test that fires N requests at `FileStore`
+and asserts a breach is flaky — 11/40, 32/40, 39/40 at two, three and four callers. A
+store that suspends in `record` breaches every single time, so the transcript reproduces
+and the test is not a coin. Study 32's aggregate is still the victim; a transaction is
+still the fix; and `Tracker` is where a transaction boundary can be spoken about at all,
+which is what study 36 was for.
 
 **Then weigh CQRS and units of work, and expect to decline them**, the way study 34
 declined `public_member_api_docs` after measuring it. ADR 0003 kept them out of Book II
@@ -1737,6 +1852,37 @@ existing transcripts and verified to reproduce.
   *did not have to be rewritten* to go async, which is praise. Sweep by grepping the pages
   for the thing being counted, not by remembering it — an apology and a mention read the
   same from memory and do not read the same on the page.
+- **A measurement of a race is a sample, not a fact, and this book's whole method is built
+  on the opposite assumption.** Every other requirement here says *run it and write down
+  what happened*. That is sound because everything measured so far has been deterministic:
+  a lint fires or it does not, `DateTime(2026, 2, 31)` is the 3rd of March every time. A
+  race is not like that, and the method quietly breaks.
+
+  Found in Book III's spike, which measured a lost update against `FileStore` at 11/40,
+  32/40 and 39/40 for two, three and four concurrent callers, and wrote all three into this
+  file as measured facts. Re-running the identical experiment twice more gave 10/40, 20/40,
+  17/40 and then 4/40, 7/40, 27/40 — not even monotonic in concurrency. Before that, six
+  consecutive clean runs at two callers had nearly established "two callers are safe" as a
+  rule. The same trap one level down: the *verdict* of an interleaving test was stable 5/5,
+  and the *trace* was not, because which request wins varies — and a trace had been printed
+  as the result.
+
+  So: **a number sampled from a racy process may only be published as evidence that the
+  variance exists, never as the answer.** Before writing any measurement down, ask whether
+  re-running it could give a different number. If it could, either find the deterministic
+  version of the experiment — the spike's was moving the suspension from the read to the
+  write, which went from a coin to 30/30 across 90 trials — or print the variance and say
+  plainly that the rate is not a property of the program. A transcript of a race is a
+  transcript that fails on somebody's second run, which is the one thing
+  `check_transcripts` exists to prevent and cannot catch here.
+
+- **A comparison is only as honest as what it leaves out.** The same spike printed
+  *18 lines against 11* for a hand-rolled server against `shelf`, and the two were not
+  doing the same work: the `shelf` version returned a `Handler` and still needed the
+  `serve` call the raw one already contained, while the raw one hand-wrote a 404 that
+  `Router` gives away. The number was not wrong; the sentence around it was. State what the
+  losing side had to do that the winner did not, in the same breath as the count.
+
 - **A line number into a record that gets amended is a citation that rots, and an ADR is
   designed to be amended.** Found while outlining Book III, and self-inflicted: the Book III
   section cited `docs/adr/0004:134-140` for the `.pubignore` commitment, then an amendment

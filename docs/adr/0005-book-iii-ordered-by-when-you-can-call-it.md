@@ -129,9 +129,29 @@ re-read against the finished study and amended here if it was wrong.
   declined `public_member_api_docs`. The tracker's API is small and a five-endpoint
   service rarely needs either. But declining is only honest after measuring, and if the
   concurrent writer turns out to need a unit of work, this bullet is what was wrong.
-- That the microtask queue draining before the next socket event means a handler awaiting
-  an `InMemoryStore` **cannot** interleave with another request. If that is wrong, study
-  40's argument arrives at study 35 instead and this book is ordered differently.
+- ~~That the microtask queue draining before the next socket event means a handler awaiting
+  an `InMemoryStore` **cannot** interleave with another request.~~ **Measured, and it holds.**
+  Two requests on two already-open sockets: `InMemoryStore` gives `A enter, A exit, B enter,
+  B exit`; `FileStore` and a bare `Future.delayed` both interleave. Book III's order stands.
+
+  **But the same measurement opened something this record did not foresee.** `FileStore`
+  interleaves, so a server reading and writing a file has live concurrency from the first
+  study that uses one — not from study 38, where this outline put it. Either studies 35-37
+  serve from an `InMemoryStore`, or the race is named early and left standing until 40.
+  Undecided, and it must be decided before study 35 is written.
+
+  **And the lost update is probabilistic, which no prediction here allowed for.** Against
+  `FileStore` it breaches *sometimes*, and the rate is not a property of the program: three
+  runs of the identical 40-trial experiment gave 11/32/39, then 10/20/17, then 4/7/27 for
+  two, three and four callers — not even monotonic. So the mechanism had to be narrowed to
+  something that reproduces: a lost update needs a suspension **between the decision and
+  the write**. Suspend the read and one expense is recorded; suspend the write and every
+  caller records — 30/30 each, over three passes, and a store that reads from a real file
+  but records in memory never breaches at all.
+
+  This is now a standing requirement in its own right, because it breaks an assumption the
+  rest of them share: every other measurement in this book is deterministic, so *run it and
+  write down what happened* has always been safe. A race is the case where it is not.
 - That study 39 is the overloaded one. Build hooks, a schema, `SqliteStore`, moving the
   reader's data, deleting study 38's cache and growing `Store` is six subjects against a
   five-section envelope. The spike should settle whether `Store`'s growth belongs in 40.
