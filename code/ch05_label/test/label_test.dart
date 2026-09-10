@@ -1,9 +1,11 @@
 import 'package:ch05_label/label.dart';
 import 'package:test/test.dart';
 
+// #region decomposed
 /// `café` written as `e` followed by a combining acute accent, not as the
 /// single code point. Both look identical on screen.
 const decomposed = 'café';
+// #endregion decomposed
 
 void main() {
   group('truncate', () {

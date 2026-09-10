@@ -2,13 +2,14 @@ import 'package:ch16_entries/entries.dart';
 import 'package:test/test.dart';
 
 void main() {
+  // #region family
+  /// Three entries that add up to -960p, which is what `balanceOf` is asked.
   const statement = [
     Payment(-2500, 'landlord'),
     Refund(1200, 'shop'),
     Interest(340, 120),
   ];
 
-  // #region family
   group('one field and one getter, written once', () {
     test('every entry has the pence its parent declared', () {
       expect(Payment(-2500, 'landlord').pence, -2500);

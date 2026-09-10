@@ -1,0 +1,256 @@
+---
+title: Files
+study: 28
+direction: A signature is a promise about time. Before you can write to a disk, the promise has to become one a disk can keep.
+description: FileStore, async returning after five studies away, and the two characters this file format cannot carry.
+---
+
+Study 25 said the store forgets everything when the program stops, and left it. This is the
+study that fixes it, and almost none of the work is the file.
+
+`Store` is an interface with two members, and both of them are lies the moment a disk is
+involved. `void record(Expense)` says the expense is kept by the time the call returns.
+`List<Expense> get all` says the list is already in hand. A file cannot say either without
+stopping the program to make it true.
+
+<Drill n={1}>
+
+<Direction>What it costs to change two lines of an interface, and what it buys.</Direction>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch28_expenses/transcripts/spread.txt</include>
+</Console>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch28_expenses/transcripts/persist.txt</include>
+</Console>
+
+</Drill>
+
+## 28.1 A signature is a promise about time
+
+Nothing in that first transcript is an implementation. No file was written, no class was
+added, no behaviour changed. Two lines in `Store` were rewritten, and nineteen errors came
+back from six files. Four are in `store.dart` itself, where the `totals` extension was still
+treating `all` as a list. The other fifteen are in five files that have never heard of a
+disk, including the challenges.
+
+That is worth sitting with, because it is the study's whole argument. **`async` travels up
+the call stack and cannot be hidden.** A function that awaits is a function whose callers
+await, and theirs, all the way to `main`. Study 21 taught what a future is; this is the
+first time the program has had to pay for one.
+
+Which is why the decision belongs in the interface and not in the implementation. The
+alternative was to leave `Store` alone and have the file use `readAsStringSync` — and for
+*this* program, a command-line tool that does one read and one write and then exits, that
+would genuinely have worked. There is nothing else for it to be doing meanwhile.
+
+It would still have been the wrong call, and for a reason that has nothing to do with this
+program: `Store` is an interface, and an interface's signature is a promise every
+implementation has to keep. Book III puts a server behind this same type, and a server that
+blocks on a disk stops answering everybody. A promise you can only keep in a CLI is a promise
+you should not have made in a CLI.
+
+<include cwd lang="dart" meta='title="lib/src/store.dart"'>../code/ch28_expenses/lib/src/store.dart#store</include>
+
+## 28.2 What the weaker promise costs
+
+`InMemoryStore` pays nothing and says so:
+
+<include cwd lang="dart" meta='title="lib/src/store.dart"'>../code/ch28_expenses/lib/src/store.dart#memory</include>
+
+`async` on a method that never waits for anything is not a lie and not a cost. It wraps the
+answer in a future that is **already complete**, so `await` on it resumes without ever giving
+the event loop anything to do.
+
+`totals` was an extension in study 27 and stays one, because none of this changed the fact
+that it is derived:
+
+<include cwd lang="dart" meta='title="lib/src/store.dart"'>../code/ch28_expenses/lib/src/store.dart#totals</include>
+
+`run` had no say in any of it:
+
+<include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch28_expenses/lib/src/command.dart#run</include>
+
+Read what changed and what did not. Every arm of the switch is the same arm study 24 wrote;
+`await` in front of two of them is the entire diff to the shape of this function. A switch
+expression may contain an `await` in an arm, so study 24's parser did not have to be
+rewritten to be made asynchronous — measured, because it was not obvious.
+
+And the tests, which are where the bill actually arrives:
+
+<include cwd lang="dart" meta='title="test/command_test.dart"'>../code/ch28_expenses/test/command_test.dart#setup</include>
+
+Every test in that file is `async` now. Not one of them tests anything about time. That is
+what a contagious keyword looks like from the inside, and it is the honest price of the
+decision in 28.1 rather than an argument against it.
+
+## 28.3 The file
+
+<include cwd lang="dart" meta='title="lib/src/file_store.dart"'>../code/ch28_expenses/lib/src/file_store.dart#filestore</include>
+
+One class, and it is the only thing under `lib/` that has ever imported `dart:io`. Everything
+else in the package still works on `Store` and cannot tell a disk from a list. That is study
+27's seam, one study later, doing the job it was cut for.
+
+Three things in it are measured rather than assumed.
+
+**`writeAsString` truncates.** Write `one` and then `two` and the file holds `two`. It is
+the default mode, it is silent, and using it in `record` would keep the most recent expense
+and throw away every other one. `FileMode.append` is the fix and there is a test that would
+fail without it.
+
+**A file that was never written is not an error.** `await file.exists()` answers `false` and
+`all` answers with an empty list. Nobody has recorded anything yet, which is an ordinary
+state of the world — study 26's rule, applied to a filesystem.
+
+**Splitting on newlines gives you one line too many.** Every expense is written with a
+trailing `\n`, so `'a\nb\n'.split('\n')` is `['a', 'b', '']`. The empty string on the end is
+not a line anybody wrote, and `_expenseFrom` answers `null` for it. Worth knowing before you
+meet it: `''.split('\n')` is `['']` and has a **length of one**, not zero, so an empty file
+also arrives as a line to be ignored rather than as no lines at all.
+
+<Gloss title="Reading it back on every call">
+`all` opens the file each time it is asked, and `_list` asks twice — once for the expenses
+and once through `totals`. Two reads for one command.
+
+That is fine here and would not be fine anywhere else. A CLI runs one command and exits, and
+a cache that has to be invalidated is a second problem to be wrong about. When the program
+becomes a server in Book III it will read once and hold on, and it will need a reason to
+believe what it holds is still true.
+</Gloss>
+
+And the edge picks which file:
+
+<include cwd lang="dart" meta='title="bin/expenses.dart"'>../code/ch28_expenses/bin/expenses.dart#main</include>
+
+`main` may be `async`, and returning `Future<void>` is how you tell the runtime to wait for
+it. Leave the `Future` off and the program can reach the end of `main` with the write still
+outstanding, and `exit` takes the process down mid-sentence.
+
+Still four statements, still the only file in the package that has heard of a terminal — and
+now the only one that knows which file the tracker lives in. Study 33 lets you say.
+
+## 28.4 The one test that touches a disk
+
+<include cwd lang="dart" meta='title="test/file_store_test.dart"'>../code/ch28_expenses/test/file_store_test.dart#temp</include>
+
+Study 27 argued for fakes and this study did not stop believing it. `FileStore` is the one
+class a fake cannot stand in for, because the file *is* the thing being tested — so it gets a
+real directory, and `tearDown` puts it back.
+
+<include cwd lang="dart" meta='title="test/file_store_test.dart"'>../code/ch28_expenses/test/file_store_test.dart#roundtrip</include>
+
+The last test in that group is the study in one line. Two `FileStore` objects, one file: the
+second one sees what the first one recorded, which is exactly what `InMemoryStore` cannot do
+and what a second run of the program needs.
+
+<include cwd lang="dart" meta='title="test/file_store_test.dart"'>../code/ch28_expenses/test/file_store_test.dart#append</include>
+
+## 28.5 What this format cannot carry
+
+The format is one expense per line, four fields, commas between them:
+
+```
+2026-09-10,1250,food,coffee
+2026-09-10,320,transport,bus fare
+```
+
+It is deliberately the smallest thing that works, and it does not work. Two characters break
+it, and they break it in different ways — which is the interesting part.
+
+<include cwd lang="dart" meta='title="test/file_store_test.dart"'>../code/ch28_expenses/test/file_store_test.dart#debt</include>
+
+A **comma** in a note makes five fields. The list pattern counts, nothing matches, and the
+expense is gone on the next read. That failure is at least loud: the money you recorded is
+not there.
+
+A **newline** in a note is worse, and worse in the way that matters. The expense is written
+across two lines. The first four fields of the first line still line up, so it reads back as
+a perfectly ordinary expense — right amount, right day, right category, and a note with half
+of itself missing. Nothing throws. Nothing is logged. The record looks fine.
+
+The tempting fix is to widen the pattern: take the first three fields and join the rest back
+together. That does fix the comma, and it fixes it only because the note happens to be last —
+add a field after it and the fix stops working. It does nothing at all for the newline,
+because the damage was done by `split('\n')` before the pattern ever saw the line.
+
+So the answer is not a bigger pattern. The answer is a format that was designed by somebody
+who had thought about this, which is study 29.
+
+<Practice source="Effective Dart — Design" href="https://dart.dev/effective-dart/design#do-use-futurevoid-as-the-return-type-of-asynchronous-members-that-do-not-produce-values">
+**DO use `Future<void>` as the return type of asynchronous members that do not produce
+values** — *"The asynchronous equivalent for a method that doesn't produce a value, but that
+the caller might need to await, is `Future<void>`."*
+
+Read the clause in the middle. `record` produces nothing; the reason it is not `void` is that
+**the caller might need to await it**, and with plain `void` the caller could not. The
+guideline is this study's decision, written down by somebody else first.
+
+Its companion decides the shortcut this study did not take: [**AVOID using `FutureOr<T>` as a
+return type**](https://dart.dev/effective-dart/design#avoid-using-futureort-as-a-return-type).
+`FutureOr<void> record(Expense)` looks like it would let `InMemoryStore` off the hook while
+`FileStore` returns a future, and it would. It would also leave every caller unable to tell
+whether awaiting is required, which is a worse problem than the one it solves. Be generous in
+what you accept and exact in what you return.
+
+There is no guideline anywhere saying "prefer asynchronous I/O", and this study does not
+pretend otherwise. `avoid_slow_async_io` argues the opposite and is not in this book's lint
+set. The argument for `Future` here is the one in 28.1 — what an interface may promise — and
+that argument is the book's own.
+</Practice>
+
+<Gloss title="avoid_slow_async_io says the opposite">
+There is a lint called `avoid_slow_async_io`, and if you turn it on it will complain about
+`await file.exists()`. It is not wrong. The asynchronous forms of `exists`, `stat` and their
+neighbours really are *slower* than the synchronous ones, because the work is too small to be
+worth handing to another thread.
+
+It is not in `package:lints/recommended.yaml`, so it is not on here, and this study would
+argue with it if it were: `Store.all` is asynchronous for reasons that have nothing to do
+with how long `exists` takes. Naming the lint is the honest thing to do — a reader who
+enables more lints later should recognise the complaint rather than think this book was
+wrong.
+</Gloss>
+
+The whole study, run at once:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch28_expenses/transcripts/all.txt</include>
+</Console>
+
+## Wrapping up
+
+A method signature is a promise about time. `void` promises the work is done on return, and
+a disk cannot keep that promise, so the interface had to make a weaker and truer one.
+
+Make that decision in the interface, not the implementation. `readAsStringSync` would have
+worked for this program and would have made `Store` a type only a CLI can implement.
+
+`async` is contagious and the cost is real: two lines changed, nineteen errors, and every test
+in `command_test.dart` and `store_test.dart` rewritten to await something that never waits.
+Count it honestly and then decide.
+
+`async` on a method that never waits costs nothing. `InMemoryStore` returns an
+already-complete future and the fake stays as cheap as it was in study 27.
+
+`writeAsString` truncates unless you ask it not to, a missing file is a state of the world
+rather than an error, and splitting on newlines always leaves you one empty line too many.
+
+Also met: `File`, `Directory`, `FileMode.append`, `Directory.systemTemp.createTemp`,
+`tearDown`, `await` inside a switch arm, and an `async main` that returns `Future<void>`.
+
+Study 29 replaces this format with one that can carry a comma, a newline and anything else a
+person types — and the first thing it does is make `jsonDecode` hand back a `dynamic`.
+
+## Challenges
+
+Three challenges, ten failing tests. Make them pass one at a time. Do not edit the tests. The
+first two are `dart:io`; the third is the escaping this format needs, and study 29 is the
+study that never has to write it.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch28_expenses/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch28_expenses/exercises/challenges.dart</include>

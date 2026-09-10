@@ -3,9 +3,10 @@ import 'package:ch10_ledger/v1.dart' as v1;
 import 'package:test/test.dart';
 
 void main() {
+  // #region walking
+  /// One day's entries, in pence: two in, two out, and a zero.
   const day = [2500, -900, 0, -150, 400];
 
-  // #region walking
   group('two ways to walk the same list', () {
     test('the index and the entry reach the same balance', () {
       expect(total(day), totalIn(day));

@@ -1,0 +1,16 @@
+$ dart run bin/expenses.dart add 12.50 food coffee
+2026-09-10  £12.50  food  coffee
+
+$ dart run bin/expenses.dart add 3.20 transport bus fare
+2026-09-10  £3.20  transport  bus fare
+
+$ cat expenses.txt
+2026-09-10,1250,food,coffee
+2026-09-10,320,transport,bus fare
+
+$ dart run bin/expenses.dart list
+2026-09-10  £12.50  food  coffee
+2026-09-10  £3.20  transport  bus fare
+
+food: £12.50
+transport: £3.20

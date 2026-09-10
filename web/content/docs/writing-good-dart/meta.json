@@ -5,6 +5,7 @@
     "a-program-that-runs",
     "values-and-entities",
     "errors-by-design",
-    "testing-without-mocks"
+    "testing-without-mocks",
+    "files"
   ]
 }

@@ -43,6 +43,8 @@ unresolved `package:` imports. It looks like the book is broken. It is not.
 cd code && dart analyze && dart test && dart format --output=none --set-exit-if-changed .
 cd code && dart run tool/check_slices.dart      # a study changed only what its SLICE says
 cd code && dart run tool/check_regions.dart     # every new or changed region is on a page
+                                                # or exempted, with a reason, in its SLICE
+cd code && dart run tool/check_shown.dart       # no shown region leans on an unshown name
 cd code && dart run tool/check_promises.dart    # the promise table matches the prose
 cd code && dart run tool/check_transcripts.dart # every green transcript still runs green
 cd web && npx next build
@@ -51,7 +53,7 @@ cd web && npx next build
 `next build` is the only real check on the site; the dev server caches stale colour. If
 colours look wrong in dev, `rm -rf .next/cache .source` before believing it.
 
-The four `check_*` tools cover different halves and none subsumes another —
+The five `check_*` tools cover different halves and none subsumes another —
 `OUTLINE.md`'s standing requirements say what each one can and cannot see.
 `check_transcripts` is the slow one: it re-runs a test suite per green transcript and
 per challenge count, so give it a minute or two.

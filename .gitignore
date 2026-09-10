@@ -17,5 +17,8 @@ out/
 build/
 pubspec.lock
 
+# what study 28's program writes when you run it from its own package
+code/ch*/expenses.txt
+
 # tooling
 .playwright-mcp/

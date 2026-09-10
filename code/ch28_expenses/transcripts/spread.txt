@@ -1,0 +1,9 @@
+$ dart analyze          # after changing only the two lines in the Store interface
+  error - exercises/challenges.dart:20:8 - 'CappedStore.record' ('void Function(Expense)') isn't a valid override of 'Store.record' ('Future<void> Function(Expense)').
+  error - exercises/challenges.dart:23:21 - 'CappedStore.all' ('List<Expense> Function()') isn't a valid override of 'Store.all' ('Future<List<Expense>> Function()').
+  error - exercises/challenges.dart:39:8 - 'CountingStore.record' ('void Function(Expense)') isn't a valid override of 'Store.record' ('Future<void> Function(Expense)').
+  error - exercises/challenges.dart:42:21 - 'CountingStore.all' ('List<Expense> Function()') isn't a valid override of 'Store.all' ('Future<List<Expense>> Function()').
+  error - lib/src/command.dart:99:17 - The getter 'isEmpty' isn't defined for the type 'Future<List<Expense>>'. Try importing the library that defines 'isEmpty', correcting the name to the name of an existing getter, or defining a getter or field named 'isEmpty'.
+  error - lib/src/command.dart:103:27 - The type 'Future<List<Expense>>' used in the 'for' loop must implement 'Iterable'.
+  …
+19 issues found.

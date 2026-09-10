@@ -1,7 +1,7 @@
 # Outline
 
 Book I: Foundations (studies 1–22) — written. Book II: Writing good Dart
-(studies 23–34) — written through study 27, outlined to 34. Book III (35–39) and
+(studies 23–34) — written through study 28, outlined to 34. Book III (35–39) and
 Book IV (40–44) have no outline.
 
 Entries marked **WRITTEN** are no longer plans. They are the record of what
@@ -108,7 +108,7 @@ the loops deleted), 12→13 and 12→14, 13→14, 3→15 (`const` constructors),
 as the record of what was intended, and each study's own commit message
 records what construction actually measured.
 
-**Book II is outlined below**, and studies 23–27 are written. It opens at study 23
+**Book II is outlined below**, and studies 23–28 are written. It opens at study 23
 with libraries, imports and `_` privacy, which pays the only debt Book I leaves
 unpaid. `part` / `export` was folded into that study as a Gloss rather than taught.
 
@@ -368,6 +368,14 @@ before it is written as prose.
 | `Money.fromPence(250) == Money.fromPence(250)` before study 27 | **`false`** — no `==`, and a factory builds a new object each call. |
 | A primary constructor on a mutable class with `implements` | Legal. `class CappedStore(final int limit) implements Store { … }` analyzes clean and runs. |
 | A primary constructor on a generic class | Legal. `class Slots<T>(final int capacity) { … }` analyzes clean and runs. |
+| `await` inside a `switch` expression arm | Legal. Study 24's parser became `async` without changing shape. |
+| `Store`'s two signatures made `Future` | **19 errors in six files**, no implementation touched. |
+| `file.writeAsString` twice | **Truncates.** `one` then `two` leaves `two`; `FileMode.append` is the fix. |
+| `File('missing').readAsString()` | `PathNotFoundException`, "Cannot open file", errno 2. |
+| `writeAsString` into a directory that is not there | `PathNotFoundException` too — hence `file.parent.create(recursive: true)`. |
+| `''.split('\n')` | `['']` — **length one**, not zero. |
+| `'a\nb\n'.split('\n')` | `['a', 'b', '']` — always one empty entry too many. |
+| A note with a newline, through the line format | Reads back as an ordinary expense with **half its note gone**. Silent. |
 
 ### 23 — Libraries, imports and privacy · `libraries` · `ch23_expenses` — **WRITTEN**
 
@@ -622,32 +630,73 @@ design:
 - Challenge 1 lost its `ArgumentError` requirement with the constructor change, so the
   count is **nine failing tests**, not ten.
 
-### 28 — Files · `files` · `ch28_expenses`
+### 28 — Files · `files` · `ch28_expenses` — **WRITTEN**
 
-Teaches `dart:io`: `File`, `readAsString`, `writeAsString`, `exists`, directories, and
-`async`/`await` returning after five studies away — 23–27 carry no `async` or `await`
-at all, measured.
+Teaches `dart:io`: `File`, `readAsString`, `writeAsString`, `FileMode.append`, `exists`,
+`Directory.systemTemp.createTemp`, `tearDown`, and `async`/`await` returning after five
+studies away.
 
 Toy: `lib/src/file_store.dart` — a second `Store` implementation, one expense per line.
 
-The mechanism to name: `File.readAsString()` returns a `Future` because the operating
-system answers later, and study 21's rule is unchanged — `await` does not block, it
-gives the event loop the program back. The synchronous forms exist and are the exception
-you argue for, not the default you reach for. Say what the argument is: a CLI that does
-one read at startup has nothing else to do meanwhile, so `readAsStringSync` is defensible
-there and indefensible in study 35's server.
+**The hinge the outline did not settle: `Store` was a synchronous interface, and a file
+cannot honour one.** That is the study, and almost none of it is the file. `void
+record(Expense)` promises the expense is kept by the time the call returns; `List<Expense>
+get all` promises the list is already in hand. Both become `Future`, and the argument for
+doing it in the *interface* rather than reaching for `readAsStringSync` in the
+implementation is that `Store` is a promise every implementation must keep — Book III puts
+a server behind this same type, and a promise only a CLI can keep should not have been
+made in a CLI.
 
-Principle 4, named in the prose: this format is one expense per line, split on commas,
-and study 29 breaks it with the first note that contains a comma. Do not fix it here.
+Measured, and it is the Drill: changing those two lines and nothing else gives **19 errors
+across six files** — four in `store.dart` itself, where the `totals` extension still treated
+`all` as a list, and fifteen in five files that have never heard of a disk. `async` travels up the call stack
+and cannot be hidden. The transcript was captured from a temporary state of
+`ch27_expenses` and reverted.
 
-Practice: **no attribution.** `avoid_slow_async_io` is not in this book's lint set, and
-it argues the opposite for `exists` and `stat`. There is no citable guideline for
-"prefer async I/O", so this study's `<Practice>` carries the book's own convention and
-omits both props, exactly as study 2 does. Do not invent one.
+Also measured, because none of it was obvious: `await` is legal inside a `switch`
+expression arm, so study 24's parser became asynchronous without changing shape.
+`writeAsString` **truncates** by default, which would have kept only the last expense ever
+recorded. Writing into a directory that does not exist throws `PathNotFoundException`, so
+`record` calls `file.parent.create(recursive: true)`. And `''.split('\n')` has length
+**one**, not zero.
 
-Gloss: `avoid_slow_async_io` exists in the wider lint catalogue and says the async forms
-of `exists` and `stat` are *slower*. Naming it here is honest and stops a reader who
-enables more lints later from thinking the book was wrong.
+Principle 4, named in the prose and asserted in tests: the format breaks on two characters
+and breaks differently. A **comma** makes five fields, the list pattern does not match, and
+the expense is gone — loud. A **newline** splits one expense across two lines, and the
+first four fields still line up, so it reads back as an ordinary expense with half its note
+missing and nothing anywhere saying so. **This study first assumed the newline case lost
+the expense too; the test measured otherwise and the prose was corrected.** Silent
+corruption is the better argument for study 29, and 28.5 also says why widening the pattern
+is not a fix — it repairs the comma only because the note happens to be last, and does
+nothing for the newline, which `split` did before the pattern ever saw it.
+
+Practice: **the outline was wrong to say there is none.** There is no citable guideline for
+"prefer async I/O" — that part holds — but the study's actual decision was about a *return
+type*, and Effective Dart covers it exactly: **DO use `Future<void>` as the return type of
+asynchronous members that do not produce values**, whose own wording is *"that the caller
+might need to await"*. Its companion **AVOID using `FutureOr<T>` as a return type** closes
+the shortcut a reader will reach for — `FutureOr<void> record` would let `InMemoryStore`
+off the hook and leave every caller unable to tell whether awaiting is required. Both
+verified on the live page, neither cited before.
+
+Gloss 1: `avoid_slow_async_io` exists, is not in this book's lint set, and argues the
+opposite for `exists` and `stat`. Named so a reader who enables it later recognises the
+complaint.
+
+Gloss 2: `all` re-reads the file on every call and `_list` asks twice. Fine for a CLI that
+runs one command and exits, not fine for the Book III server, and a cache is a second thing
+to be wrong about.
+
+**`check_regions` gained a recorded exemption, because this study broke its rule honestly.**
+Five regions changed by nothing but `async` and `await` — the same mocks, the same
+assertions, one keyword heavier — and re-showing them would suggest something new about
+mocks. A SLICE may now carry `# unshown: <path>#<region> — <reason>` lines, and **the
+reason is required**: a line without one is reported as a problem, so every exemption is a
+sentence a person wrote and a reviewer can disagree with. Proved by adding a reasonless
+line and watching it fail. 55 regions changed, 50 shown, 5 exempted.
+
+Also: `.gitignore` gained `code/ch*/expenses.txt`, because running the study's own program
+from its package writes one.
 
 ### 29 — JSON · `json` · `ch29_expenses`
 
@@ -852,9 +901,9 @@ told will be explained or fixed.
 
 | Owed by | Made in | The reader is promised |
 | --- | --- | --- |
-| 28 | 25 | the store stops forgetting everything when the program stops |
 | 31 | 27 | `totals` is a holding position and becomes a `Report` |
-| 29 | 28 | the line format breaks on a note containing a comma |
+| 29 | 28 | a comma loses the expense and a newline corrupts it silently |
+| 33 | 28 | which file the tracker keeps becomes something you can say |
 | 30 | 25 | why `Expense` carries a `Day` and not a `DateTime` |
 | 33 | 24 | a parser with `--help`, abbreviations and `--flag=value` |
 
@@ -862,7 +911,7 @@ Paid: 26←24 (`null` could not say which part was wrong; a sealed `Reading` can
 26←24 again (`dart compile exe` named in a Gloss, measured in 26.4), 27←24 (the seam
 behind `Outcome` is named and two more are cut), 27←25 (`Store` is an interface now that
 a second implementation exists), 27←26 (both lines study 26 left alone became
-parameters).
+parameters), 28←25 (the store stops forgetting when the program stops).
 
 Removed as fiction, found by checking the prose rather than the plan: **31←25** — the
 outline meant study 25 to promise study 31 that `Category`'s equality is what makes
@@ -966,13 +1015,28 @@ existing transcripts and verified to reproduce.
   shown — `standardPrices` used in a test, `hashPrefix` used in `tag`, the
   four-language `enum` when only the three-language stage was on the page. Check
   with: for each `// #region X` in `code/`, some MDX must include that path`#X`.
-- **No unshown definition — the inverse of the rule above, and the rule above
-  cannot see it.** A helper declared *outside* every region, in a file whose
+- **No unshown definition — the inverse of the rule above, and `check_regions`
+  cannot see it.** `dart run tool/check_shown.dart` can, and does. A helper
+  declared *outside* every region, in a file whose
   regions are on the page, is invisible to the orphan check and is exactly the
   same gap: study 20 shipped a `#trace` region calling `traceOf(…)` with
   `traceOf` declared above `main()` and never shown. Check with: for each shown
   region, every name it calls must be declared either inside a shown region, in
   `dart:core`, or in a package the reader has been told about.
+
+  It kept happening after that, twice in two studies — study 27 shipped `day` and
+  `late Store store` outside the regions that used them, study 28 did the same with
+  `directory`, `file` and `expenseOf` — so it is a tool now, and the tool found four
+  more in Book I that had never been noticed: `const day` above the regions in both
+  `ch10_ledger` and `ch12_report`, `const statement` in `ch16_entries`, and worst,
+  `const decomposed = 'café'` in `ch05_label`, where the fixture *is* the lesson —
+  study 5 asks the reader to read `widths(decomposed)` and never shows that the
+  string is a decomposed `é`. All four fixed by moving the declaration into the
+  first region that uses it, or by giving it a region of its own.
+
+  The tool discounts comments, string literals and member accesses before a name
+  counts as used; each of the three was added because leaving it out invented a
+  problem. It is a heuristic and not a parser, so it errs towards silence.
 - **A count in prose is a claim, and none of the counts in this book were counted.**
   Four were wrong and every one was written from an impression: `Store.totals` called
   "four lines" is ten; `bin/expenses.dart` called "nine lines" is eight lines of code and
@@ -1031,7 +1095,12 @@ existing transcripts and verified to reproduce.
   study, or if its text differs from the previous study's copy.**
   `dart run tool/check_regions.dart` enforces it and normalises the package name first.
   It found the file-scoped version's four true misses in study 25 and cleared its three
-  false alarms.
+  false alarms. **Study 28 earned it an escape hatch**, because a study can change a region
+  honestly and mechanically: five of its regions gained `async` and `await` and nothing
+  else, and re-showing them would suggest something new about mocks. A SLICE may carry
+  `# unshown: <path>#<region> — <reason>` lines, and the reason is required — a line without
+  one is reported as a problem. An exemption is therefore always a sentence a person wrote,
+  never a silent skip.
 - **A transcript is captured once and can be falsified by any later commit, and
   nothing was watching.** `check_slices` skips `transcripts/` on purpose, because a
   transcript legitimately differs whenever the suite grows; `check_regions` and

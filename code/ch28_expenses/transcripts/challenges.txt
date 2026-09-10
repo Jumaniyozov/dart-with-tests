@@ -1,0 +1,5 @@
+$ dart test exercises/
+00:00 +0: loading exercises/challenges_test.dart
+00:00 +0: exercises/challenges_test.dart: challenge 1 — a store seeded from a file a source that is not there means nothing was seeded
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — a store seeded from a file a source that is not there means nothing was seeded [E]
+  UnimplementedError: 1

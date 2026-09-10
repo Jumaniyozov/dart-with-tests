@@ -2,9 +2,10 @@ import 'package:ch12_report/report.dart';
 import 'package:test/test.dart';
 
 void main() {
+  // #region folding
+  /// One day's entries, in pence: two in, two out, and a zero.
   const day = [2500, -900, 0, -150, 400];
 
-  // #region folding
   group('folding a list down to one value', () {
     test('fold carries a running answer and starts from a seed', () {
       expect(total(day), 1850);

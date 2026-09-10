@@ -1,0 +1,28 @@
+# Study 28 — what changed since study 27.
+#
+# Added — a Store that keeps a file, and the one test file that touches a disk
+lib/src/file_store.dart
+test/file_store_test.dart
+# Changed — every Store member returns a Future, so everything that calls one
+# had to say so too. Nothing here changed what the program does.
+lib/src/store.dart
+lib/src/command.dart
+lib/expenses.dart
+bin/expenses.dart
+test/command_test.dart
+test/store_test.dart
+test/values_test.dart
+pubspec.yaml
+#
+# Regions this study changed and deliberately does not show again. Every one of
+# them gained `async` and `await` and nothing else — the same code, one keyword
+# heavier — and putting them back on the page would suggest there is something
+# new about mocks or about `setUp`. 28.2 shows the two that carry the argument.
+# unshown: test/store_test.dart#spy — async only, shown whole in study 27
+# unshown: test/store_test.dart#blind — async only, shown whole in study 27
+# unshown: test/store_test.dart#fake — async only, shown whole in study 27
+# unshown: test/command_test.dart#day — async only, shown whole in study 27
+# unshown: lib/expenses.dart#barrel — one export added, and 28.3 names it
+# unshown: lib/src/command.dart#outcome — one sentence corrected. It said no
+#   `dart:io` appears under `lib/`, which study 28 made false. The typedef is
+#   unchanged and was shown in study 24; 28.3 states the truth in prose.
