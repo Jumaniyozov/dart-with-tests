@@ -1,0 +1,6 @@
+$ dart analyze          # after deleting the dependency and keeping the import
+Analyzing ch33_expenses...
+
+   info - lib/src/command.dart:1:8 - The imported package 'args' isn't a dependency of the importing package. Try adding a dependency for 'args' in the 'pubspec.yaml' file. - depend_on_referenced_packages
+
+1 issue found.

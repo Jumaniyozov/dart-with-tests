@@ -1,0 +1,8 @@
+$ dart test test/command_test.dart -n 'an amount the domain refuses'
+00:00 +0: loading test/command_test.dart
+00:00 +0: a run that did not an amount the domain refuses is refused, not misuse
+00:00 +0 -1: a run that did not an amount the domain refuses is refused, not misuse [E]
+  Expected: <1>
+    Actual: <2>
+
+00:00 +0 -1: Some tests failed.

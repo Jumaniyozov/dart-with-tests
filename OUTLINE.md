@@ -398,6 +398,18 @@ before it is written as prose.
 | Adding two members to `Store` | **4 implementations broken**, two of them test doubles with no opinion about the new members. |
 | `SpyStore.calls` after study 32's budget check | `['limits', 'record']` where study 27 asserted `['record']`, with no change to what the program does. |
 | A **factory in the unnamed slot** beside a private primary constructor | Legal. `class const Limit._(…) { factory Limit(…) }` — a published type gains a check and no call site moves. |
+| `dart pub add args` in a **workspace** | Prints the workspace root's paths and no version line. A standalone package prints `+ args 2.7.0` / `Changed 1 dependency!`. |
+| `args` in the workspace lock | `dependency: transitive` — `package:test` already depends on it. In a standalone package it is `direct main`. |
+| `--fi` for `--file` | **Throws.** `args` has single-letter `abbr:` and no unique-prefix abbreviation. `--hel` is not `--help`. |
+| `add -5.00 food` through `ArgParser` | **Throws** `Could not find an option with short name "-5"`; `-5` gives `Could not find an option or flag "-5"`. No setting turns this off. |
+| `--` before a leading-dash word | Restores it: `add -- -5 food coffee` reaches `readMoney` and answers `refused`. |
+| `ArgParserException` | `is FormatException`, `is Exception`, **not** an `Error` — so study 26 licenses catching it. |
+| `ArgResults` typed accessors | `flag`→`bool`, `option`→`String?`, `multiOption`→`List<String>`. The package's own doc says to prefer them over `[]`, which is `dynamic`. |
+| `ArgParser.usage` with `addCommand` | Lists **options only**. Commands are not in it; `parser.commands` is an `UnmodifiableMapView<String, ArgParser>`. |
+| `CommandRunner` and `--help` | Free, and it **prints to stdout from inside the library** — the one thing `lib/` has not done since study 24. |
+| `addOption(allowed: […])` | Rejects with `"colour" is not an allowed value for option "--sort"`; usage renders `[day (default), amount]`. |
+| `unintended_html_in_doc_comment` | In this book's lint set. `/// add <amount>` in a doc comment fires it; backticks fix it. |
+| Removing a dependency, keeping the import | Still compiles — `args` is reachable through `test`. One `info`: `depend_on_referenced_packages`. |
 
 ### 23 — Libraries, imports and privacy · `libraries` · `ch23_expenses` — **WRITTEN**
 
@@ -901,34 +913,67 @@ gained the paragraph and a Gloss, because the fix is a better lesson than the or
 The study's own rule of thumb is what names the defect: *put the rule on the smallest thing that
 can see all of it.* It was stated in bold on the page and broken four inches below by the page's
 own code.
-### 33 — Taking a dependency · `taking-a-dependency` · `ch33_expenses`
+### 33 — Taking a dependency · `taking-a-dependency` · `ch33_expenses` — **WRITTEN**
 
-Teaches `dart pub add`, `pubspec.yaml` dependencies, caret constraints, the lockfile,
-`dart pub outdated`, and `package:args` **2.7.0** replacing study 24's parser.
+Shipped: 165 green, 3 challenges at 9 failing, 7 transcripts. `package:args` **2.7.0**
+replaces the parser three studies apologised for, and all three of study 33's debts are
+paid in one slice: `--file` (28), `--help` and `--flag=value` and single-letter
+abbreviations (24), and the deletion of `_flagged` (32).
 
-Toy: `bin/expenses.dart` rewritten on `ArgParser` and `ArgRunner`; `--help` for free.
+**Every claim about `ArgParser` was measured before it was written, as the plan demanded.**
+Context7 has no Dart `args` entry — checked, not assumed — so the API was read out of
+`~/.pub-cache/…/args-2.7.0/lib/` and exercised in a throwaway package. Four of those
+measurements changed the study.
 
-The mechanism to name: `^2.7.0` means "at least 2.7.0 and less than 3.0.0", and it is a
-bet on someone else's discipline — that they will not break you before the major bump.
-The lockfile is what makes the bet reproducible: the constraint says what you *allow*,
-the lock says what you *got*. Show `pubspec.lock` in the study and say which one a
-teammate's machine reads.
+**The dependency took a behaviour away, and that became the study.** `add -5 food coffee`
+was `refused` in study 24 — a well-formed request `Money` forbids, exit 1 — and
+`package:args` reads a leading `-` as an option, so it is now `misuse`, exit 2. Measured:
+one test out of 165 failed when the dependency went in, and it was that one. There is no
+setting for it (`ArgParser` takes `allowTrailingOptions` and `usageLineLength` and nothing
+else) and it is not about the abbreviations this program declares, because a parser with no
+abbreviations at all does the same. `--` restores it, and 33.4 is built on the whole
+sequence. That is a better lesson than the `--help` was.
 
-Pays: study 24's named weaknesses, one at a time — `--help`, abbreviations,
-`--flag=value`. The comparison is the study, so transclude study 24's parser beside the
-new one the way study 12 transcludes study 10's loop.
+Departures from the plan, each argued and measured:
 
-*Unverified: every claim about `ArgParser`'s API. `args` 2.7.0 is the resolved version —
-verify each call against the installed package, not from memory, and note that Context7
-has no Dart `args` entry.*
+- **`ArgParser` with `addCommand`, not `CommandRunner`.** The outline said "`ArgRunner`",
+  which is not a name in this package. `CommandRunner` does give `--help` for free —
+  measured, it prints the usage itself and `run` answers `null` — and the printing is the
+  problem: it writes to stdout from inside a library. Every study since 24 has rested on
+  `lib/` never printing and `run` answering an `Outcome`, which is what makes a command
+  testable without a terminal. Taking `CommandRunner` would trade study 27's seam for a
+  help flag.
+- **`--help` is therefore not free, and what is free is better.** Half the usage text is
+  generated from the parser and can no longer disagree with it; the other half — the
+  positional grammar — `ArgParser` does not model at all, so it is still hand-written and
+  can still rot. Naming which half the dependency took over is 33.3.
+- **`package:args` appears in no public signature.** `run` still takes `List<String>` and
+  `fileFrom` answers a `String`. Putting `ArgResults` in `run` would have been the tidier
+  design and would have made the dependency part of what this library promises its
+  callers — which is study 34's subject, so the study says so instead of doing it.
+- **The typed accessors, not the subscript.** `results['anyway']` answers `dynamic` and
+  this book turns on `strict-casts`; `flag`/`option`/`multiOption` are typed, and the
+  package's own doc comment says to prefer them.
 
-Practice: `depend_on_referenced_packages` — every package you `import` must be in
-your `pubspec.yaml`, not merely reachable through someone else's. Verified present in
-`package:lints/core.yaml` 6.1.0. It is the lint that makes a dependency a declaration
-rather than an accident.
+**Found while writing: two flaws in `check_shown`, both false positives, both real bugs.**
+Its declaration pattern had `\s` inside the leading character class, so the *indentation*
+could stand in for a type and every `test('…', () async {` outside a region registered a
+declaration of `test`. And `_string` reads one line at a time, so a `'''` block's prose was
+read as code — study 33's `usage` says *show what has been recorded* and the checker
+reported the region as using `recorded`. Both fixed, and the fix proved in both directions:
+an injected helper declared outside every region is still caught.
 
-Gloss: `dart pub add --dev` and why `test` and `lints` are dev dependencies — they are
-not part of what your callers get.
+The real report underneath them stood: `_list` and `_listMonth` were the only helpers in
+`command.dart` outside every region, which only surfaced because study 33 is the first page
+to show `#run`. They are a region now, exempted in `SLICE` with the reason.
+
+Practice: `depend_on_referenced_packages`, verified against the live page and against
+`lints-6.1.0/lib/core.yaml:19`. Demonstrated rather than asserted: `args` is already
+reachable through `package:test`, so deleting the dependency and keeping the import leaves
+a program that compiles with one `info` — captured in `undeclared.txt`.
+
+Gloss: `dependencies` against `dev_dependencies`, argued from what a *caller* receives
+rather than from tidiness.
 
 ### 34 — Being a dependency · `being-a-dependency` · `ch34_expenses`
 
@@ -975,9 +1020,7 @@ told will be explained or fixed.
 
 | Owed by | Made in | The reader is promised |
 | --- | --- | --- |
-| 33 | 28 | which file the tracker keeps becomes something you can say |
-| 33 | 24 | a parser with `--help`, abbreviations and `--flag=value` |
-| 33 | 32 | the hand-rolled flag handling `--anyway` needed gets deleted |
+| 34 | 33 | what a dependency in your public API costs, from the other end |
 
 Paid: 26←24 (`null` could not say which part was wrong; a sealed `Reading` can),
 26←24 again (`dart compile exe` named in a Gloss, measured in 26.4), 27←24 (the seam
@@ -989,11 +1032,17 @@ against `DateTime`, argued with four measurements instead of one line), 30←29 
 three ways, and study 30 is careful that its count and study 29's agree), 31←27 (`totals`
 stopped being an extension and became `Report`), 31←30 (`list <month>`
 became a report with an order and a total), 32←31 (`Money` got the `operator -` study 31
-argued for and withheld).
+argued for and withheld), 33←28 (`--file` says where the tracker lives, and the `const`
+in `bin/` is gone), 33←24 (`--help`, `--flag=value` and single-letter abbreviations —
+**two of the three in full and one smaller than the promise sounded**, because `args` does
+not abbreviate long names and study 33 says so), 33←32 (`_flagged` deleted, and study 32's
+own `--anyway` tests pass untouched against the new parser).
 
-Study 33 now owes three things, which ties study 27 for the most any study in this book
-has carried. Two of them are the same deletion seen from different studies, and the third
-is `--anyway`, which study 32 added knowing study 33 would take it away.
+Study 33 carried three and paid all three, which is the most any study in this book has
+both owed and settled. One of them came back smaller than it was promised: study 24 said
+*abbreviations*, and what `package:args` has is single letters declared with `abbr:`, not
+unique prefixes. `--hel` is not `--help`, measured. The study pays what the dependency
+actually provides and names the gap rather than letting the word cover both.
 
 Removed as fiction, found by checking the prose rather than the plan: **31←25** — the
 outline meant study 25 to promise study 31 that `Category`'s equality is what makes
@@ -1260,6 +1309,13 @@ existing transcripts and verified to reproduce.
   'Money'>`, which names nothing. Study 25 states the test — *identical contents, one
   thing or two?* — so apply it to every type the moment it exists, not the moment a map
   needs it.
+- **A new snapshot starts by copying the last one, and `transcripts/` must not come with
+  it.** Every other directory carries forward by design; `transcripts/` does not — each
+  study holds only the runs it captured, and `check_slices` skips the directory on purpose,
+  so an inherited transcript is invisible to every checker. Study 33 was copied from study
+  32 and arrived holding `interface.txt`, `mock.txt` and `refused.txt`, all of them study
+  32's evidence for study 32's claims. Delete them before writing the first new one, and
+  compare `ls chNN/transcripts` against the previous study's if in doubt.
 - **A rule enforced at two edges belongs on the type between them.** `Limit` refused a
   zero amount in the `budget` command and again in `limitFromJson`, and permitted it
   itself, so the program could construct and store a limit it could not read back. When

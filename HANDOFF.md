@@ -19,8 +19,9 @@ Last checked: 2026-09-09.
 
 ## State
 
-Book I (studies 1-22) is written, audited and pushed. Book II (23-34) is outlined and
-not written. Books III and IV have no outline.
+Book I (studies 1-22) is written, audited and pushed. Book II (23-34) is written through
+**study 33**; only study 34, *Being a dependency*, is left, and `OUTLINE.md` has its entry.
+Books III and IV have no outline.
 
 Counts are not restated here. `OUTLINE.md` and the git log carry them, and a number
 copied into this file is a number that will be wrong within a week. That is exactly how
@@ -41,7 +42,7 @@ unresolved `package:` imports. It looks like the book is broken. It is not.
 
 ```bash
 cd code && dart analyze && dart format --output=none --set-exit-if-changed .
-cd code && for d in ch*/; do (cd "$d" && dart test test/) || break; done   # 915 green
+cd code && for d in ch*/; do (cd "$d" && dart test test/) || break; done   # every package green
 cd code && dart run tool/check_slices.dart      # a study changed only what its SLICE says
 cd code && dart run tool/check_regions.dart     # every new or changed region is on a page
                                                 # or exempted, with a reason, in its SLICE

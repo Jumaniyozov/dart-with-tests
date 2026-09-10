@@ -1,0 +1,12 @@
+$ dart test exercises/
+00:00 +0: loading exercises/challenges_test.dart
+00:00 +0: exercises/challenges_test.dart: challenge 1 — a parser that constrains --sort defaults to day and takes amount
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — a parser that constrains --sort defaults to day and takes amount [E]
+  UnimplementedError: 1
+
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — a parser that constrains and refuses anything else, in words the parser chose
+00:00 +0 -2: exercises/challenges_test.dart: challenge 1 — a parser that constrains and refuses anything else, in words the parser chose [E]
+  Expected: throws <Instance of 'ArgParserException'> with `message`: '"colour" is not an allowed value for option "--sort".'
+    Actual: <Closure: () => ArgResults>
+     Which: threw UnimplementedError:<UnimplementedError: 1>
+…

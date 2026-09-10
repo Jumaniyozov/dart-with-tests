@@ -1,0 +1,234 @@
+---
+title: Taking a dependency
+study: 33
+direction: Somebody else has already written the boring part. Taking their code means taking their opinions with it, and one of those opinions will cost you something you had tested.
+description: dart pub add, caret constraints and the lockfile — and package:args replacing a hand-rolled parser, including the behaviour it takes away.
+---
+
+Every study since 24 has typed arguments into a list and read them with a pattern. It worked,
+and three separate studies had to say out loud that it was worse than it should be.
+
+<Drill n={1}>
+
+<Direction>One dependency, and the three things study 24 said it could not do.</Direction>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch33_expenses/transcripts/help.txt</include>
+</Console>
+
+</Drill>
+
+## 33.1 A dependency is a line in a file
+
+`dart pub add` writes it for you.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch33_expenses/transcripts/add.txt</include>
+</Console>
+
+<include cwd lang="yaml" meta='title="pubspec.yaml"'>../code/ch33_expenses/pubspec.yaml</include>
+
+`^2.7.0` is a **caret constraint**, and it means *at least 2.7.0, and less than 3.0.0*. Read it
+as a bet on somebody else's discipline: they have promised that nothing before 3.0.0 will break
+you, and you have agreed to accept whatever they ship inside that range without being asked.
+
+The constraint says what you **allow**. It does not say what you **got** — for that there is
+`pubspec.lock`, which `pub` writes and you commit:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch33_expenses/transcripts/lock.txt</include>
+</Console>
+
+The version, and a hash of the exact bytes. That is the difference that matters: a teammate
+cloning this repository runs `dart pub get` and gets **2.7.0**, not "whatever satisfies
+`^2.7.0` today". The constraint is the policy and the lock is the record, and only one of them
+is reproducible.
+
+`direct main` is the other half of the entry: it says *this package asked for it*. Run the same
+command against **this book's** lockfile and the line reads `transitive` instead, because these
+studies share one workspace and `package:test` was already pulling `args` in long before study
+33 asked for it. The distinction is not cosmetic, and the Practice at the end of this study is
+about exactly what it costs to blur it.
+
+<Gloss title="Two lists, and callers only get one">
+`args` went under `dependencies`. `test` and `lints` are under `dev_dependencies`, which
+`dart pub add --dev` writes, and the difference is not tidiness: a dev dependency is not
+installed for anyone who depends on **you**. Somebody using this package gets `args`, because
+`lib/` imports it and their copy would not compile otherwise. They do not get `test`, because
+nothing they can reach mentions it.
+
+The rule follows from that: if a file under `lib/` or `bin/` imports it, it is a dependency. If
+only your tests and tools do, it is a dev dependency. Study 34 is where being on the other end
+of this starts to matter.
+</Gloss>
+
+`dart pub outdated` is how you find out whether the bet is still current:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch33_expenses/transcripts/outdated.txt</include>
+</Console>
+
+## 33.2 A parser knows a flag from a word
+
+Here is what study 24 shipped, and what has been growing ever since:
+
+<include cwd lang="dart" meta='title="ch24_expenses/lib/src/command.dart"'>../code/ch24_expenses/lib/src/command.dart#run</include>
+
+And here is the declaration that replaces it:
+
+<include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch33_expenses/lib/src/command.dart#parser</include>
+
+`addCommand` gives each command word a parser of its own, which is why `--anyway` can belong to
+`add` and be an error anywhere else. Study 32 could not do that. It had a function whose only
+job was to pull `--anyway` out of the list before the patterns saw it, because
+`['add', …, ...final note]` would otherwise have swallowed the flag into somebody's note — and
+that function is now deleted, which is the third of ADR 0003's three debts paid.
+
+<include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch33_expenses/lib/src/command.dart#run</include>
+
+The shape is the same. Study 14's patterns still read the arguments; they read them off
+`(command.name, command.rest)` instead of off the raw list, and the flag arrives as
+`command.flag('anyway')` rather than as a word somebody had to fish out first.
+
+`flag` and `option` are worth noticing. `results['anyway']` also works and is what most
+examples show, but it answers `dynamic`, and this book turns on `strict-casts`. The package's
+own documentation says to prefer the typed ones; the analyzer agrees, and so does anybody
+reading the line later.
+
+<include cwd lang="dart" meta='title="test/arguments_test.dart"'>../code/ch33_expenses/test/arguments_test.dart#given</include>
+
+<include cwd lang="dart" meta='title="test/arguments_test.dart"'>../code/ch33_expenses/test/arguments_test.dart#flags</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch33_expenses/transcripts/flags.txt</include>
+</Console>
+
+Study 32's own `--anyway` tests were not touched and still pass, against a parser that reads
+that flag a completely different way. That is the useful shape of a replacement: the behaviour
+was pinned by tests, so swapping the machinery underneath was a thing you could check rather
+than a thing you had to hope about.
+
+## 33.3 Help that cannot disagree with the parser
+
+Study 24's `usage` was a `const` string sitting next to the code it described. That is a claim
+nothing checks. Add a flag, forget the line, and the help is wrong until somebody happens to
+read both.
+
+<include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch33_expenses/lib/src/command.dart#usage</include>
+
+<include cwd lang="dart" meta='title="test/arguments_test.dart"'>../code/ch33_expenses/test/arguments_test.dart#help</include>
+
+`--anyway`'s help text is written once, on the flag, and appears in the output because the
+parser put it there. The two can no longer drift, and a whole class of stale documentation is
+gone.
+
+Only a class of it. `ArgParser` models **options**; the words after a command word are a plain
+list it has no opinion about, so `add <amount> <category> <note>` is still a hand-written line
+that can still rot. Knowing which half your dependency took over is the difference between
+trusting it and assuming things about it.
+
+The other half of study 24's promise arrives here too, and one part of it arrives smaller than
+it sounds. `-h` works because `--help` was declared with `abbr: 'h'`. `--hel` does not work:
+`args` gives you **single-letter abbreviations**, not unique prefixes, and the test above says
+so because that is what it does when you run it.
+
+## 33.4 What the dependency took
+
+Study 28 left a `const` in `bin/` holding the one path this program could use, and named this
+study as the one that would let you say otherwise.
+
+<include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch33_expenses/lib/src/command.dart#file</include>
+
+<include cwd lang="dart" meta='title="bin/expenses.dart"'>../code/ch33_expenses/bin/expenses.dart#main</include>
+
+<include cwd lang="dart" meta='title="test/arguments_test.dart"'>../code/ch33_expenses/test/arguments_test.dart#file</include>
+
+Note what does **not** cross that boundary. `fileFrom` answers a `String`, and `run` still takes
+a `List<String>`. No `ArgResults` appears in any signature this package offers, so `package:args`
+is something this library *uses* rather than something it makes its callers use. That choice is
+free today and expensive to reverse, which is study 34's whole subject.
+
+Now the part that is not free. Add the dependency, run the suite, and one test out of the
+hundred and sixty-five fails:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch33_expenses/transcripts/dash.txt</include>
+</Console>
+
+`1` is `refused` and `2` is `misuse`. Study 24 built its whole exit-code lesson on those being
+different answers: `add -5 coffee` is a well-formed request for something `Money` forbids, and
+a script can retry a misuse and must not retry a refusal.
+
+`package:args` disagrees. A leading `-` is how an option announces itself, so `-5` is read as a
+short option that was never declared, and the amount never reaches the code that would have
+refused it. There is no setting for this — `ArgParser` takes `allowTrailingOptions` and
+`usageLineLength` and nothing else — and it is not about the abbreviations this program
+declares, because a parser with no abbreviations at all does the same thing.
+
+<include cwd lang="dart" meta='title="test/command_test.dart"'>../code/ch33_expenses/test/command_test.dart#dash</include>
+
+`--` is the escape, and it is a convention far older than this package: everything after it is a
+word, whatever it starts with. So the distinction study 24 taught is still available, and the
+reader now has to type two more characters to get it.
+
+That is the honest shape of taking a dependency, and it is worth more than the `--help` was.
+You did not get to pick which behaviours came with the code. Somebody else decided what a
+leading dash means, they decided it before you arrived, and the only reason you found out is
+that the behaviour was pinned by a test. A change like this in code with no tests is discovered
+by a user.
+
+<Practice source="Dart lints — depend_on_referenced_packages" href="https://dart.dev/tools/linter-rules/depend_on_referenced_packages">
+**"DO depend on referenced packages. When importing a package, add a dependency on it to your
+pubspec."** The rule is in `package:lints/core.yaml` 6.1.0, which `recommended.yaml` includes,
+so it is enforced here.
+
+It exists because an import can succeed by accident. `args` was already on this machine before
+study 33 asked for it — `package:test` depends on it — so deleting the dependency and keeping
+the import leaves a program that still compiles:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch33_expenses/transcripts/undeclared.txt</include>
+</Console>
+
+One `info`, and everything runs. That is exactly the situation the lint is for: without it, this
+package would be relying on a version of `args` that somebody else chose, and would break the
+day `test` stopped needing it. Declaring the dependency is what turns *reachable* into
+*promised*.
+</Practice>
+
+## Wrapping up
+
+`dart pub add` writes a line in `pubspec.yaml`, and that line is a caret constraint: a range you
+allow, and a bet that the author will not break you inside it. `pubspec.lock` records what you
+actually got, hash and all, and it is the lock rather than the constraint that makes a build
+reproducible on someone else's machine.
+
+A dependency that belongs to `lib/` or `bin/` goes under `dependencies`, because your callers
+need it too. One that only your tests reach goes under `dev_dependencies`, and
+`depend_on_referenced_packages` is the analyzer noticing when an import is working by accident.
+
+`package:args` replaced a parser three studies had apologised for. A flag is now a flag wherever
+it appears, each command has its own options, `--flag=value` and `-f value` and `-fvalue` all
+work, and half the help text is generated from the options rather than typed beside them.
+
+The other half of that sentence is the study. `args` does not abbreviate long names, only
+single letters. It does not model the words after a command at all. And it reads a leading `-`
+as an option, which took away a distinction study 24 had built a lesson on — recovered with
+`--`, at the cost of two characters the reader has to know about.
+
+Also met: `dart pub outdated`, `pubspec.lock` as a record rather than a policy, `ArgParser`,
+`addCommand`, `addFlag`, `addOption`, `ArgResults`, the typed `flag` and `option` accessors,
+`ArgParserException`, and `--` as the end of options.
+
+Study 34 turns this around: everything here is what a version number promised **you**, and the
+last study of Book II is about making that promise to somebody else.
+
+## Challenges
+
+Three challenges, nine failing tests. Make them pass one at a time. Do not edit the tests. Every
+assertion in them was measured against `args` 2.7.0 before it was written, because the only
+honest way to say what somebody else's code does is to run it.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch33_expenses/transcripts/challenges.txt</include>
+</Console>

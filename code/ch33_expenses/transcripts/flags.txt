@@ -1,0 +1,12 @@
+$ dart run bin/expenses.dart --file spending.txt add 4.20 food flat white
+2026-09-10  £4.20  food  flat white
+
+$ dart run bin/expenses.dart -f spending.txt budget food 3.00
+food: £3.00
+
+$ dart run bin/expenses.dart --file=spending.txt add 9.00 food a big dinner
+food is budgeted at £3.00 and this would put it £10.20 over. Record it anyway with --anyway.
+exit: 1
+
+$ dart run bin/expenses.dart --file=spending.txt add 9.00 food a big dinner --anyway
+2026-09-10  £9.00  food  a big dinner  (over budget)

@@ -39,8 +39,13 @@ final _declarations = [
   RegExp(
     r'^\s*(?:final|const|var|late\s+final|late)\s+[\w<>,\s?]*?(\w+)\s*[=;]',
   ),
+  // The type must start with a character a type can start with. `[\w<>,\s?]+`
+  // let the *indentation* be the type, so every `test('…', () async {` outside
+  // a region registered a declaration of `test` — measured on study 33's
+  // `command_test.dart`, where it made a shown region look like it leaned on
+  // the test package.
   RegExp(
-    r'^\s*(?:static\s+)?[\w<>,\s?]+\s+(\w+)\s*\([^)]*\)\s*(?:async\s*)?[={]',
+    r'^\s*(?:static\s+)?[\w<>?][\w<>,\s?]*\s+(\w+)\s*\([^)]*\)\s*(?:async\s*)?[={]',
   ),
   RegExp(
     r'^\s*(?:abstract\s+|final\s+|base\s+|interface\s+|sealed\s+|mixin\s+)*'
@@ -124,7 +129,24 @@ Map<String, List<String>> _split(List<String> lines) {
 /// Both mattered. The first version reported a region "uses `out`" because its
 /// doc comment said *reach out for*, and the second reported one "uses `record`"
 /// because it asserted `expect(spy.calls, ['record'])`.
-String _code(List<String> lines) => lines.map(_stripped).join('\n');
+String _code(List<String> lines) =>
+    _withoutBlockStrings(lines.join('\n'))
+        .split('\n')
+        .map(_stripped)
+        .join('\n');
+
+/// Triple-quoted strings, taken out before anything else looks at the text.
+///
+/// `_string` reads one line at a time and cannot see them, so a `'''` block's
+/// prose was read as code: study 33's `usage` says *show what has been
+/// recorded* and the checker reported the region as using `recorded`.
+final _blockString = RegExp("'''.*?'''|\"\"\".*?\"\"\"", dotAll: true);
+
+String _withoutBlockStrings(String source) => source.replaceAllMapped(
+  _blockString,
+  // Keep the line count, so nothing else shifts underneath.
+  (match) => '\n' * '\n'.allMatches(match[0]!).length,
+);
 
 final _string = RegExp(r"""('(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*")""");
 

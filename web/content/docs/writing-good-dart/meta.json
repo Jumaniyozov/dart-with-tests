@@ -10,6 +10,7 @@
     "json",
     "dates-and-times",
     "reports",
-    "budgets"
+    "budgets",
+    "taking-a-dependency"
   ]
 }

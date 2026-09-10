@@ -1,0 +1,28 @@
+# Study 33 — what changed since study 32.
+#
+# Added — the tests that hold `package:args` to what it actually does
+test/arguments_test.dart
+# Changed — the parser arrives, the hand-rolled flag handling goes, `--file`
+# takes the path `bin/` used to hold, and the help text stops being a string
+# that can disagree with the options
+lib/src/command.dart
+bin/expenses.dart
+pubspec.yaml
+test/command_test.dart
+#
+# unshown: test/command_test.dart#setup — unchanged since study 27. What
+#   changed in this file is one test: 33.4 shows it on its own.
+# unshown: test/command_test.dart#refusing — unchanged. The budget refusals
+#   read the same through the new parser, which is 33.3's point in prose
+#   rather than by re-showing fifty lines.
+# unshown: test/command_test.dart#anyway — unchanged, and that is the claim.
+#   Study 32's `--anyway` tests pass against a parser that reads the flag a
+#   completely different way; 33.2 says so and `all.txt` proves it.
+# unshown: test/command_test.dart#budgeting — unchanged since study 32.
+# unshown: test/command_test.dart#reported — unchanged since study 31.
+# unshown: test/command_test.dart#month — unchanged since study 30.
+# unshown: test/command_test.dart#day — unchanged since study 27.
+# unshown: lib/src/command.dart#listing — the two `list` helpers, unchanged
+#   since study 30 and shown there. They are marked as a region only so that
+#   `#run`, which 33.2 does show, does not lean on a name declared outside
+#   every region — check_shown's rule, and the reason it exists.

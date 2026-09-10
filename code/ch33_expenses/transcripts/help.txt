@@ -1,0 +1,18 @@
+$ dart run bin/expenses.dart --help
+usage: expenses [options] <command> [arguments]
+
+commands:
+  add <amount> <category> <note>   record what you spent
+  list [YYYY-MM]                   show what has been recorded, all of it
+                                   or one calendar month of it
+  budget [<category> <amount>]     show this month against its limits,
+                                   or set the limit on a category
+  help                             print this
+
+options:
+-h, --help           print this and stop
+-f, --file=<path>    where the tracker keeps what it is told
+                     (defaults to "expenses.txt")
+
+  add also takes:
+  --anyway    record it even if it breaks a budget

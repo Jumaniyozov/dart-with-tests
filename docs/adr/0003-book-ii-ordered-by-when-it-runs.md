@@ -129,3 +129,26 @@ consistency boundary as mechanism rather than as architecture folklore. Command 
 query separation, units of work and transaction boundaries stay out of Book II: they
 solve concurrency the tracker does not have. If Book III's API needs them, that is where
 the argument gets made, with a real concurrent writer on the page.
+
+**All three debts are paid, and the third one cost more than it looked.** Study 33 took
+`package:args` 2.7.0 and deleted the hand-rolled parser, `_flagged` with it. Study 28's
+`const` path in `bin/` became `--file`. Two of the three arrived exactly as promised.
+
+The one that did not is study 24's word *abbreviations*. Measured on `args` 2.7.0: there are
+single-letter abbreviations, declared with `abbr:`, and there is no unique-prefix
+abbreviation at all — `--fi` for `--file` throws, and so does `--hel` for `--help`. The
+promise was written before anyone had run the package. It is paid in the smaller sense and
+study 33 names the gap rather than letting one word cover both readings.
+
+**Taking the dependency changed the program's behaviour, and that is now part of Book II's
+argument rather than a footnote.** `package:args` reads a leading `-` as an option, so
+`add -5 food coffee` — study 24's example of a *refusal*, exit 1, as against a *misuse*,
+exit 2 — became a misuse. Measured: exactly one test of 165 failed when the dependency went
+in, and it was that one. There is no setting for it. `--` restores the old behaviour at the
+cost of two characters the reader has to know about.
+
+That is worth recording here because it is the first time an outside decision has reached
+into this book's own teaching. Study 24's page is still true of `ch24_expenses`, which has
+its own parser and always will; what changed is the program from study 33 onwards. A
+snapshot layout (ADR 0004) is what makes that statement possible: the earlier study did not
+become wrong, it became earlier.
