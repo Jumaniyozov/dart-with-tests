@@ -55,6 +55,8 @@ cd code && dart run tool/check_shown.dart       # no shown region leans on an un
 cd code && dart run tool/check_promises.dart    # the promise table matches the prose
 cd code && dart run tool/check_transcripts.dart # every green transcript still runs green
 cd code && dart run tool/check_also_met.dart    # every `Also met:` item was actually met
+cd code && dart run tool/check_shipped.dart     # OUTLINE.md's `Shipped:` counts match
+                                                # the packages they describe
 cd web && npx next build
 ```
 
@@ -73,28 +75,40 @@ broken command. Corrected while outlining Book III: 33 packages have a `test/`, 
 hold **1248 tests**, which is the number this file's predecessors quoted without a working
 loop to produce it.
 
-The six `check_*` tools cover different halves and none subsumes another —
+The seven `check_*` tools cover different halves and none subsumes another —
 `OUTLINE.md`'s standing requirements say what each one can and cannot see.
-`check_transcripts` is the slow one: it re-runs a test suite per green transcript and
-per challenge count, so give it a minute or two.
+**`check_transcripts` and `check_shipped` are the slow two**, because both run a suite per
+claim; give them a minute or two each.
+
+**`check_shipped` is the newest, and it exists because `OUTLINE.md` was the one corpus no
+checker read.** Nine `Shipped:` lines, six carrying a wrong number when first swept by
+hand. It counts the files in each study's `transcripts/` and runs that package's own suite,
+against the ruling that a `Shipped:` line describes the package **as it stands** rather
+than the commit that wrote it. Studies 27, 28 and 29 state no count, which it reports
+rather than failing on — a study that states no number cannot have a stale one — while
+finding *no* lines at all fails, because that is the check switching itself off.
+
+**`check_promises` was Book II-only until Book III was outlined.** It hardcoded one heading
+and read one directory, so Book I's table and Book III's were both invisible, as would
+every page either book ever shipped. It now finds tables by their header row and reads
+every page under `web/content/docs/`; study numbers are unique across books, which is what
+makes one page map enough. Finding all three tables immediately surfaced a real promise
+Book I had paid only in prose — `extension-types.mdx` says *"Study 23 will show how to hide
+a constructor"* — now recorded as `19→23` so the tool can see it.
 
 ## Open, on the book
 
-- **`check_promises` is Book II-only, and study 35 must fix it.** It hardcodes the heading
-  `### Promises Book II makes to itself` and reads pages only from
-  `web/content/docs/writing-good-dart/`, so Book III's table and Book III's prose are both
-  invisible to it. Green today only because Book II's pages say "Book III" and the tool
-  matches "study 35". `OUTLINE.md`'s Book III section has the detail.
-- **A seventh checker: `OUTLINE.md`'s `Shipped:` lines.** Nine of them, six carrying a
-  wrong number when first swept, and no checker has ever read this file. All nine are now
-  correct and verified against their packages. Ruled while outlining Book III: a `Shipped:`
-  line describes the package **as it stands**, not the commit that wrote it — so both
-  numbers are countable and the checker is straightforward. Studies 27, 28 and 29 state no
-  `Shipped:` line, which is the empty-corpus case it has to answer for.
 - **Book III's server transcripts need `tool/capture_server.dart`**, and
   `check_transcripts` needs to learn to re-run it. A server does not exit, so Book II's
   convention does not cover it. ADR 0005 carries the constraint that makes it possible:
   the server logs nothing time-varying.
+
+  **Deliberately not written yet, and this is the reason.** It was meant to land with the
+  other two checkers. It cannot: the tool has to start Book III's server, and Book III has
+  no server. Writing it now means inventing an entrypoint, a readiness signal and a request
+  format for a program that does not exist, then rewriting all three when it does — a tool
+  built against a guess, which is the shape this book has been burned by twice already.
+  Build it **with study 35**, when the interface it wraps is a real file.
 
 ## Open, not on the book
 

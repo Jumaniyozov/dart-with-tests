@@ -91,7 +91,11 @@ stop being an `int` by convention and become a type), 10→20 and 15→20 and
 19→20 (bad input answered at run time, all three promises paid by one study),
 9→20 (`tryParse`'s null against an exception that can say why), 20→21 (the
 failure that arrives after the function that caused it has returned), 12→22
-and 21→22 (the same verbs and the same waiting, over many values).
+and 21→22 (the same verbs and the same waiting, over many values), 19→23
+(*"Study 23 will show how to hide a constructor"* — `extension-types.mdx` makes
+that promise in as many words, and the paragraph above records it being paid;
+adding the pair here is what lets `check_promises` see it, which it could not
+while the tool read Book II only).
 
 Paid and verified: 2→6 (enum kills the stringly-typed parameter), 3→7
 (`final` list vs `const` list), 7→12 (the shorter way to sum, needing
@@ -1576,13 +1580,23 @@ Book III's prose be. It reports green today for a reason that will not last: Boo
 pages say *"Book III puts a server behind this same type"*, and the tool's pattern matches
 `study 35`, not `Book III`, so no forward reference to this book has ever been counted.
 
-This is the failure the tool's own comments describe — a check quietly switching itself
-off — arriving by a route those comments did not anticipate. Not fixed here, because a
-checker written against a corpus that does not exist cannot be proved to work; the fix is
-part of study 35, and it is on `HANDOFF.md`'s open list until then. Ask of the
-generalisation what the standing requirement asks of every checker: what does it print
-when Book III's table is empty, and is that different from what it prints when somebody
-has deleted it?
+This was the failure the tool's own comments describe — a check quietly switching itself
+off — arriving by a route those comments did not anticipate.
+
+**Fixed.** `check_promises` now finds tables by their **header row** rather than by a
+heading somebody has to spell exactly, and reads every page under `web/content/docs/`;
+study numbers are unique across books, which is what makes one page map enough. It went
+from one table and 12 pages to **three tables and 34**, and both failure modes were proved
+rather than assumed: delete every header row and it exits 1 saying nothing is being
+checked; add a row naming a promise no page makes and it exits 1 naming the table and the
+row. An empty table still reads differently from a missing one.
+
+Finding all three tables immediately paid for itself. Book I's table was never read either,
+and it held a genuine promise recorded only in prose — `extension-types.mdx` says *"Study
+23 will show how to hide a constructor"*, which study 23 pays. It is now written `19→23`
+where the tool can see it. Two notations had to be understood to do that: Book I writes
+`15→16` and Book II writes `26←24`, and both mean the same thing with the arrow pointing
+from the study that made the promise.
 
 ## Working in a fresh worktree
 
@@ -1960,12 +1974,17 @@ existing transcripts and verified to reproduce.
   never edited; where a `Shipped:` count has moved, this file is recording the one rule the
   layout has actually broken, and that is information rather than noise.
 
-  All nine lines were verified against their packages when this was written. The fix is a
-  seventh checker, not a sweep: every `Shipped:` line names a package and both numbers are
-  countable. Ask it what the standing requirement asks of all of them — what does it print
-  when a study states no count, and is that different from a study whose entry has gone
-  missing? Note that studies 27, 28 and 29 have no `Shipped:` line at all, so the answer
-  is not hypothetical.
+  The fix was a seventh checker rather than a sweep, and it exists:
+  `dart run tool/check_shipped.dart` counts the files in each study's `transcripts/` and
+  runs that package's own suite. It reports **9 lines agreeing and 20 entries stating no
+  count**, because a study that states no number cannot have a stale one — studies 27, 28
+  and 29 among them, so that case was never hypothetical. Finding *no* lines at all fails,
+  which is the difference between an empty corpus and a missing one. Both proved: removing
+  every `Shipped:` line exits 1 saying nothing is being checked, and re-introducing study
+  34's original wrong number reproduces the defect exactly — *claims 7 transcripts,
+  `ch34_expenses` holds 9*.
+
+  It is slow, for the same reason `check_transcripts` is: it runs a suite per claim.
 
 - **An ADR's "therefore" is a separate claim from its premises, and it decays on its own.**
   ADR 0003 said `avoid_slow_async_io` is not in the lint set and argues the opposite for
