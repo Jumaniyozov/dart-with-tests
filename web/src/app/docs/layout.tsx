@@ -8,7 +8,7 @@ export default function Layout({ children }: LayoutProps<'/docs'>) {
   for (const page of source.getPages()) {
     if (page.data.study !== undefined) studies[page.url] = page.data.study;
   }
-  // The total is the studies that exist, not the forty-four that are planned.
+  // The total is the studies that exist, not the forty-five that are planned.
   const total = Object.keys(studies).length;
 
   return (

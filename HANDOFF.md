@@ -10,7 +10,7 @@ Last checked: 2026-09-10.
 
 | Path | What it holds |
 | --- | --- |
-| `PRODUCT.md` | The 44-study, four-book shape; the audience; the voice rules; the six principles |
+| `PRODUCT.md` | The 45-study, four-book shape; the audience; the voice rules; the six principles |
 | `OUTLINE.md` | Book I's written spine, Book II's outline, the transcript convention, and **the standing requirements for every study** |
 | `CONTEXT.md` | The expense tracker's vocabulary. A glossary, nothing else |
 | `docs/adr/` | Why the books are shaped as they are. Read 0002 before writing any class |
@@ -21,7 +21,12 @@ Last checked: 2026-09-10.
 
 Book I (studies 1-22) is written, audited and pushed. **Book II (23-34) is complete** —
 all twelve snapshots exist, and its promise table is empty because every promise the prose
-made has been paid. Books III and IV have no outline; that is the next piece of work.
+made has been paid. **Book III (35-40) is outlined, with provisional titles and no code**;
+ADR 0005 records its order and why it costs a sixth study. Book IV (41-45) has no outline.
+
+The next piece of work is the spike, not study 35: the smallest real `shelf` server in
+front of `ch34_expenses`'s `Store`. `OUTLINE.md`'s Book III section lists what it must
+measure, and it is allowed to rename studies.
 
 Counts are not restated here. `OUTLINE.md` and the git log carry them, and a number
 copied into this file is a number that will be wrong within a week. That is exactly how
@@ -42,7 +47,7 @@ unresolved `package:` imports. It looks like the book is broken. It is not.
 
 ```bash
 cd code && dart analyze && dart format --output=none --set-exit-if-changed .
-cd code && for d in ch*/; do (cd "$d" && dart test test/) || break; done   # every package green
+cd code && for d in ch*/; do [ -d "$d/test" ] || continue; (cd "$d" && dart test test/) || break; done
 cd code && dart run tool/check_slices.dart      # a study changed only what its SLICE says
 cd code && dart run tool/check_regions.dart     # every new or changed region is on a page
                                                 # or exempted, with a reason, in its SLICE
@@ -60,16 +65,82 @@ colours look wrong in dev, `rm -rf .next/cache .source` before believing it.
 package has no `test/`, so it exits with *No test files were passed* — the loop above is what
 runs every study package. It runs `test/` only: `exercises/` is red on purpose in every study.
 
+**The `[ -d "$d/test" ] || continue` guard is load-bearing, and it was missing.** Study 1
+has no `test/` at all — the standing requirements say so, because the reader has not met
+`test()` yet — so the previous version of this loop broke on the first package and ran
+nothing. It printed a failure and stopped, which reads like a broken book rather than a
+broken command. Corrected while outlining Book III: 33 packages have a `test/`, and they
+hold **1248 tests**, which is the number this file's predecessors quoted without a working
+loop to produce it.
+
 The six `check_*` tools cover different halves and none subsumes another —
 `OUTLINE.md`'s standing requirements say what each one can and cannot see.
 `check_transcripts` is the slow one: it re-runs a test suite per green transcript and
 per challenge count, so give it a minute or two.
 
+## Open, on the book
+
+- **`check_promises` is Book II-only, and study 35 must fix it.** It hardcodes the heading
+  `### Promises Book II makes to itself` and reads pages only from
+  `web/content/docs/writing-good-dart/`, so Book III's table and Book III's prose are both
+  invisible to it. Green today only because Book II's pages say "Book III" and the tool
+  matches "study 35". `OUTLINE.md`'s Book III section has the detail.
+- **A seventh checker: `OUTLINE.md`'s `Shipped:` lines.** Nine of them, six carrying a
+  wrong number when first swept, and no checker has ever read this file. All nine are now
+  correct and verified against their packages. Ruled while outlining Book III: a `Shipped:`
+  line describes the package **as it stands**, not the commit that wrote it — so both
+  numbers are countable and the checker is straightforward. Studies 27, 28 and 29 state no
+  `Shipped:` line, which is the empty-corpus case it has to answer for.
+- **Book III's server transcripts need `tool/capture_server.dart`**, and
+  `check_transcripts` needs to learn to re-run it. A server does not exit, so Book II's
+  convention does not cover it. ADR 0005 carries the constraint that makes it possible:
+  the server logs nothing time-varying.
+
 ## Open, not on the book
 
-Reference/cheatsheet section, 404 page, licence, Vercel deployment. Two stale files:
-`.impeccable/design.json` and
-`.impeccable/surfaces/web-src-app-docs-slug-page-tsx.md`.
+Reference/cheatsheet section, 404 page, licence, Vercel deployment.
+
+`.impeccable/` now tracks **only** `config.json` and `design.json`; the nine review PNGs,
+`questions/` and `surfaces/` were untracked and `.gitignore` keeps them out, which settles
+the second of the two stale files this list used to name. `design.json` is the one left,
+and it is still stale — the design hook reports `DESIGN.md` is newer than it, fixed by
+`/impeccable document`.
+
+## The history was rewritten on 2026-09-10
+
+`.impeccable/review/`, `questions/` and `surfaces/` were purged from **all** history with
+`git filter-repo`, not merely untracked. They entered in the repo's second commit, so
+every commit from there on has a new SHA — 61 commits, all of them.
+
+**Any clone or worktree made before that date is incompatible** and must be re-cloned, or
+reset to the new refs. `git pull` will not reconcile them.
+
+Three worktrees went with it — `book-logo-design-aa252d`, `dart-book-handoff-50bb50` and
+`dart-book-outline-next-c23635`, each confirmed merged into `main` before removal.
+
+**Six commit references in this book's prose were remapped**, and the operational fact
+behind that is worth keeping: `git filter-repo` rewrites SHA references inside **commit
+messages** automatically, and does **not** touch **file contents**. So the log healed
+itself and the prose did not. Every one of these had to be found and replaced by hand:
+
+| Cited as | Now | The commit |
+| --- | --- | --- |
+| `efa9fb6` | `97f639e` | Correct three false claims, and a stale consequence |
+| `fbfb51a` | `968ad86` | Give the book a mark, and the metadata that carries it |
+| `ff350b1` | `4528c90` | Audit study 23: two claims with no run behind them |
+| `69727fb` | `25ecdfa` | Audit the Book II code: two silent wrongs |
+| `69c05df` | `f6df067` | Audit the promise ledger |
+| `645eaf7` | `ab840c9` | Audit study 27: a transcript nobody was checking |
+
+The left column is kept here on purpose, and only here: it is what a stale clone will
+show, and this table is the only thing that can translate it. Everywhere else the new SHA
+is the one written. Every citation is also identified by what the commit did, which is why
+none of them was lost — **a SHA is a citation that rots, so never let one be the only
+identification of a commit.**
+
+Sweep for a stale one with: for each 7-hex token in `*.md`, `git merge-base --is-ancestor
+<sha> main`. A token that resolves but is not an ancestor of `main` is reachable only from
+a stale `origin/*` ref and dies at the next prune.
 
 Done since this list was last written: favicon, OG metadata and the book's mark
-(`fbfb51a`), and the GitHub links, which are no longer placeholders.
+(`968ad86`), and the GitHub links, which are no longer placeholders.

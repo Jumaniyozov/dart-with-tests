@@ -1,0 +1,139 @@
+# Book III is ordered by when the reader can call it
+
+ADR 0001 records Book I's order, which the language forced. ADR 0003 records Book II's,
+which nothing forced except **when the reader first has a program they can run** — `dart
+run` works in study 24 and every later study changes a program that already works.
+
+Book III inherits that move and changes one word. Its spine is **when the reader can
+call it**: study 35 answers `curl`, and every later study changes a server that already
+answers.
+
+The word matters because a server fails differently from a CLI. A CLI that is wrong
+prints the wrong thing and exits. A server that is wrong keeps running, holding something
+that stopped being true, answering a stranger who is still waiting. Every study in this
+book is a thing the CLI was right to do and the server is not.
+
+| # | Provisional title | The mechanism to name |
+| --- | --- | --- |
+| 35 | A server that answers | `shelf_io.serve` returns a `dart:io` `HttpServer`; a `Handler` is a function |
+| 36 | A second edge finds what the first one hid | A seam cut for testing turns out to be a layer |
+| 37 | The caller is a stranger | A thrown `Error` is a 500 the client must never read |
+| 38 | The server holds on | Held state has two halves, and the date is the one you forget |
+| 39 | *(blank until the spike reports)* | A schema is a type system somebody else checks |
+| 40 | A second writer | `await` on a completed future resumes on the microtask queue |
+
+**The titles are provisional and the numbering is not.** Book II's two best studies —
+33 and 34 — got their theses from measurement rather than from this file's ancestor:
+study 33's argument appeared when `package:args` silently changed one test of 165, and
+study 34 turned on `public_member_api_docs`, read 22 issues, and declined the lint on the
+page. Study 39 is deliberately left blank here, because naming it would be predicting
+what `sqlite3` does before anyone has run it, and this book's method is to prefer the
+measurement. See *Consequences*, which says the same thing about this record's own claims.
+
+## Book III costs a sixth study, and the sixth was bought rather than found
+
+`PRODUCT.md` said five, 35–39. Outlining found six, so Book IV is now 41–45 and the book
+is 45 studies. That is a real cost, and it was paid deliberately rather than by letting a
+study run long. Every file that stated the old shape: `PRODUCT.md`, `HANDOFF.md`,
+`OUTLINE.md`, `DESIGN.md`, ADR 0004, and `web/src/app/(home)/page.tsx`,
+`web/src/app/layout.tsx` and `web/src/app/docs/layout.tsx` — the last two in comments,
+which is where a stale number survives longest because no reader ever sees it.
+
+Sweep for the next one with `grep -rnE "44|forty-four|35–39|40–44"` over `*.md`, `*.mdx`
+and `*.tsx`, discarding `node_modules/`, lockfile hashes, SVG path data and hex colours,
+all of which match the digits and state nothing.
+
+What forced it was an arithmetic, not a preference. Every study in Book II is **4 or 5
+numbered sections and 1535–2489 words**, twelve of twelve, which makes six studies a
+budget of 24–30 sections. The subjects Book III already owes, before anything optional:
+a server, an application layer, an HTTP surface, a cache, a database, and a concurrent
+writer. Six subjects, and the fifth-study version of this book had two of them sharing.
+
+The sixth study splits what was one: extracting the application layer (36) and putting an
+HTTP surface on it (37) are different arguments, and merging them buried the first.
+
+## Three commitments this book did not choose
+
+Each is a sentence already printed on a published page. They bind Book III, and the
+alternative to honouring them is amending the page that made them, not ignoring it.
+
+- `writing-good-dart/files.mdx:50` — Book III puts **a server behind `Store`**, the same
+  interface study 28 wrote. Study 28's argument for making every member a `Future` was
+  explicitly that *a server that blocks on a disk stops answering everybody*, so this book
+  is the thing that argument was made for. Paid at 35.
+- `writing-good-dart/files.mdx:119` — the server **reads once and holds on**, and needs a
+  reason to believe what it holds is still true. Paid at 38.
+- `writing-good-dart/budgets.mdx:219` — Book III puts **a concurrent writer on the page**,
+  and ADR 0003 adds that CQRS, units of work and transaction boundaries were kept out of
+  Book II *because the tracker has no concurrency*, so this is where that argument gets
+  made. Paid at 40.
+
+## Considered options
+
+**Ordered by what a second caller breaks.** Concurrency as the organising force rather
+than the finale: each study takes something correct for a lone process and breaks it with
+a second caller. Rejected because the reader cannot feel the problem until there is a
+server worth calling twice, and because it front-loads the book's hardest argument.
+
+**Ordered by how far the promise travels** — the widening gap between the code and a
+caller who cannot be trusted. Rejected as a spine and **kept as study 37's thesis**, which
+is where it was always strongest.
+
+**A separate `api` package depending on the domain package.** The literal reading of
+`PRODUCT.md`'s "reusing the CLI's domain package". Rejected because ADR 0004 rules out the
+`pubspec.yaml` edge, and because the alternative is better: one package with two
+entrypoints means `check_slices` *proves* the domain files are untouched, so the reuse
+claim stops being narrative.
+
+**Deleting the CLI at study 35.** Rejected twice over. It opens the book with a deletion,
+and it throws away the demonstration — the same domain answering two edges with not one
+line of it changing. It would also have cost study 38 its second writer, which is the CLI
+writing the same file from another terminal: free, real, and reproducible in a transcript.
+
+## Consequences
+
+**Marked, because ADR 0003 was amended for exactly this.** That record reasoned from *no
+lint supports this argument* to *study 28 will cite nothing*, and study 28 cites
+something. A consequence written before the work is a prediction. The list below is split
+on that line, and the second half is to be checked against the artifact rather than
+against this record's premises.
+
+**Decided.** These are choices, and changing them means amending this file.
+
+- Packages are `ch35_expenses` … `ch40_expenses`, each a copy of the last plus its slice,
+  per ADR 0004. `ch35_expenses` is `ch34_expenses` plus a server. The CLI survives.
+- `.pubignore` and `test/surface_test.dart` carry forward from study 34. A contract nobody
+  checks is one that drifts, and Book III adds a second thing to the surface.
+- `CONTEXT.md` gains exactly one term, **Tracker**, and no others. If Book III needs a
+  second domain word, something has leaked from the edge into the domain, and that is a
+  defect to find rather than a glossary entry to write.
+- `Tracker` is exported from the barrel; the server is not. `Tracker` names no `shelf`
+  type, and study 34's whole lesson is what a dependency's types in a public API cost.
+- **The server logs nothing time-varying** — no timestamps, no elapsed times, no random
+  ports. Not a style rule: a transcript carrying a clock reading cannot be re-run, and
+  `check_transcripts` exists because a transcript nobody re-runs is one any later commit
+  can falsify in silence. Note what that tool covers today: it re-runs `dart test`
+  transcripts and compares the **count** matched by `\+(\d+): All tests passed!`. A server
+  transcript is not a `dart test` transcript, so nothing re-runs it until the tool is
+  taught — which is on `HANDOFF.md`'s open list, and is the reason this constraint has to
+  be a rule rather than a habit.
+- Deliberately not in Book III: isolates and codegen (Book IV), deployment, an ORM, CORS
+  and a browser client, versioned schema migrations, and authenticating a *user* —
+  `CONTEXT.md` says there is no Account, so the shared key in study 37 authenticates a
+  caller and the page says so in those words.
+
+**Predicted.** These are guesses this record is making before the work. Each is to be
+re-read against the finished study and amended here if it was wrong.
+
+- That study 40 will **weigh CQRS and units of work and decline them**, the way study 34
+  declined `public_member_api_docs`. The tracker's API is small and a five-endpoint
+  service rarely needs either. But declining is only honest after measuring, and if the
+  concurrent writer turns out to need a unit of work, this bullet is what was wrong.
+- That the microtask queue draining before the next socket event means a handler awaiting
+  an `InMemoryStore` **cannot** interleave with another request. If that is wrong, study
+  40's argument arrives at study 35 instead and this book is ordered differently.
+- That study 39 is the overloaded one. Build hooks, a schema, `SqliteStore`, moving the
+  reader's data, deleting study 38's cache and growing `Store` is six subjects against a
+  five-section envelope. The spike should settle whether `Store`'s growth belongs in 40.
+- That six studies is enough. Five was not, and the arithmetic that found six is the same
+  arithmetic that would find seven.

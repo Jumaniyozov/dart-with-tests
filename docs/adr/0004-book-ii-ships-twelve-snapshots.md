@@ -126,6 +126,15 @@ and carry the domain forward by copy, not by dependency. "Reusing the CLI's doma
 package", as `PRODUCT.md` puts it, is a narrative claim about the code being the same
 code — not a `pubspec.yaml` edge.
 
+**Amended while outlining Book III: the range is 35–40, and the decision held under a
+test this record did not anticipate.** Book III bought a sixth study (ADR 0005), so the
+numbers above are wrong and the reasoning is not. The test was this: `PRODUCT.md` says
+the API reuses the CLI's domain package, and the obvious reading of that is a second
+package with a `path:` dependency on the first. This record rules that out, and the
+alternative turned out to be strictly better — `ch35_expenses` is `ch34_expenses` plus a
+server, the CLI keeps working, and `check_slices` therefore *proves* every domain file is
+untouched. The narrative claim became a checkable one, which is what this layout is for.
+
 **All twelve exist, and the layout held.** `ch23_expenses` through `ch34_expenses` are
 written, and `check_slices` reports twelve packages agreeing with their manifests. The
 retroactive-fix price this record warned about was paid three times, all of them recorded

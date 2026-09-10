@@ -16,13 +16,13 @@ const books = [
   {
     no: 'III',
     title: 'Build the API',
-    span: 'Studies 35–39',
+    span: 'Studies 35–40',
     line: 'The same domain, served over HTTP.',
   },
   {
     no: 'IV',
     title: 'When you need it',
-    span: 'Studies 40–44',
+    span: 'Studies 41–45',
     line: 'Isolates, code generation, FFI, performance.',
   },
 ];

@@ -311,7 +311,7 @@ worked — in four parts:
 
 - **Progress** (banner, above everything): the word "Worked", the count in tabular mono,
   and a 2px track whose fill is `brass-bright`. The count is the signal; the rule only
-  makes it easier to feel. The total counts studies that **exist**, never the 44 planned.
+  makes it easier to feel. The total counts studies that **exist**, never the 45 planned.
 - **Front matter**: no numeral column, `rail-mute`, followed by a hairline. A page that is
   not a chapter stops occupying a chapter's grid.
 - **Book**: a full-width trigger — roman numeral in mono, name in Manrope 600, worked

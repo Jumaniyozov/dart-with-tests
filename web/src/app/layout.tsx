@@ -6,7 +6,7 @@ import { appDescription, appName, siteUrl } from '@/lib/shared';
 
 /* Four faces, and each earns its place. Stonelight runs a serif display over a
    Manrope UI; a book adds one thing the app never needed — a text face that
-   survives forty-four chapters — so Literata carries the prose. */
+   survives forty-five chapters — so Literata carries the prose. */
 
 const fraunces = Fraunces({
   subsets: ['latin'],

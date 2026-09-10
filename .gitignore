@@ -22,3 +22,8 @@ code/ch*/expenses.txt
 
 # tooling
 .playwright-mcp/
+
+# impeccable: keep config.json and design.json only.
+.impeccable/*
+!.impeccable/config.json
+!.impeccable/design.json

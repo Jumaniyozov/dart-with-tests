@@ -3,6 +3,16 @@
   "detector": {
     "ignoreRules": [],
     "ignoreFiles": [],
-    "ignoreValues": []
+    "ignoreValues": [
+      {
+        "rule": "layout-transition",
+        "value": "*",
+        "files": [
+          "web/src/app/global.css"
+        ],
+        "createdAt": "2026-09-10T12:22:22.850Z",
+        "reason": "user confirmed: DESIGN.md:312-314 specifies the .sl-progress-fill as a 2px brass-bright pill (border-radius 999px) that transitions on navigation, not continuously; transform:scaleX would squash its caps. Narrowest scope the tool offers is per-file."
+      }
+    ]
   }
 }

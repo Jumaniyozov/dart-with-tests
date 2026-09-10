@@ -61,10 +61,12 @@ defect of the same class as an untested code sample.
 - Dart 3.13.2 is the target; the book must cover language features through 3.13
   (digit separators, wildcard variables, null-aware elements, dot shorthands, private named
   parameters, primary constructors).
-- 44 chapters in four phases: Foundations (1–22, whole language, tests from ch2), Writing
+- 45 chapters in four phases: Foundations (1–22, whole language, tests from ch2), Writing
   good Dart (23–34, an expense-tracker CLI grown one slice per chapter), Build the API
-  (35–39, `dart:io` → `shelf` with `sqlite3`, reusing the CLI's domain package), and
-  When you need it (40–44, reference depth: isolates, codegen, FFI, performance).
+  (35–40, `dart:io` → `shelf` with `sqlite3`, reusing the CLI's domain package), and
+  When you need it (41–45, reference depth: isolates, codegen, FFI, performance).
+  Build the API was five chapters until Book III was outlined; the sixth was bought,
+  on the record, in `docs/adr/0005`.
 - Testing uses `package:test` and `package:matcher`. `package:checks` is experimental and
   is mentioned once, never taught.
 - No in-browser code execution. An earlier version embedded a DartPad editor; it was
@@ -117,7 +119,7 @@ defect of the same class as an untested code sample.
 
 ## Accessibility & Inclusion
 
-- Sustained long-form reading is a product requirement, not a preference: 44 chapters read
+- Sustained long-form reading is a product requirement, not a preference: 45 chapters read
   end to end.
 - English as a second language is the assumed reading condition.
 - The red–green–refactor cycle is the book's core signal. Colour may never be its only

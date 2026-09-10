@@ -1,8 +1,8 @@
 # Outline
 
 Book I: Foundations (studies 1–22) — written. Book II: Writing good Dart
-(studies 23–34) — written through study 29, outlined to 34. Book III (35–39) and
-Book IV (40–44) have no outline.
+(studies 23–34) — written. Book III: Build the API (35–40) — outlined below, with
+provisional titles. Book IV (41–45) has no outline.
 
 Entries marked **WRITTEN** are no longer plans. They are the record of what
 construction measured, including the places where it contradicted the plan, and
@@ -108,7 +108,8 @@ the loops deleted), 12→13 and 12→14, 13→14, 3→15 (`const` constructors),
 as the record of what was intended, and each study's own commit message
 records what construction actually measured.
 
-**Book II is outlined below**, and studies 23–29 are written. It opens at study 23
+**Book II is written.** All twelve studies, 23–34, are committed, and its promise table
+is empty because every promise its prose made has been paid. It opens at study 23
 with libraries, imports and `_` privacy, which pays the only debt Book I leaves
 unpaid. `part` / `export` was folded into that study as a Gloss rather than taught.
 
@@ -320,7 +321,7 @@ as the default. This one does not have to.
 - **Operator overloading.** ~~Book IV.~~ **Book II, study 31** — study 25 overrides
   `operator ==`, so the book teaches operator overloading whether it admits to it or
   not. Study 31 owns it, where totalling makes `Money + Money` the obvious want.
-- **Isolates, FFI, codegen, performance.** Book IV (40–44), per PRODUCT.md.
+- **Isolates, FFI, codegen, performance.** Book IV (41–45), per PRODUCT.md.
 - **Enhanced enums.** Folded into 16, once classes exist.
 - **`package:checks`.** Mentioned once, never taught, per PRODUCT.md.
 
@@ -423,7 +424,7 @@ before it is written as prose.
 
 ### 23 — Libraries, imports and privacy · `libraries` · `ch23_expenses` — **WRITTEN**
 
-Shipped: 7 green, 3 challenges at 5 failing, 8 transcripts. Two things the writing found
+Shipped: 7 green, 3 challenges at 5 failing, 10 transcripts. Two things the writing found
 that this entry did not predict. The barrel would not analyze clean — a `///` above an
 `export` trips `dangling_library_doc_comments`, so `library;` is in the study. And
 `crowded.dart` and `pence.dart` are **demonstration files, not tracker code**: study 24's
@@ -468,7 +469,7 @@ Book IV's codegen study is where it earns a place. Nothing in this book needs it
 
 ### 24 — A program that runs · `a-program-that-runs` · `ch24_expenses` — **WRITTEN**
 
-Shipped: 12 green, 3 challenges at 7 failing, 7 transcripts. The first snapshot with a
+Shipped: 14 green, 3 challenges at 7 failing, 7 transcripts. The first snapshot with a
 predecessor, so the first real exercise of `check_slices` — it passed, and both negative
 controls fired: an undeclared edit to a carried-forward `money.dart`, and an undeclared
 deletion. The `<Practice>` carries no attribution: two dart.dev pages were opened looking
@@ -512,7 +513,7 @@ you ship. Named now, met in study 34. **Measured there:** 5.7 MB binary, ~0.53s 
 
 ### 25 — Values and entities · `values-and-entities` · `ch25_expenses` — **WRITTEN**
 
-Shipped: 27 green, 3 challenges at 8 failing, 8 transcripts. The outline's planned
+Shipped: 33 green, 3 challenges at 8 failing, 7 transcripts. The outline's planned
 `<Practice>` was wrong — study 15 already cites *DO override `hashCode` if you override
 `==`*, so this study cites *AVOID defining custom equality for mutable classes* instead,
 which is the value/entity lesson rather than a repeat. A book-wide duplicate-citation
@@ -549,7 +550,7 @@ them rather than restating them.
 
 ### 26 — Errors: thrown or returned · `errors-by-design` · `ch26_expenses` — **WRITTEN**
 
-Shipped: 34 green, 3 challenges at 6 failing, 8 transcripts. Two things measured that the
+Shipped: 36 green, 3 challenges at 6 failing, 7 transcripts. Two things measured that the
 entry did not predict. A `sealed` base needs its own `const` constructor
 (`sealed class const Reading();`) or every `const` subclass fails — found on the first
 attempt. And study 10's Gloss is weaker than it sounds: **`dart run` does not enable
@@ -653,7 +654,7 @@ Also fixed: the barrel doc comment said **"Five exports now"** over six exports 
 Found by the audit pass after it shipped, and all of it prose or tooling rather than
 design:
 
-- **Two of Book I's transcripts had been false since `efa9fb6`**, and this study's own
+- **Two of Book I's transcripts had been false since `97f639e`**, and this study's own
   `Money` fix falsified three more. `tool/check_transcripts.dart` now re-runs every green
   `dart test` transcript and every "Three challenges, N failing tests" sentence. It is
   proved against injected drift in both directions.
@@ -848,7 +849,7 @@ where the answer lives.
 
 ### 31 — Reports · `reports` · `ch31_expenses` — **WRITTEN**
 
-Shipped: 116 green, 3 challenges at 12 failing, 5 transcripts. `Report` arrives and `totals`
+Shipped: 116 green, 3 challenges at 12 failing, 6 transcripts. `Report` arrives and `totals`
 stops being an extension, which pays study 27 in full: deleting it named **8 call sites and no
 implementations**, and that analyzer run is on the page.
 
@@ -927,7 +928,7 @@ can see all of it.* It was stated in bold on the page and broken four inches bel
 own code.
 ### 33 — Taking a dependency · `taking-a-dependency` · `ch33_expenses` — **WRITTEN**
 
-Shipped: 165 green, 3 challenges at 9 failing, 7 transcripts. `package:args` **2.7.0**
+Shipped: 165 green, 3 challenges at 9 failing, 9 transcripts. `package:args` **2.7.0**
 replaces the parser three studies apologised for, and all three of study 33's debts are
 paid in one slice: `--file` (28), `--help` and `--flag=value` and single-letter
 abbreviations (24), and the deletion of `_flagged` (32).
@@ -1000,7 +1001,7 @@ page is either a filename, CLI syntax, or an `args` API the study deliberately d
 
 ### 34 — Being a dependency · `being-a-dependency` · `ch34_expenses` — **WRITTEN**
 
-Shipped: 168 green, 3 challenges at 10 failing, 7 transcripts. Closes Book II. Study 23's
+Shipped: 168 green, 3 challenges at 10 failing, 9 transcripts. Closes Book II. Study 23's
 `lib/src/` stops being a privacy mechanism and becomes a contract: `dart doc` documents
 **one public library** and **nineteen types**, which is exactly what the barrel exports.
 
@@ -1120,6 +1121,324 @@ outline meant study 25 to promise study 31 that `Category`'s equality is what ma
 grouping work, and the written study never names study 31. **34←23** and **34←24** —
 neither study's prose mentions study 34 at all. A table that records promises nobody made
 cannot cost a reorder, which is the only reason it exists.
+
+## Book III: Build the API (studies 35–40)
+
+The same expense tracker, given a second edge, shipped as six snapshot packages —
+`code/ch35_expenses/` through `code/ch40_expenses/`. ADR 0005 records the order and what
+the sixth study cost. ADR 0004 records the snapshot layout, which this book inherits
+unchanged.
+
+Prose lives in `web/content/docs/build-the-api/`. Add the book to
+`web/content/docs/meta.json` and each slug to that directory's `meta.json`, or the study
+does not appear in the rail and nothing warns you.
+
+Book III's spine is **when the reader can call it**. Study 35 answers `curl`, and every
+later study changes a server that already answers. The structural difference from Book II
+is what failure looks like: a CLI that is wrong prints the wrong thing and exits, and a
+server that is wrong keeps running, holding something that stopped being true, answering
+a stranger who is still waiting.
+
+**`ch35_expenses` is `ch34_expenses` plus a server, and the CLI survives.** That is what
+turns `PRODUCT.md`'s "reusing the CLI's domain package" from a narrative claim into a
+checked one: `check_slices` asserts every domain file is byte-identical, and
+`diff ch34_expenses ch35_expenses` is the server and nothing else. It also hands study 38
+a free second writer — the CLI, run from another terminal, writing the same file the
+server is holding in memory.
+
+### What a snapshot carries, and what it must not
+
+The handoff asked what a `SLICE` means when the package is a server rather than a CLI.
+**It means exactly what it meant** — the files this study adds or changes, with everything
+unnamed proved byte-identical to the previous study's copy. Nothing about that definition
+mentions what the program does, and Book III is the test of that.
+
+Verified rather than assumed: `check_slices` and `check_regions` both select packages with
+`^ch(\d\d)_expenses$` and sort lexically, so `ch35_expenses` chains onto `ch34_expenses`
+with **no change to either tool**. That is the mechanical case for continuing the
+numbering, and it is why the name stays `_expenses` even though the program grows a
+second edge — the program is still the expense tracker.
+
+Three things Book III must get right that Book II learned the hard way:
+
+- **Delete `transcripts/` after copying.** `ch35_expenses` starts as a copy of
+  `ch34_expenses`, which holds seven of study 34's transcripts. `check_slices` skips
+  `transcripts/` on purpose, so an inherited transcript is invisible to every checker.
+  Study 33 shipped three of study 32's this way. Compare `ls chNN/transcripts` against the
+  previous study's before committing.
+- **`web/content/docs/build-the-api/meta.json` needs a `title` key**, not just a page list:
+  `"title": "Book III: Build the API"`, matching how `writing-good-dart/meta.json` names
+  Book II. The book must also be added to `web/content/docs/meta.json`'s `pages` array.
+- **The spike is not a snapshot.** It must not be called `chNN_expenses` or the two tools
+  above will pick it up and demand a `SLICE`. It lives outside `code/`, is never committed,
+  and its only output is rows in the tables below.
+
+### Titles are provisional; the numbering is not
+
+Book II's two best studies got their theses from measurement rather than from this file.
+Study 33's argument appeared when `package:args` silently changed one test of 165, and
+study 34 turned on `public_member_api_docs`, read the 22 issues, found ten unfixable
+under ADR 0002, and declined the lint on the page. Neither was in the outline.
+
+So the entries below name what each study is *for* and leave the thesis to construction.
+Study 39 has no title at all, because naming it would be predicting what `sqlite3` does
+before anyone has run it.
+
+### Facts measured while outlining, so no study need guess them
+
+Run on Dart 3.13.2 stable (macos_arm64), in a throwaway package outside the workspace.
+
+| Measured | Result |
+| --- | --- |
+| `dart pub add shelf shelf_router sqlite3` | `shelf` **1.4.2**, `shelf_router` **1.1.4**, `sqlite3` **3.5.2** |
+| `sqlite3` 3.5.2 on **stable** 3.13.2 | Runs. **No `--enable-experiment` flag.** |
+| What `sqlite3` 3.5.2 pulls in | `native_toolchain_c`, and it **compiles SQLite from source** via Dart build hooks |
+| The SQLite it binds | **Bundled 3.53.4**, not the host's — so it is the same on every reader's machine |
+| `sqlite3` as a **pub workspace** member | Works. `dart pub get` at the root and `dart test` in the member both succeed, so study 39 is possible in this repo's layout |
+| `Running build hooks...` | Printed **twice, on stdout, on every run** — warm and cold alike, byte-identical across consecutive runs |
+| Where that lands in `dart test` output | Prefixed to the **first progress line**, with no newline after it. The **last** line is clean: `00:00 +1: All tests passed!` |
+| What that costs the transcript convention | **Nothing for a passing run** — Book II already cuts those to the final status line, which is clean. `check_transcripts` reads only `\+(\d+): All tests passed!`, a count. A **failing** transcript keeps the narrative from the top, so studies 39–40's failing transcripts carry the prefix and must keep it verbatim rather than tidy it away |
+| `sqlite3.openInMemory()` + `CREATE`/`INSERT`/`select` | Works; `select` yields `[{pence: 450}]` |
+| `implements Store` in `ch34_expenses` | **Four**: `InMemoryStore`, `FileStore`, and two doubles in `test/store_test.dart` |
+| Book II's study size, all twelve | **4 or 5 numbered sections**, **1535–2489 words**. No exceptions |
+| The CLI's entire surface | `add <amount> <category> <note>` `[--anyway]`, `list [YYYY-MM]`, `budget [<category> <amount>]`, `help`; codes `okay 0` / `refused 1` / `misuse 2` |
+| `_add`, `_setLimit`, `_list`, `_record` | **Already take `Store` and `Day` as parameters.** Study 27 cut those seams for testability, and they are the application layer |
+| `Outcome` | `({int code, String out, String err})` — a shell's exit code and human text. The one thing an API cannot reuse |
+
+### Read in the docs, not yet run — measure before writing as prose
+
+Every row here came from `package:shelf`'s own documentation via Context7. The standing
+requirement is that a factual claim in prose is an assertion in a test or a transcript, so
+each of these is a claim to be executed, not quoted.
+
+| Documented | To verify |
+| --- | --- |
+| `shelf_io.serve` returns `Future<HttpServer>` | That the `dart:io` type is really what comes back — it is study 35's whole argument that `shelf` is not a replacement for `dart:io` |
+| `Handler` is `FutureOr<Response> Function(Request)` | That a handler is callable in a test with a constructed `Request` and no socket |
+| `serve` adds `Date` and `X-Powered-By` | Both, and that `poweredByHeader: null` omits the second. This is study 35's measured difference between the hand-rolled server and `shelf` |
+
+### Facts the spike must measure before any title is fixed
+
+The spike is the smallest real `shelf` server standing in front of `ch34_expenses`'s
+`Store`. It runs **before** study 35 is written, and it is allowed to rename studies.
+
+1. **Whether a handler awaiting an `InMemoryStore` can interleave with another request.**
+   An `await` on an already-completed future resumes on the microtask queue, and that
+   queue drains before the event loop takes the next socket event — so the prediction is
+   *no*, and interleaving needs a real suspension. If that is wrong, study 40's argument
+   belongs at study 35 and this book is ordered differently. This is the single
+   load-bearing measurement in Book III.
+2. Whether two concurrent requests genuinely lose the budget update, and at what
+   concurrency it first happens.
+3. What the hand-rolled `dart:io` server costs in lines against the `shelf` one, and what
+   `shelf` adds that it did not have.
+4. `sqlite3`'s transaction API — whether a `BEGIN`/`COMMIT` pair is `db.execute`, and what
+   it does on a failure.
+5. What a machine with no C toolchain reports, and how early. Book III has to print this
+   as a prerequisite rather than let a reader discover it at study 39.
+6. Whether a counting double can prove study 37's bound is cosmetic — identical work for
+   `limit=1` and `limit=1000`.
+7. Six `<Practice>` citations with no reused `href`. Grep every `.mdx` first; the outline
+   has named a guideline an earlier study already used twice now.
+
+### 35 — A server that answers · `a-server-that-answers` · `ch35_expenses`
+
+Stand up `HttpServer` from `dart:io` by hand, feel what it costs, then take `shelf` in the
+same study. One study and not two, because `shelf_io.serve` **returns** an `HttpServer`:
+`shelf` is `dart:io` plus a function type, not a replacement for it, and that is one
+lesson rather than two.
+
+The seam is free. `Handler` is `FutureOr<Response> Function(Request)`, so study 27's
+argument — a seam is a parameter, and only one of them wants an interface — applies with
+nothing to build. A test constructs a `Request` and calls the handler. No socket, no port,
+no `setUp` that binds anything.
+
+Pays `files.mdx:50`, which promised a server behind `Store`, and settles study 28's bet:
+`Store`'s members were made `Future` on the argument that *a server that blocks on a disk
+stops answering everybody*, and this is the study that could not have been written if they
+had not been.
+
+The server answers at one path with no routing at all. That is deliberate — study 36 is
+what lets it answer about expenses, and 37 is what gives it a surface.
+
+### 36 — A second edge finds what the first one hid · `a-second-edge` · `ch36_expenses`
+
+The server cannot reach `_add`. It is private to `command.dart`, and so are `_setLimit`,
+`_list` and `_record` — every use case the tracker has. The CLI never needed them public
+because it was the only edge.
+
+`Outcome` is the other half. It is `({int code, String out, String err})`: a shell's exit
+code and text written for a person. An API needs a status and a document. The record that
+made the CLI testable is precisely the thing the second edge cannot reuse, and saying that
+plainly is the study.
+
+Extract `Tracker`, holding the `Store`, with the use cases as methods. **The signatures
+barely move** — `_add` already takes a `Store` and a `Day`, because study 27 cut those
+seams to avoid mocks. Four studies later a second edge arrives and the seams turn out to
+have been the application layer. That is the payoff, and the diff being small is the
+evidence.
+
+`CONTEXT.md` gains **Tracker** and nothing else. Avoid: Service, Manager, Facade,
+Controller, UseCase, Interactor.
+
+**ADR 0002 settles the constructor form, and it is the header one.** That ADR's rule is
+*when a type must check something, the check goes on a constructor with a body to put it
+in* — and `Tracker` checks nothing. A `Store` and a `Day` are already-valid values by the
+time they reach it, so `class Tracker(final Store store, final Day today)` is correct, and
+the measured-facts table already records that a primary constructor on a mutable class is
+legal. Study 38 replaces `today` with a `Day Function()`; a function in a header parameter
+changes none of this. Do not re-open this at construction time — the choice is the
+analyzer's, not a matter of taste.
+
+`Tracker` is exported from the barrel; the server is not. `Tracker` names no `shelf` type,
+and study 34 measured what a dependency's types in a public API cost. `surface_test.dart`
+is what catches it if that slips.
+
+**Ships a bug on purpose.** `Tracker` holds `today`, which is correct for a process that
+lives for milliseconds and wrong for one that runs for days. Study 38 breaks it.
+
+The CLI passes untouched, and that is an assertion, not a claim.
+
+### 37 — The caller is a stranger · `the-caller-is-a-stranger` · `ch37_expenses`
+
+`shelf_router`, and the HTTP surface. The CLI's caller was the person at the keyboard;
+the server's caller sends anything.
+
+Study 26's taxonomy becomes status codes, which is the best forward payment in the book: a
+*returned* refusal is the client's fault and is a 4xx, and a *thrown* `Error` is the
+program's fault and is a 500 the client must never read the text of. Middleware is where
+that mapping lives, which is also how `Pipeline` gets taught rather than merely used.
+
+The shared key. It authenticates a **caller, not a user** — `CONTEXT.md` says there is no
+Account, one person and one file — and the page says so in those words rather than
+letting "authentication" cover both readings.
+
+**A bound on `list` that is a lie.** Slicing after `all` returns means `FileStore` read the
+whole file and threw most of it away, and a counting double asserts the store did identical
+work for `limit=1` and `limit=1000`. Principle 3: the reader meets the bad choice and sees
+it fail. Study 39 is where a bound can be kept.
+
+### 38 — The server holds on · `holding-on` · `ch38_expenses`
+
+`FileStore.all` opens the file every time it is asked, and study 28's own Gloss already
+admitted this would not do for a server. Hold the expenses instead, and measure the
+difference.
+
+Then falsify it, and the falsifier is free: `dart run bin/expenses.dart add 4.50 coffee`
+in another terminal, against the same file. Not concurrency — a second **process** — and
+the held copy is simply wrong. That is `files.mdx:119` paid in the words it was promised
+in: it needs a reason to believe what it holds is still true.
+
+**The second thing it is holding is a date.** `Tracker`'s `today` was captured at startup,
+so a server started yesterday files today's expenses under yesterday. One transcript. The
+fix is a clock, and study 28's *a signature is a promise about time* is the argument,
+arriving where something depends on it.
+
+Two kinds of stale state, one mechanism: a value read once is a bet that nothing else can
+change it.
+
+### 39 — *(no title until the spike reports)* · `ch39_expenses`
+
+`sqlite3` 3.5.2. What it is for: durability, a schema, and a store that can keep a bound.
+
+The parts that are already known: build hooks compile SQLite from source and bundle
+**3.53.4**, so it is the same everywhere and the reader needs a C toolchain — Book III
+prints that rather than letting study 39 discover it. `SqliteStore implements Store`. The
+reader's existing `.jsonl` moves into a table, once; a schema that evolves twice is not in
+this book. Study 38's cache is **deleted**, and why is the lesson — it existed because
+reading a file meant reading all of it, and a database reads what you ask for. A cache you
+can delete is the best ending a caching study can have.
+
+And the bound becomes real. `Store` grows a bounded read, five implementations pay study
+32's bill in public, and study 37's counting double now measures a difference.
+
+**This entry is over budget on purpose.** Six subjects against a five-section envelope.
+The spike decides what moves — `Store`'s growth into study 40 is the likeliest candidate,
+since 40 is already arguing about what shape reads want.
+
+### 40 — A second writer · `a-second-writer` · `ch40_expenses`
+
+Name the machinery first, because everything else follows from it: an `await` on an
+already-completed future resumes on the **microtask** queue, and that queue drains
+completely before the event loop dequeues the next socket event. Concurrency in a
+single-isolate server is not "two callers"; it is a real suspension in the middle of a
+request. Parallelism is a different thing and is Book IV's — that is a promise this study
+makes and the promise table will hold it to.
+
+Then break something with it. Two requests both read the budget, both find room, both
+record, and the limit is breached — study 32's aggregate, which is the only invariant in
+the tracker spanning more than one object, losing an update. A transaction is the fix, and
+`Tracker` is where a transaction boundary can be spoken about at all, which is what study
+36 was for.
+
+**Then weigh CQRS and units of work, and expect to decline them**, the way study 34
+declined `public_member_api_docs` after measuring it. ADR 0003 kept them out of Book II
+because the tracker had no concurrency and promised the argument here, with a real
+concurrent writer on the page. The argument is the study; the adoption is not the point.
+If measurement says the tracker needs a unit of work, ADR 0005's *Predicted* list is what
+was wrong, and it gets amended.
+
+Closes Book III by returning to study 28: every member of `Store` is a `Future` because a
+promise you can only keep in a CLI is a promise you should not have made in a CLI.
+
+### Deliberately not in Book III
+
+- **Isolates and real parallelism.** Book IV (41–45), per `PRODUCT.md`. Study 40 names the
+  distinction and promises it, so this is a debt the promise table tracks.
+- **Codegen** — `json_serializable`, OpenAPI generation. Book IV. The domain already has
+  hand-written `toJson`/`fromJson` from study 29 and they are the better teaching artifact.
+- **An ORM** (`drift`). Codegen, and it hides the schema study 39 exists to show.
+- **Versioned schema migrations.** The one-time move of the reader's data is in; a schema
+  that changes twice is a topic and nothing in these six studies changes it twice.
+- **Deployment**, Docker, a hosting provider. Not Dart.
+- **CORS and a browser client.** `PRODUCT.md` rules out in-browser execution.
+- **WebSockets and server-sent events.** The tracker has nothing to push.
+- **Authenticating a user.** `CONTEXT.md`'s *Deliberately absent* says there is no Account
+  — one person, one file — so a user to authenticate does not exist. Study 37's shared key
+  authenticates a caller and says so.
+
+### Book III's inherited promises
+
+Three sentences already printed on published pages bound this outline before it was
+written. A fresh reader of `OUTLINE.md` alone would not find them.
+
+| Printed at | The promise | Paid by |
+| --- | --- | --- |
+| `PRODUCT.md:66` | `dart:io` → `shelf` with `sqlite3`, reusing the CLI's domain package | 35, 39 |
+| ADR 0004, *"inherits this decision"* | Packages carry the domain forward **by copy**, not by a `pubspec.yaml` dependency | 35 onward |
+| `writing-good-dart/files.mdx:50` | Book III puts a server behind this same `Store` | 35 |
+| `writing-good-dart/files.mdx:119` | The server reads once and holds on, and needs a reason to believe what it holds is still true | 38 |
+| `writing-good-dart/budgets.mdx:219` | Book III puts a concurrent writer on the page | 40 |
+| ADR 0003, *"Study 32 is where a real aggregate arrives"* | If Book III's API needs CQRS, units of work or transaction boundaries, that is where the argument gets made | 40 |
+| `OUTLINE.md` (study 34) | `test/surface_test.dart` carries into Book III | 35 onward |
+| ADR 0004, *"One consequence this record did not anticipate"* | A book whose packages are read as packages carries a `.pubignore` | 35 onward |
+
+### Promises Book III makes to itself
+
+Filled in from the written prose, never from this outline — the table exists to be
+checked by `check_promises`, and Book II's had three rows that were fiction.
+
+| Owed by | Made in | The reader is promised |
+| --- | --- | --- |
+
+**Empty, because nothing is written yet.** `check_promises` distinguishes an empty table
+from a missing one and fails on the second.
+
+**But nothing checks this table, and that must be fixed before study 35 ships.**
+Measured while writing this section: `tool/check_promises.dart` hardcodes the heading
+`### Promises Book II makes to itself` and reads pages only from
+`web/content/docs/writing-good-dart/`. So the table above is invisible to it, and so will
+Book III's prose be. It reports green today for a reason that will not last: Book II's
+pages say *"Book III puts a server behind this same type"*, and the tool's pattern matches
+`study 35`, not `Book III`, so no forward reference to this book has ever been counted.
+
+This is the failure the tool's own comments describe — a check quietly switching itself
+off — arriving by a route those comments did not anticipate. Not fixed here, because a
+checker written against a corpus that does not exist cannot be proved to work; the fix is
+part of study 35, and it is on `HANDOFF.md`'s open list until then. Ask of the
+generalisation what the standing requirement asks of every checker: what does it print
+when Book III's table is empty, and is that different from what it prints when somebody
+has deleted it?
 
 ## Working in a fresh worktree
 
@@ -1333,7 +1652,7 @@ existing transcripts and verified to reproduce.
 - **A transcript is captured once and can be falsified by any later commit, and
   nothing was watching.** `check_slices` skips `transcripts/` on purpose, because a
   transcript legitimately differs whenever the suite grows; `check_regions` and
-  `check_promises` never look at one. So the audit at `efa9fb6` — the pass that added
+  `check_promises` never look at one. So the audit at `97f639e` — the pass that added
   tests to `ch07_basket` and `ch08_tally` so two unasserted claims would be executed —
   left both packages' `all.txt` saying `+12` over a suite of 13, on published pages,
   for every commit since. Its own message records "90 tests pass": it counted the
@@ -1418,6 +1737,61 @@ existing transcripts and verified to reproduce.
   *did not have to be rewritten* to go async, which is praise. Sweep by grepping the pages
   for the thing being counted, not by remembering it — an apology and a mention read the
   same from memory and do not read the same on the page.
+- **A line number into a record that gets amended is a citation that rots, and an ADR is
+  designed to be amended.** Found while outlining Book III, and self-inflicted: the Book III
+  section cited `docs/adr/0004:134-140` for the `.pubignore` commitment, then an amendment
+  to that same ADR — nine lines, added in the same session — pushed the paragraph to 146 and
+  left the citation pointing at the amendment itself. `0004:124-127` survived only because
+  the insert happened to land below it, which is luck rather than method. Cite an ADR by a
+  distinctive phrase from the paragraph instead, and check the phrase matches exactly once:
+  the first attempt here quoted *"Book III inherits this decision"* and matched nothing,
+  because the real sentence reads *"Book III (studies 35–39) inherits this decision"* — a
+  range the amendment deliberately left stale. Line numbers into `.mdx` pages are a smaller
+  risk and are kept, because a published page is frozen in a way a record is not.
+
+- **`OUTLINE.md`'s own `Shipped:` lines are claims, and no checker has ever read them.**
+  The count requirements above sweep `code/` with a grep and the pages with another; this
+  file is the corpus neither of them looks at, and it is the one every session reads first.
+  Swept for the first time while outlining Book III: nine `Shipped:` lines, and **six
+  carried a wrong number**. Git separates two different faults, and the distinction is the
+  useful part:
+
+  Five were **wrong on the day they were written** — studies 25 and 26 claimed eight
+  transcripts over seven, 31 claimed five over six, and 33 and 34 each claimed seven over
+  nine. Every transcript in those packages was added in the single commit that wrote the
+  study, so nothing was added afterwards; the number was written from an impression of the
+  work while doing it. Corrected.
+
+  Four **drifted after publication**, which is the opposite fault and has a cause worth
+  stating exactly: **every one of them drifted because the book audited itself.** Study
+  23's transcripts went from eight to ten when `4528c90` — *two claims with no run behind
+  them* — added `generative.txt` and `offer.txt`. Studies 24, 25 and 26 gained tests from
+  `25ecdfa`, `f6df067` and `ab840c9`, three audit passes whose whole purpose was to make
+  unasserted claims executable. Not one of these was a mistake being repaired; each made
+  the book more true and falsified a `Shipped:` line as a side effect. Also corrected.
+
+  These are **not** the three retroactive fixes ADR 0004 records — those are a false doc
+  comment spanning three snapshots, a machine-dependent test spanning one, and an inverted
+  sentence in `Report.of` spanning two, all from the studies 30-32 era. An earlier draft of
+  this requirement asserted that linkage from plausibility rather than from the log, which
+  is the same fault it was written to describe.
+
+  **A `Shipped:` line describes the package as it stands, not the commit that wrote it.**
+  That is the ruling, and it is the reading that makes the line checkable: count the files
+  in `transcripts/`, run `dart test test/`, compare. The historical reading would have been
+  defensible — these entries are called the record of what construction measured — but it
+  makes a stale number and a correct one indistinguishable without running `git`, and the
+  drift is worth seeing rather than excusing. A snapshot is supposed to be written once and
+  never edited; where a `Shipped:` count has moved, this file is recording the one rule the
+  layout has actually broken, and that is information rather than noise.
+
+  All nine lines were verified against their packages when this was written. The fix is a
+  seventh checker, not a sweep: every `Shipped:` line names a package and both numbers are
+  countable. Ask it what the standing requirement asks of all of them — what does it print
+  when a study states no count, and is that different from a study whose entry has gone
+  missing? Note that studies 27, 28 and 29 have no `Shipped:` line at all, so the answer
+  is not hypothetical.
+
 - **An ADR's "therefore" is a separate claim from its premises, and it decays on its own.**
   ADR 0003 said `avoid_slow_async_io` is not in the lint set and argues the opposite for
   `exists` — both still true, re-measured — and concluded that study 28's `<Practice>`
