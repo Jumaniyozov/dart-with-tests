@@ -1,0 +1,7 @@
+$ dart compile exe bin/expenses.dart -o expenses
+                    # its one line names an absolute path, so it is cut
+$ ls -lh expenses | awk '{print $5}'
+5.7M
+
+$ ./expenses --file spending.txt add 4.20 food flat white
+2026-09-10  £4.20  food  flat white

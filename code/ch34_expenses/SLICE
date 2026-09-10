@@ -1,0 +1,29 @@
+# Study 34 — what changed since study 33.
+#
+# Added — the four files pub asks for before it will publish anything, the one
+# that says what not to publish, and a test that holds the public surface to a
+# list somebody wrote on purpose
+LICENSE
+README.md
+CHANGELOG.md
+.pubignore
+test/surface_test.dart
+# Changed — a version number, a repository, and twelve doc comments on public
+# members that had none
+pubspec.yaml
+lib/src/budget.dart
+lib/src/category.dart
+lib/src/command.dart
+lib/src/day.dart
+lib/src/expense.dart
+lib/src/period.dart
+lib/src/report.dart
+#
+# unshown: lib/src/budget.dart#budget — three getters gained a doc comment and
+#   nothing else moved. 34.4 shows the two regions where the change is the
+#   lesson; re-showing an aggregate because `spent` gained one line would tell
+#   the reader something new had happened to it.
+# unshown: lib/src/day.dart#day — the same, one factory and one getter.
+# unshown: lib/src/period.dart#period — the same, one factory and one getter.
+# unshown: lib/src/report.dart#report — the same, one getter.
+# unshown: lib/src/expense.dart#expense — the same, one getter.

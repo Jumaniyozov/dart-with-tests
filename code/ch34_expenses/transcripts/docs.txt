@@ -1,0 +1,7 @@
+$ dart analyze          # study 33, with public_member_api_docs switched on
+Analyzing ch33_expenses...
+   info - lib/src/budget.dart:85:20 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/src/budget.dart:88:19 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/src/budget.dart:91:19 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+…
+22 issues found.

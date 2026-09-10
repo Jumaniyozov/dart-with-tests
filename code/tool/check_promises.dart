@@ -32,10 +32,26 @@ void main(List<String> args) {
     Directory('$root/web/content/docs/writing-good-dart'),
   );
 
+  // An empty table and a deleted one used to look the same here, and both
+  // passed. They are not the same: Book II ended with every promise paid and
+  // the table structurally present, which is a result worth keeping, while a
+  // table somebody removed is the check quietly switching itself off.
+  final header = outline.contains('| Owed by | Made in | The reader is');
   final table = _promiseTable(outline);
   if (table.isEmpty) {
-    stdout.writeln('check_promises: no promise table found.');
-    return;
+    if (header) {
+      stdout.writeln(
+        'check_promises: the table is present and empty — '
+        'every promise the prose makes has been paid.',
+      );
+      return;
+    }
+    stderr.writeln(
+      'check_promises: no promise table found in OUTLINE.md. '
+      'It is the header row this looks for, so either it moved or it was '
+      'deleted; either way nothing is being checked.',
+    );
+    exit(1);
   }
 
   final problems = <String>[];

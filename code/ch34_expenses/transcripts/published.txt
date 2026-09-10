@@ -1,0 +1,10 @@
+$ dart pub publish --dry-run          # study 34, after the fixes
+                                     # (archive listing and resolve preamble cut)
+Validating package...
+Package validation found the following potential issue:
+* The name of "lib/expenses.dart", "expenses", should match the name of the package, "ch34_expenses".
+  This helps users know what library to import.
+The server may enforce additional checks.
+
+Package has 1 warning.
+exit: 65

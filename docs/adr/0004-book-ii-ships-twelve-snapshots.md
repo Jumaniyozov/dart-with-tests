@@ -125,3 +125,24 @@ be faked.
 and carry the domain forward by copy, not by dependency. "Reusing the CLI's domain
 package", as `PRODUCT.md` puts it, is a narrative claim about the code being the same
 code — not a `pubspec.yaml` edge.
+
+**All twelve exist, and the layout held.** `ch23_expenses` through `ch34_expenses` are
+written, and `check_slices` reports twelve packages agreeing with their manifests. The
+retroactive-fix price this record warned about was paid three times, all of them recorded
+above; studies 33 and 34 added none, because both changed only the newest snapshot.
+
+**One consequence this record did not anticipate: what a snapshot ships.** Study 34 ran
+`dart pub publish --dry-run`, which builds the archive it would upload and prints it. Study
+33's package would have shipped `SLICE`, `exercises/` and all of `test/` — 33 KB, of which
+about fifteen is this book's own scaffolding rather than the program. `.pubignore` takes it
+to 18 KB. `SLICE` is a manifest this layout invented; it exists to keep twelve copies
+honest, and it is not something a reader downloading the package would ever want. Any later
+book whose packages are meant to be read as packages should carry one.
+
+**And the naming has a visible cost, measured rather than argued.** `pub` wants
+`lib/<package name>.dart`, and these packages are named for their study number while their
+barrel is named for the program. `dart pub publish --dry-run` reports that as a warning and
+exits 65 on account of it. Measured on the identical code in a package named `expenses`:
+0 warnings, exit 0. Study 34 states this rather than renaming the barrel, because
+`lib/ch34_expenses.dart` is not a filename any reader should copy — but it is the one place
+where the snapshot layout is visible to a tool rather than only to someone reading `code/`.

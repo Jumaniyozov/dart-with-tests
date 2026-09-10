@@ -11,6 +11,7 @@
     "dates-and-times",
     "reports",
     "budgets",
-    "taking-a-dependency"
+    "taking-a-dependency",
+    "being-a-dependency"
   ]
 }

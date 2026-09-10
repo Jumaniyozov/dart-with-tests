@@ -410,6 +410,16 @@ before it is written as prose.
 | `addOption(allowed: […])` | Rejects with `"colour" is not an allowed value for option "--sort"`; usage renders `[day (default), amount]`. |
 | `unintended_html_in_doc_comment` | In this book's lint set. `/// add <amount>` in a doc comment fires it; backticks fix it. |
 | Removing a dependency, keeping the import | Still compiles — `args` is reachable through `test`. One `info`: `depend_on_referenced_packages`. |
+| `dart pub publish --dry-run` on `publish_to: none` | **Does not refuse.** Builds the archive, validates, exits **65**. |
+| That validation on study 33's package | **2 errors** (LICENSE, `version:`) and **4 potential issues**, on code that analyzes clean and passes every test. |
+| What study 33's package would have shipped | `SLICE`, `exercises/` and all of `test/` — 33 KB. With a `.pubignore`: 18 KB. |
+| The last warning, on a package named `expenses` | **Gone.** 0 warnings, exit 0. The residual warning is the snapshot naming, not the package. |
+| `dart doc` on this package | **1 public library, 19 types**, 0 warnings, 0 errors — exactly what the barrel exports. |
+| `public_member_api_docs` on study 33's package | **22 issues** on code analyzing clean. 12 real; the other 10 are primary constructors. |
+| Documenting a class to satisfy that lint | **Does not.** It points at the constructor in the header. A doc on a header parameter does not either. |
+| The only spelling that satisfies it | The pre-3.13 body form. So the lint costs ADR 0002, and this book does not take it. |
+| `^2.7.0` / `^0.4.2` / `^0.0.3`, from `pub_semver` | `>=2.7.0 <3.0.0-0` / `>=0.4.2 <0.5.0-0` / `>=0.0.3 <0.1.0-0`. Below 1.0.0 the minor is the breaking one. |
+| `dart compile exe` on this program | 5.7 MB, ~1.4s to build. **~0.53s for `dart run` against ~0.01s** for the binary. |
 
 ### 23 — Libraries, imports and privacy · `libraries` · `ch23_expenses` — **WRITTEN**
 
@@ -491,12 +501,14 @@ Principle 4, named in the prose: this parser is hand-rolled and study 33 replace
 with `package:args`. Say which parts are weak — no `--help`, no abbreviations, no
 `--flag=value` — so study 33 has something specific to fix.
 
-Practice: candidate is *dart.dev — Write command-line apps*, on exit codes and
-`stderr`. **Unverified.** Open the page and confirm it says this before quoting it; if
-it does not, this study's `<Practice>` omits both props the way study 2's does.
+Practice: the candidate was *dart.dev — Write command-line apps*, on exit codes and
+`stderr`. **Resolved: it does not say it.** The shipped `<Practice>` omits both props the
+way study 2's does, and says so on the page — "two dart.dev pages were opened looking for
+one before this note was written".
 
 Gloss: `dart run` compiles to a kernel snapshot each time; `dart compile exe` is what
-you ship. Named now, met in study 34. *Unverified — measure the two before writing.*
+you ship. Named now, met in study 34. **Measured there:** 5.7 MB binary, ~0.53s for
+`dart run` against ~0.01s for the binary, on the same command.
 
 ### 25 — Values and entities · `values-and-entities` · `ch25_expenses` — **WRITTEN**
 
@@ -975,37 +987,66 @@ a program that compiles with one `info` — captured in `undeclared.txt`.
 Gloss: `dependencies` against `dev_dependencies`, argued from what a *caller* receives
 rather than from tidiness.
 
-### 34 — Being a dependency · `being-a-dependency` · `ch34_expenses`
+### 34 — Being a dependency · `being-a-dependency` · `ch34_expenses` — **WRITTEN**
 
-Closes Book II. Teaches doc comments and `///`, `dart doc`, `dart pub publish --dry-run`,
-semantic versioning as a promise, `analysis_options.yaml` as policy, and
-`dart compile exe`.
+Shipped: 168 green, 3 challenges at 10 failing, 7 transcripts. Closes Book II. Study 23's
+`lib/src/` stops being a privacy mechanism and becomes a contract: `dart doc` documents
+**one public library** and **nineteen types**, which is exactly what the barrel exports.
 
-Toy: `lib/expenses.dart`, the barrel from study 23, read back as a public API.
+**The outline's guess about `dart pub publish --dry-run` was wrong, and the truth was
+better.** It does not refuse a `publish_to: none` package. It builds the archive, prints
+it, validates it, and exits **65** — measured on study 33's package: **2 errors** (no
+LICENSE, no `version:`) and **4 potential issues** (library name, no homepage/repository,
+no README, no CHANGELOG), on a package whose tests all pass and whose analyzer is silent.
+None of them is about the code.
 
-The mechanism to name: study 23's `lib/` against `lib/src/` was a privacy mechanism.
-Here it is a **contract**: everything the barrel exports is what a version number
-promises about, and everything in `lib/src/` is yours to change. A major version bump is
-the sentence "I broke something you were using", and `lib/src/` is how you make that
-sentence rare. `dart pub publish --dry-run` reads your package back to you and is the
-closest thing to a machine checking the promise.
+The archive listing turned out to be the better half. Study 33's package would have shipped
+`SLICE`, `exercises/` and every file in `test/` to every stranger who downloaded it — 33 KB
+of archive, of which 15 KB is this book's own scaffolding. `.pubignore` takes it to 18 KB.
+That is a fact nobody would have guessed and everybody can check.
 
-Then lints as policy: `analysis_options.yaml` is a set of errors you chose to opt into,
-enforced at compile time by the same analyzer that enforces the language. Show one lint
-being enabled and a file that was clean becoming not clean.
+After the fixes, one warning is left and it is the book's fault rather than the package's:
+`pub` wants `lib/<package name>.dart`, and these packages are named for their study number.
+Measured on the identical code in a package named `expenses`: **0 warnings, exit 0.** The
+page says so rather than renaming the barrel, because `lib/ch34_expenses.dart` is not a
+thing any reader should copy.
 
-Closes the arc: 33 is what a caret constraint promises *you*, 34 is what it promises
-*your callers*.
+**The lint this study turned on, read, and did not take.** `public_member_api_docs` is not
+in `recommended.yaml`, so switching it on is a decision — and for a package about to be read
+by strangers it looks like the obviously right one. Measured on study 33's package: **22
+issues** on code that had been analyzing clean since study 23. Twelve were real (public
+getters and factories with nothing said about them, and two exit-code constants documented
+with `//` where `///` was meant) and are fixed here. The other **ten are primary
+constructors**, and they cannot be fixed:
 
-*Unverified: `dart pub publish --dry-run` output on a `publish_to: none` package. Run it
-before writing the transcript — it may refuse, which would itself be the transcript.*
+- documenting the class does not silence it — the lint points at the constructor inside the
+  header, not the class;
+- a doc comment on a parameter inside the header does not silence it either;
+- the only spelling that satisfies it is the pre-3.13 body form.
 
-Practice: `slash_for_doc_comments` — `///` and not `/** */`. Verified present in
-`package:lints/recommended.yaml` 6.1.0, and apt here because this is the study where doc
-comments stop being decoration and become the thing `dart doc` publishes.
+So the lint would cost ADR 0002's default class syntax, and this book does not take it. That
+is a better lesson than adopting it would have been: a policy is a thing you weigh by turning
+it on and reading what it says.
 
-Gloss: `dart compile exe` produces a native binary with no Dart on the target machine,
-paying study 24's Gloss.
+The study's own new test is the one worth carrying into Book III: `test/surface_test.dart`
+reads `lib/expenses.dart` back as text and compares its exports against a list somebody wrote
+on purpose, and checks that `pubspec.yaml`'s version and the top of `CHANGELOG.md` agree. A
+contract nobody checks is a contract that drifts.
+
+**Paid study 33's promise about a dependency in the public API**, with the cost stated: a
+type from a dependency in your public signatures makes that dependency's major versions into
+yours, and your callers pay for somebody else's decision. `dart doc` publishes nineteen types
+and `ArgParser` is not one of them.
+
+Licence: MIT, in `ch34_expenses/` only, chosen by the author when the study surfaced the
+question. The repository root is still unlicensed and that item stays on `HANDOFF.md`'s open
+list.
+
+Practice: `slash_for_doc_comments`, verified in `lints-6.1.0/lib/recommended.yaml:51` and
+never cited before. Apt here because it is the study where `///` stops being a prettier
+comment and becomes the thing `dart doc` publishes and an IDE shows a caller.
+
+Gloss: `dart compile exe`, paying study 24's Gloss with numbers.
 
 ### Promises Book II makes to itself
 
@@ -1020,7 +1061,11 @@ told will be explained or fixed.
 
 | Owed by | Made in | The reader is promised |
 | --- | --- | --- |
-| 34 | 33 | what a dependency in your public API costs, from the other end |
+
+**Empty.** Book II made fourteen promises and paid all fourteen, which is what the table
+exists to make checkable. Study 34 paid the last one — 34←33, what a dependency in your
+public API costs — by measuring it: `dart doc` publishes nineteen types and `ArgParser` is
+not one of them, because study 33 kept it out of every signature on purpose.
 
 Paid: 26←24 (`null` could not say which part was wrong; a sealed `Reading` can),
 26←24 again (`dart compile exe` named in a Gloss, measured in 26.4), 27←24 (the seam
@@ -1036,7 +1081,8 @@ argued for and withheld), 33←28 (`--file` says where the tracker lives, and th
 in `bin/` is gone), 33←24 (`--help`, `--flag=value` and single-letter abbreviations —
 **two of the three in full and one smaller than the promise sounded**, because `args` does
 not abbreviate long names and study 33 says so), 33←32 (`_flagged` deleted, and study 32's
-own `--anyway` tests pass untouched against the new parser).
+own `--anyway` tests pass untouched against the new parser), 34←33 (a dependency's types
+kept out of the public surface, and the cost of the alternative stated in versions).
 
 Study 33 carried three and paid all three, which is the most any study in this book has
 both owed and settled. One of them came back smaller than it was promised: study 24 said
@@ -1309,6 +1355,13 @@ existing transcripts and verified to reproduce.
   'Money'>`, which names nothing. Study 25 states the test — *identical contents, one
   thing or two?* — so apply it to every type the moment it exists, not the moment a map
   needs it.
+- **A checker that finds nothing must say whether there was anything to find.**
+  `check_promises` printed *no promise table found* and exited 0, which was the same
+  answer for a table with every promise paid and for a table somebody had deleted. Book
+  II ended with the first, so the difference finally mattered. It now distinguishes them
+  and fails on the second — proved both ways. Ask this of every new checker: what does it
+  print when its corpus is empty, and is that different from what it prints when its
+  corpus has gone missing?
 - **A new snapshot starts by copying the last one, and `transcripts/` must not come with
   it.** Every other directory carries forward by design; `transcripts/` does not — each
   study holds only the runs it captured, and `check_slices` skips the directory on purpose,

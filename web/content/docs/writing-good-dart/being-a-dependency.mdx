@@ -1,0 +1,244 @@
+---
+title: Being a dependency
+study: 34
+direction: A version number is a sentence you say to strangers. Everything the barrel exports is what that sentence is about, and everything under lib/src is yours.
+description: dart pub publish --dry-run, semantic versioning as a promise, doc comments as published output, and a lint this book measured and did not take.
+---
+
+Study 33 read a caret constraint from the taking end: `^2.7.0` was a bet on somebody else's
+discipline. This study is the other end of the same sentence, and it starts by asking a machine
+what this package currently promises.
+
+<Drill n={1}>
+
+<Direction>What `pub` says about a package that was never meant to be read by a stranger.</Direction>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch34_expenses/transcripts/dryrun.txt</include>
+</Console>
+
+</Drill>
+
+Two errors and four warnings, on a package whose tests all pass and whose analyzer is silent.
+None of them is about the code.
+
+## 34.1 The barrel is the contract now
+
+Study 23 made `lib/src/` a **privacy mechanism**: a file under it cannot be imported from
+another package, so a private constructor stays private. Nothing about that has changed. What
+changes here is what it is *for*.
+
+<include cwd lang="dart" meta='title="lib/expenses.dart"'>../code/ch34_expenses/lib/expenses.dart#barrel</include>
+
+Eleven lines, and every one of them is a promise. Anything reachable through this file is
+something a caller may be using, so removing it costs a major version. Anything under
+`lib/src/` that the barrel does not name reaches nobody, so it can be rewritten, renamed or
+deleted on a Tuesday and nobody's build breaks.
+
+`dart doc` reads exactly that boundary:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch34_expenses/transcripts/doc.txt</include>
+</Console>
+
+**One public library.** Eleven files under `lib/src/`, and dartdoc documents one library,
+because one is all a stranger can import. The documentation and the contract are the same
+shape, and neither of them is a matter of intention.
+
+It documents nineteen types, and `ArgParser` is not among them — which is study 33's last
+sentence arriving. That study kept `package:args` out of every public signature: `run` takes a
+`List<String>` and `fileFrom` answers a `String`, where handing back an `ArgResults` would have
+read better and cost more. Here is the cost, now that there is a version number to say it in.
+A type from a dependency in your public API makes that dependency's promises part of **yours**:
+the day `args` ships `3.0.0` with a changed `ArgResults`, every caller of this package has to
+move too, and the major version they have to move through is *this package's*. Your callers
+would be paying for somebody else's decision. `lib/src/` is where a dependency goes so that it
+stays your problem.
+
+A contract nobody checks is a contract that drifts, so this study makes it a test:
+
+<include cwd lang="dart" meta='title="test/surface_test.dart"'>../code/ch34_expenses/test/surface_test.dart#surface</include>
+
+Adding a line to `offered` is a feature. Removing one is a breaking change. The test does not
+stop you doing either — it stops you doing either *by accident*, which is the only failure mode
+a version number cannot survive.
+
+## 34.2 What the machine reads back
+
+`dart pub publish --dry-run` does not publish. It builds the archive it would upload, prints
+it, and validates it, which makes it the closest thing to a machine reading your promise back
+to you. The first thing it prints is the part most people never look at:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch34_expenses/transcripts/archive.txt</include>
+</Console>
+
+Study 33's package would have shipped `SLICE`, `exercises/` and every test in `test/` to every
+stranger who downloaded it. None of that is wrong, exactly — it is just not what anybody asked
+for, and it is in the archive because nobody said otherwise.
+
+<include cwd lang="text" meta='title=".pubignore"'>../code/ch34_expenses/.pubignore</include>
+
+Thirty-three kilobytes down to eighteen. `.pubignore` works like `.gitignore` and is read only
+by `pub publish`; without one, `pub` falls back to `.gitignore`, which is a different question
+with a different answer — the files you do not want in version control are not the files you do
+not want in a release.
+
+The two errors were the interesting part, and both are decisions rather than typing:
+
+- **`version:`** — a package without one is `0.0.0`, which under semantic versioning is a
+  promise to nobody.
+- **`LICENSE`** — without one, a stranger who downloads your code has no legal right to use
+  it. Nothing in the tooling can decide this for you.
+
+With those two answered, plus a `README.md`, a `CHANGELOG.md` and a `repository:`, the same
+command says:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch34_expenses/transcripts/published.txt</include>
+</Console>
+
+One warning left, and it is this book's fault rather than the package's: `pub` wants
+`lib/<package name>.dart`, and these packages are named for their study number. A package named
+`expenses` with `lib/expenses.dart` — which is what you would actually write — reports
+**0 warnings** and exits `0`. Measured, on this exact code with the name changed.
+
+## 34.3 A version number is a sentence
+
+`1.0.0` is not "we finished". It is the first version that promises anything at all, and the
+three numbers each say something different to a caller reading `^`:
+
+| The change | The bump | What the caller is told |
+| --- | --- | --- |
+| Nothing they can see | patch — `1.4.2` → `1.4.3` | Take it without reading |
+| Something added | minor — `1.4.2` → `1.5.0` | Take it; nothing you use has moved |
+| Something removed or changed | major — `1.4.2` → `2.0.0` | **I broke something you were using** |
+
+`^1.4.2` means `>=1.4.2 <2.0.0-0`. Study 33 read that as "less than 3.0.0" for `^2.7.0`, which
+is right to within a detail this study can now afford: the bound is `3.0.0-0`, so a pre-release
+of the next major is excluded too. Measured against `pub_semver`, which is the resolver `pub`
+itself uses.
+
+Below `1.0.0` every rule shifts one place left. `^0.4.2` is `>=0.4.2 <0.5.0-0`, so for a `0.x`
+package the **minor** is where it breaks you — which is what `0.x` means, and why taking a
+dependency on one is a different bet from taking a dependency on `^2.7.0`.
+
+The version is written down twice — in `pubspec.yaml` and at the top of `CHANGELOG.md` — so
+this study asserts they agree:
+
+<include cwd lang="dart" meta='title="test/surface_test.dart"'>../code/ch34_expenses/test/surface_test.dart#version</include>
+
+## 34.4 A lint is a policy, and a policy can lose
+
+`analysis_options.yaml` is not configuration in the sense of preferences. It is a set of errors
+you chose to opt into, enforced at compile time by the same analyzer that enforces the language
+— study 1's argument, arriving at its conclusion twenty-three studies later.
+
+For a package about to be read by strangers, `public_member_api_docs` looks like exactly the
+right policy to opt into. It is not in `package:lints/recommended.yaml`, so switching it on is a
+decision. Here is that decision, made on study 33's package:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch34_expenses/transcripts/docs.txt</include>
+</Console>
+
+Twenty-two, on a package that had been analyzing clean since study 23. Twelve of them were
+real: public getters and factories with nothing said about them, and two exit-code constants
+documented with `//` where `///` was meant. Those are fixed, and they are the reason this
+study's diff touches seven files under `lib/src/`.
+
+<include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch34_expenses/lib/src/command.dart#codes</include>
+
+<include cwd lang="dart" meta='title="lib/src/category.dart"'>../code/ch34_expenses/lib/src/category.dart#category</include>
+
+The other ten do not go away:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch34_expenses/transcripts/constructors.txt</include>
+</Console>
+
+Every one of those ten is a **primary constructor**. `Reading` is the plainest case — the class
+carries a doc comment, and the lint is pointing at column 20, which is the constructor declared
+inside the header:
+
+<include cwd lang="dart" meta='title="lib/src/reading.dart"'>../code/ch34_expenses/lib/src/reading.dart#reading</include>
+
+There is nowhere to put the doc. Measured on Dart 3.13.2: documenting the class does not
+silence it, and neither does a doc comment on the parameter inside the header. The only
+spelling that satisfies the lint is the pre-3.13 body form, with the constructor written out so
+it has a line of its own to be documented above.
+
+So the policy loses. This book declares its classes with primary constructors — ADR 0002, and
+the reason is that the header says once what the body says three times — and a lint that can
+only be satisfied by giving that up is a lint this package does not take. That is a real
+outcome and not a defeat: **a policy is a thing you weigh, and the way you weigh it is by
+turning it on and reading what it says.** A rule you adopted without doing that is a rule you
+are hoping about.
+
+<Practice source="Dart lints — slash_for_doc_comments" href="https://dart.dev/tools/linter-rules/slash_for_doc_comments">
+**"Prefer using `///` for doc comments."** The rule is in `package:lints/recommended.yaml`
+6.1.0, so it has been enforced in this book since study 1.
+
+It has been quietly load-bearing all along and this is the study where it shows. `///` is not a
+prettier comment — it is the one `dart doc` reads and `pub.dev` publishes, and it is what an
+IDE shows a caller on hover. A `/** */` block, or a `//` line above a public constant, is a note
+to whoever opens the file. A `///` is a note to everybody who ever depends on you.
+
+That is why two `//` comments in `command.dart` counted as missing documentation above. They
+said the right thing to the wrong audience.
+</Practice>
+
+<Gloss title="dart compile exe, and what dart run was doing all along">
+Study 24 promised this. `dart run` compiles your program to a kernel snapshot every time before
+executing it; `dart compile exe` does the work once and writes a native binary with the Dart
+runtime inside it.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch34_expenses/transcripts/compiled.txt</include>
+</Console>
+
+5.7 MB, and no Dart on the target machine. Measured on this program: `dart run` takes about
+0.53 seconds to print its usage and the compiled binary takes about 0.01. For a test suite that
+difference is nothing. For a command somebody types forty times a day it is the difference
+between a tool and a chore.
+
+The size is the runtime, not your code — which is the trade. A binary is what you ship to
+people; the package is what you ship to programmers, and this study has been about the second.
+</Gloss>
+
+## Wrapping up
+
+`lib/src/` was privacy in study 23 and it is a **contract** here. Everything the barrel exports
+is what a version number is about; everything under `lib/src/` is yours to change. Keeping that
+boundary narrow is not tidiness — it is how you make the sentence *I broke something you were
+using* rare.
+
+`dart pub publish --dry-run` reads the package back to you: the archive it would upload, and
+every requirement it does not meet. Two of those requirements are decisions nothing can make
+for you — a version and a licence — and the rest are files that tell a stranger what this is.
+
+A version is a promise with three parts. Patch says nothing you can see changed, minor says
+something was added, major says something you were using is gone. Below `1.0.0` all three shift
+one place left, which is what `0.x` means. `^` is how a caller writes down which of those they
+will accept without being asked.
+
+`analysis_options.yaml` is policy, enforced by the same analyzer that enforces the language.
+This study turned on the lint that looked most obviously right for a published package, read
+what it actually said, and did not take it — because it cannot be satisfied by a class with a
+primary constructor, and that is the syntax this book teaches.
+
+Also met: `dart pub publish --dry-run`, `.pubignore`, `dart doc`, `CHANGELOG.md`,
+`repository`, `version`, `dart compile exe`, and a test that reads its own package's barrel.
+
+That is Book II. The tracker started as one file with no `main` and ends as a package with a
+licence, a changelog and a public surface somebody could depend on.
+
+## Challenges
+
+Three challenges, ten failing tests. Make them pass one at a time. Do not edit the tests. They
+are the rules above written as code, and every one of them was measured against `pub_semver`
+rather than remembered.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch34_expenses/transcripts/challenges.txt</include>
+</Console>

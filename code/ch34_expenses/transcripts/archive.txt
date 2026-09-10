@@ -1,0 +1,34 @@
+$ dart pub publish --dry-run | head -8          # study 33: everything ships
+Publishing ch33_expenses 0.0.0 to https://pub.dev:
+├── SLICE (1 KB)
+├── bin
+│   └── expenses.dart (<1 KB)
+├── exercises
+│   ├── challenges.dart (2 KB)
+│   └── challenges_test.dart (2 KB)
+├── lib
+…
+$ dart pub publish --dry-run          # study 34, with a .pubignore
+Publishing ch34_expenses 1.0.0 to https://pub.dev:
+├── CHANGELOG.md (<1 KB)
+├── LICENSE (1 KB)
+├── README.md (<1 KB)
+├── bin
+│   └── expenses.dart (<1 KB)
+├── lib
+│   ├── expenses.dart (<1 KB)
+│   └── src
+│       ├── budget.dart (7 KB)
+│       ├── category.dart (<1 KB)
+│       ├── command.dart (11 KB)
+│       ├── day.dart (4 KB)
+│       ├── expense.dart (4 KB)
+│       ├── file_store.dart (3 KB)
+│       ├── money.dart (3 KB)
+│       ├── period.dart (2 KB)
+│       ├── reading.dart (3 KB)
+│       ├── report.dart (4 KB)
+│       └── store.dart (3 KB)
+└── pubspec.yaml (<1 KB)
+
+Total compressed archive size: 18 KB.

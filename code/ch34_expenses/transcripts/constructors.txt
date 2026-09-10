@@ -1,0 +1,15 @@
+$ dart analyze          # study 34, same lint, after twelve doc comments
+Analyzing ch34_expenses...
+
+   info - lib/src/budget.dart:85:20 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/src/budget.dart:88:19 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/src/budget.dart:91:19 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/src/expense.dart:16:13 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/src/file_store.dart:21:7 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/src/reading.dart:13:20 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/src/reading.dart:16:19 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/src/reading.dart:22:19 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/src/reading.dart:30:19 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+   info - lib/src/report.dart:11:13 - Missing documentation for a public member. Try adding documentation for the member. - public_member_api_docs
+
+10 issues found.

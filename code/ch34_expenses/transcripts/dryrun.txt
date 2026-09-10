@@ -1,0 +1,21 @@
+$ dart pub publish --dry-run          # study 33's package, before this study
+                                     # (archive listing and resolve preamble cut)
+Validating package...
+Package validation found the following 2 errors:
+* You must have a LICENSE file in the root directory.
+  An open-source license helps ensure people can legally use your code.
+
+* Your pubspec.yaml is missing a "version" field.
+
+Package validation found the following 4 potential issues:
+* The name of "lib/expenses.dart", "expenses", should match the name of the package, "ch33_expenses".
+  This helps users know what library to import.
+
+* It's strongly recommended to include a "homepage" or "repository" field in your pubspec.yaml
+
+* Please add a README.md file that describes your package.
+
+* Please add a `CHANGELOG.md` to your package. See https://dart.dev/tools/pub/publishing#important-files.
+Sorry, your package is missing some requirements and can't be published yet.
+For more information, see: https://dart.dev/tools/pub/cmd/pub-lish.
+exit: 65

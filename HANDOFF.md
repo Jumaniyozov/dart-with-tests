@@ -19,9 +19,9 @@ Last checked: 2026-09-09.
 
 ## State
 
-Book I (studies 1-22) is written, audited and pushed. Book II (23-34) is written through
-**study 33**; only study 34, *Being a dependency*, is left, and `OUTLINE.md` has its entry.
-Books III and IV have no outline.
+Book I (studies 1-22) is written, audited and pushed. **Book II (23-34) is complete** —
+all twelve snapshots exist, and its promise table is empty because every promise the prose
+made has been paid. Books III and IV have no outline; that is the next piece of work.
 
 Counts are not restated here. `OUTLINE.md` and the git log carry them, and a number
 copied into this file is a number that will be wrong within a week. That is exactly how
