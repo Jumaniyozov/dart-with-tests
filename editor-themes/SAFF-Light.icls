@@ -11,7 +11,7 @@
 -->
 <scheme name="SAFF Light" version="142" parent_scheme="Default">
   <metaInfo>
-    <property name="created">2026-09-09</property>
+    <property name="created">2026-09-10</property>
     <property name="ide">idea</property>
   </metaInfo>
   <colors>
@@ -2783,29 +2783,34 @@
     <option name="INLAY_DEFAULT">
       <value>
         <option name="FOREGROUND" value="4a5d56" />
+        <option name="FONT_TYPE" value="2" />
       </value>
     </option>
     <option name="INLAY_TEXT_WITHOUT_BACKGROUND">
       <value>
         <option name="FOREGROUND" value="4a5d56" />
+        <option name="FONT_TYPE" value="2" />
       </value>
     </option>
     <option name="INLINE_PARAMETER_HINT">
       <value>
         <option name="FOREGROUND" value="4a5d56" />
         <option name="BACKGROUND" value="e1e9e4" />
+        <option name="FONT_TYPE" value="2" />
       </value>
     </option>
     <option name="INLINE_PARAMETER_HINT_CURRENT">
       <value>
         <option name="FOREGROUND" value="0b251d" />
         <option name="BACKGROUND" value="d6dfd9" />
+        <option name="FONT_TYPE" value="2" />
       </value>
     </option>
     <option name="INLINE_PARAMETER_HINT_HIGHLIGHTED">
       <value>
         <option name="FOREGROUND" value="0b251d" />
         <option name="BACKGROUND" value="d6dfd9" />
+        <option name="FONT_TYPE" value="2" />
       </value>
     </option>
     <option name="INLINE_PROMPT">

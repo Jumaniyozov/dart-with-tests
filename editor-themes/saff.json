@@ -727,7 +727,7 @@
           },
           "hint": {
             "color": "#587A6C",
-            "font_style": null,
+            "font_style": "italic",
             "font_weight": null
           },
           "predictive": {
@@ -1472,7 +1472,7 @@
           },
           "hint": {
             "color": "#7C9A8E",
-            "font_style": null,
+            "font_style": "italic",
             "font_weight": null
           },
           "predictive": {

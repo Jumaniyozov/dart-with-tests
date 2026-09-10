@@ -16,7 +16,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const VERSION = '1.1.0';
+const VERSION = '1.4.0';
 
 // ── The syntax palette ───────────────────────────────────────────────────────
 // Mirrors web/src/lib/saff/palette.ts, which is asserted against below.
@@ -60,6 +60,7 @@ const UI = {
     brass: '#95753C', brassBright: '#C3A76B', brassInk: '#744C0E',
     correction: '#9E2D28', ok: '#006432', info: '#0059A2',
     selection: '#BFE6D0', caretRow: '#F0F5F2', hairline: '#E0DDD1',
+    edge: '#BFCBC4', // oklch(83% 0.016 162)
     onAccent: '#FFFFFF',
   },
   dark: {
@@ -69,6 +70,7 @@ const UI = {
     brass: '#B9995F', brassBright: '#D1B473', brassInk: '#D8BA79',
     correction: '#EB8373', ok: '#6EEEAB', info: '#5EB6E6',
     selection: '#144433', caretRow: '#1C2D26', hairline: '#3A3F30',
+    edge: '#2D3F38', // the stone2 rung, which already measures right
     onAccent: '#0E1C17',
   },
 };
@@ -402,9 +404,11 @@ function editorMarkAttributes(mode) {
     BREADCRUMBS_HOVERED: { FOREGROUND: u.ink },
     BREADCRUMBS_CURRENT: { FOREGROUND: u.ink },
     BREADCRUMBS_INACTIVE: { FOREGROUND: u.ink3 },
-    INLINE_PARAMETER_HINT: { FOREGROUND: u.ink3, BACKGROUND: u.stone },
-    INLINE_PARAMETER_HINT_CURRENT: { FOREGROUND: u.ink, BACKGROUND: u.stone2 },
-    INLINE_PARAMETER_HINT_HIGHLIGHTED: { FOREGROUND: u.ink, BACKGROUND: u.stone2 },
+    // Also `hint` in the table, but this emitter runs last and claims them, so
+    // the slant has to be repeated here or three of the five hints stay upright.
+    INLINE_PARAMETER_HINT: { FOREGROUND: u.ink3, BACKGROUND: u.stone, FONT_TYPE: ITALIC },
+    INLINE_PARAMETER_HINT_CURRENT: { FOREGROUND: u.ink, BACKGROUND: u.stone2, FONT_TYPE: ITALIC },
+    INLINE_PARAMETER_HINT_HIGHLIGHTED: { FOREGROUND: u.ink, BACKGROUND: u.stone2, FONT_TYPE: ITALIC },
     DIFF_INSERTED: { BACKGROUND: mode === 'light' ? '#DEEFE3' : '#17331F' },
     DIFF_DELETED: { BACKGROUND: mode === 'light' ? '#F6E0DE' : '#3A1F1D' },
     DIFF_MODIFIED: { BACKGROUND: mode === 'light' ? '#E6E7F5' : '#1E2A3A' },
@@ -426,6 +430,11 @@ function fallbackAttributes(mode) {
     diagnostic: { EFFECT_COLOR: u.correction, EFFECT_TYPE: 2 },
     vcs: { FOREGROUND: u.ink3 },
     chrome: { FOREGROUND: u.ink3 },
+    // Inlay hints are the compiler talking, not the author, and italic is how
+    // this palette already says that - it is what comments wear. They were part
+    // of `chrome` before, which also holds matched braces, search results and
+    // the rainbow indent guides; none of those wants a slant.
+    hint: { FOREGROUND: u.ink3, FONT_TYPE: ITALIC },
   };
   const out = {};
   for (const [key, role] of Object.entries(KEYS.attributes)) {
@@ -718,10 +727,42 @@ ${iclsAttributes(mode)}
  * Chrome is stone: the frame sits a step below the editor so the editor lifts
  * off it, the same relationship the book's card has with its page.
  */
-function themeJson(mode) {
+/**
+ * Islands geometry, taken from the platform's own themes so the two agree.
+ *
+ * `borderWidth` is not a stroke: it is the ring the island paints in its own
+ * colour, which is why `Island.borderColor` is the island and not the ground.
+ */
+const ISLAND_GEOMETRY = {
+  arc: 20, 'arc.compact': 16,
+  borderArcLength: 14, 'borderArcLength.compact': 10,
+  borderWidth: 6, 'borderWidth.compact': 4,
+  inactiveAlpha: 0.56, toolWindowAlpha: 0.2,
+};
+
+/**
+ * A seam and an outline are not the same colour, and `hairline` was only ever
+ * one of them.
+ *
+ * `hairline` is the book's rule — a brass line drawn *on* a page. The theme
+ * reused it for every border the IDE has, so the seam between two panels was
+ * painted at OKLab dE 7.0 from the light page and 14.8 from the dark one, the
+ * dark case louder than that theme's own selection wash (14.2). JetBrains draws
+ * the same seam at 3.6-5.7 and keeps a second, much stronger colour for the
+ * edges of controls, at 13.4 (light) and 13.8 (dark). Two jobs, two colours.
+ *
+ *   seam     light `stone`   dE 3.8 from the page, 5.6 from the editor
+ *            dark  `surface` dE 3.7 from the page, 0 from the editor
+ *   outline  light `edge`    dE 13.4 from the page   (new; the ladder had no rung there)
+ *            dark  `edge`    dE 13.8 from the page   (the stone2 rung, measured)
+ *
+ * `hairline` keeps the job it was tuned for: rules drawn inside the editor —
+ * indent guides, the right margin, method separators.
+ */
+function themeJson(mode, islands = false) {
   const u = UI[mode];
   const t = TERM[mode];
-  return {
+  const theme = {
     name: mode === 'light' ? 'SAFF Light' : 'SAFF Dark',
     dark: mode === 'dark',
     author: 'Learn Dart with Tests',
@@ -730,13 +771,19 @@ function themeJson(mode) {
       base: u.page,
       surface: u.stone,
       surface2: u.stone2,
+      // Anything that floats - a popup, a menu, a balloon. `surface` cannot do
+      // this job: it is the chrome tone, which is *darker* than the page in
+      // light and lighter in dark, so popups sank in one theme and rose in the
+      // other. Lifted means lighter in both.
+      raised: mode === 'light' ? u.surface : u.stone,
       editorGround: u.surface,
       text: u.ink,
       textMuted: u.ink3,
       accent: mode === 'light' ? u.brassInk : u.brassBright,
       accentQuiet: u.brass,
       emerald: u.emerald,
-      border: u.hairline,
+      border: mode === 'light' ? u.stone : u.surface,
+      outline: u.edge,
       selection: u.selection,
       hover: u.caretRow,
       onAccent: u.onAccent,
@@ -783,10 +830,19 @@ function themeJson(mode) {
       EditorPane: { background: 'editorGround' },
       Panel: { background: 'base', foreground: 'text' },
       Popup: {
-        background: 'surface', borderColor: 'border',
+        background: 'raised', borderColor: 'outline',
         Header: { activeBackground: 'surface2', inactiveBackground: 'surface' },
       },
-      PopupMenu: { background: 'surface' },
+      // `'*'` sets `background` on every key that ends in it, `MenuItem.background`
+      // included, so naming only `PopupMenu` left the items on the page tone and
+      // the popup underneath on another. What looked like a heavy divider between
+      // groups was the popup's own background showing through the separator row.
+      PopupMenu: { background: 'raised' },
+      Menu: { background: 'raised' },
+      MenuItem: { background: 'raised' },
+      // The button bar is part of the dialog, not a tray under it. Unset, these
+      // two fall through to a stock grey that owes nothing to the palette.
+      DialogWrapper: { southPanelBackground: 'base', southPanelDivider: 'base' },
       MainToolbar: {
         background: 'surface',
         Dropdown: { hoverBackground: 'hover' },
@@ -794,12 +850,19 @@ function themeJson(mode) {
       },
       StatusBar: { background: 'surface', borderColor: 'border' },
       SearchEverywhere: {
-        SearchField: { background: 'base', borderColor: 'border' },
+        SearchField: { background: 'base', borderColor: 'outline' },
         Tab: { selectedBackground: 'surface2' },
       },
+      // `Button.background` fills the component's whole rectangle; the rounded
+      // shape is drawn inside it. Set to anything but the panel behind it, it
+      // shows as a square patch around every button - which is why the platform's
+      // own themes never set it, and let `'*'` hand it the panel's own value.
+      // The fill of the shape is `startBackground`/`endBackground`, named here so
+      // it comes from the palette rather than from a stock fallback.
       Button: {
-        background: 'surface', foreground: 'text',
-        startBorderColor: 'border', endBorderColor: 'border',
+        foreground: 'text', arc: 8,
+        startBackground: 'raised', endBackground: 'raised',
+        startBorderColor: 'outline', endBorderColor: 'outline',
         default: {
           startBackground: 'accent', endBackground: 'accent', foreground: 'onAccent',
           startBorderColor: 'accent', endBorderColor: 'accent',
@@ -808,7 +871,7 @@ function themeJson(mode) {
       },
       Component: {
         focusColor: 'accent', focusedBorderColor: 'accent',
-        borderColor: 'border', errorFocusColor: 'error',
+        borderColor: 'outline', errorFocusColor: 'error',
       },
       CheckBox: { background: 'base' },
       ComboBox: {
@@ -828,8 +891,8 @@ function themeJson(mode) {
         thumbColor: 'surface2', hoverThumbColor: 'textMuted',
         Transparent: { thumbColor: 'surface2', hoverThumbColor: 'textMuted' },
       },
-      Notification: { background: 'surface', borderColor: 'border' },
-      CompletionPopup: { background: 'surface', selectionBackground: 'selection', matchForeground: 'accent' },
+      Notification: { background: 'raised', borderColor: 'outline' },
+      CompletionPopup: { background: 'raised', selectionBackground: 'selection', matchForeground: 'accent' },
       NavBar: { borderColor: 'border' },
       Separator: { separatorColor: 'border' },
       Link: {
@@ -842,6 +905,67 @@ function themeJson(mode) {
       Terminal: { background: 'terminalGround', foreground: 'terminalInk' },
     },
   };
+
+  if (!islands) return theme;
+
+  /**
+   * The islands variant, which is the same theme with the seams taken out.
+   *
+   * IntelliJ 2026.1 paints the editor and each tool window as rounded panels
+   * floating on a ground; the platform switches it on for any theme that sets
+   * `Islands: 1`, and `targetUi="islands"` in plugin.xml is what files it under
+   * Islands in Settings | Appearance. Nothing here is a new colour: JetBrains
+   * put ground and island 6.3 (light) and 5.9 (dark) OKLab units apart, and the
+   * rungs SAFF already has reach 5.6 and 4.7 on the same measurement.
+   *
+   * The ground is `stone` in both modes, which is darker than the island in
+   * light and lighter in dark - the rung moves toward mid-grey either way, the
+   * same direction the platform's own themes move. `raised` needs no override:
+   * it already lands on the platform's own popup tone in both islands modes.
+   */
+  const island = u.surface;
+  theme.name = mode === 'light' ? 'SAFF Light Islands' : 'SAFF Dark Islands';
+  // By name, not by path: two providers pointing at the same scheme resource
+  // would register it twice and show it twice in the Color Scheme dropdown.
+  theme.editorScheme = mode === 'light' ? 'SAFF Light' : 'SAFF Dark';
+  Object.assign(theme.colors, {
+    islandGround: u.stone,
+    island,
+    // A dialog is not an island. Light seats it between the ground and the
+    // island; dark has no rung there, so it takes the island's own value.
+    dialog: mode === 'light' ? u.page : u.surface,
+    transparent: `${island}00`,
+  });
+
+  const ui = theme.ui;
+  Object.assign(ui['*'], {
+    background: 'dialog', disabledBackground: 'dialog', inactiveBackground: 'dialog',
+  });
+  Object.assign(ui, {
+    Islands: 1,
+    Island: { ...ISLAND_GEOMETRY, borderColor: 'island' },
+    MainWindow: { background: 'islandGround' },
+    // The frame's seams are the gap now. Separators *inside* a panel or a menu
+    // are not, so `border` keeps its classic value and only `Borders` moves.
+    Borders: { color: 'islandGround', ContrastBorderColor: 'islandGround' },
+    DialogWrapper: { southPanelBackground: 'dialog', southPanelDivider: 'dialog' },
+  });
+  ui.MainToolbar.background = 'islandGround';
+  ui.StatusBar.background = 'islandGround';
+  ui.StatusBar.borderColor = 'transparent';
+  ui.Panel.background = 'dialog';
+  ui.EditorTabs.background = 'island';
+  ui.DefaultTabs.background = 'island';
+  ui.Tree.background = 'island';
+  ui.List.background = 'island';
+  ui.Table.background = 'island';
+  Object.assign(ui.ToolWindow, {
+    background: 'island',
+    borderColor: 'transparent',
+    Header: { background: 'island', inactiveBackground: 'island', borderColor: 'border' },
+    Stripe: { background: 'islandGround', borderColor: 'transparent' },
+  });
+  return theme;
 }
 
 const PLUGIN_XML = `<idea-plugin>
@@ -859,6 +983,8 @@ const PLUGIN_XML = `<idea-plugin>
   <extensions defaultExtensionNs="com.intellij">
     <themeProvider id="uz.saff.light" path="/themes/saff-light.theme.json" />
     <themeProvider id="uz.saff.dark" path="/themes/saff-dark.theme.json" />
+    <themeProvider id="uz.saff.light.islands" path="/themes/saff-light-islands.theme.json" targetUi="islands" />
+    <themeProvider id="uz.saff.dark.islands" path="/themes/saff-dark-islands.theme.json" targetUi="islands" />
   </extensions>
 </idea-plugin>
 `;
@@ -925,7 +1051,7 @@ function zedSyntax(mode) {
     'emphasis.strong': plain(s.identifier, 700),
     'text.literal': str,
     link_text: plain(u.brassInk, null, 'italic'), link_uri: plain(u.brassInk),
-    hint: plain(s.comment), predictive: plain(s.comment, null, 'italic'),
+    hint: plain(s.comment, null, 'italic'), predictive: plain(s.comment, null, 'italic'),
     'diff.plus': plain(TERM[mode].pass), 'diff.minus': plain(TERM[mode].fail),
   };
 }
@@ -1113,6 +1239,10 @@ writeFileSync(join(build, 'themes/saff-light.xml'), light);
 writeFileSync(join(build, 'themes/saff-dark.xml'), dark);
 for (const mode of ['light', 'dark']) {
   writeFileSync(join(build, `themes/saff-${mode}.theme.json`), `${JSON.stringify(themeJson(mode), null, 2)}\n`);
+  writeFileSync(
+    join(build, `themes/saff-${mode}-islands.theme.json`),
+    `${JSON.stringify(themeJson(mode, true), null, 2)}\n`,
+  );
 }
 writeFileSync(join(build, 'META-INF/plugin.xml'), PLUGIN_XML);
 

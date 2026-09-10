@@ -25,9 +25,10 @@ Zed watches that directory, so re-running `generate.mjs` and copying again updat
 a live editor without a restart.
 
 **IntelliJ-based IDEs** — Settings → Plugins → the gear → **Install Plugin from Disk**
-→ pick `SAFF-theme-1.0.0.jar`, then restart. SAFF Light and SAFF Dark appear in
-Settings → Appearance → Theme, and change the toolbar, tool windows, tabs and
-status bar as well as the editor.
+→ pick `SAFF-theme-1.4.0.jar`, then restart. Four themes appear in Settings →
+Appearance → Theme: **SAFF Light** and **SAFF Dark** under Classic, and **SAFF
+Light Islands** and **SAFF Dark Islands** under Islands. All four change the
+toolbar, tool windows, tabs and status bar as well as the editor.
 
 A `.icls` on its own **cannot** change the IDE frame — it is an editor colour
 scheme and nothing more. Import one (Settings → Editor → Color Scheme → gear →
@@ -188,6 +189,148 @@ In the light theme the *bright* colours are darker than their normal
 counterparts, which looks backwards and is not: on a pale ground a lighter
 colour reads as fainter, so bright has to mean more emphatic instead.
 
+### A seam and an outline are not the same colour
+
+`hairline` is the book's rule — a brass line drawn *on* a page — and the IntelliJ
+theme handed it every border the IDE has. Measured against the surfaces it was
+separating, in OKLab units:
+
+| | seam vs. panel | seam vs. editor |
+|---|---|---|
+| JetBrains light | 3.6 | 5.7 |
+| JetBrains dark | 5.7 | 0 |
+| SAFF 1.1.0 light | 7.0 | 8.7 |
+| SAFF 1.1.0 dark | **14.8** | 11.1 |
+
+By this file's own scale — under 3 merges, about 4 is a quiet card, 8 and above
+is an assertive panel — every seam in the dark IDE was being drawn at panel
+strength, louder than that theme's own selection wash at 14.2. It was also the
+wrong hue: a warm olive line between two cool green-grey surfaces reads as a
+foreign object rather than as the edge of either one.
+
+The platform's own themes do not have one border colour, they have two, and the
+second is much stronger — 13.4 (light) and 13.8 (dark) — because the edge of a
+text field has to be *seen*, while the seam between two panels only has to be
+found. 1.2.0 splits them the same way:
+
+- **seam** (`border`) — `Borders`, tabs, the status bar, table grids, separators.
+  `stone` in light (3.8 from the page, 5.6 from the editor) and `surface` in dark
+  (3.7 from the page, 0 from the editor). Both inside JetBrains' 3.6–5.7 band.
+- **outline** (`outline`) — `Component`, `Button`, popups, notifications, the
+  Search Everywhere field. `edge`: a new light value at `oklch(83% 0.016 162)`
+  measuring 13.4 from the page, and in dark the `stone2` rung, which already
+  measured 13.8. Both land on JetBrains' numbers exactly.
+
+`hairline` keeps the job it was tuned for and no longer leaves the editor: indent
+guides, the right margin, method separators, the tearline.
+
+### `'*'` sets a key on every component that has it
+
+`"*": { "background": "base" }` does not mean "the default background". It means
+*every* key whose name ends in `background` — `Panel.background`,
+`MenuItem.background`, `Menu.background`, all of them. Naming `PopupMenu` on its
+own therefore moved the popup's own background and left the items on the page
+tone underneath a popup painted `surface`, 3.8 OKLab units away. What that looks
+like is not a colour mismatch, because the items cover almost all of the popup:
+it looks like a **thick divider between every group**, since the only place the
+popup's own background shows through is the separator row. The fix is to name
+every key the wildcard already set: `Menu`, `MenuItem` and `PopupMenu` together.
+
+With one tone under the whole menu the separator is just the separator, at 5.6
+(light) and 4.7 (dark) from it — JetBrains draws theirs at 5.7.
+
+The same wildcard is why `DialogWrapper.southPanelBackground` mattered. It has no
+`background` suffix, so the wildcard never reached it and no SAFF value ever did
+either; the button bar under Cancel/Apply/OK fell through to a stock IntelliJ
+grey that owes nothing to the palette. It is set to the dialog's own background
+now, with `southPanelDivider` to match, so the bar is part of the dialog rather
+than a tray under it.
+
+### Italic is how this palette says "not the author"
+
+Comments have always been italic in both surfaces. Inlay hints are the same kind
+of text — the compiler talking over your shoulder, not something you typed — so
+they are italic now too, in IntelliJ and in Zed.
+
+In IntelliJ they were part of the `chrome` role, which is a grab-bag: matched
+braces, search results, folded text, breadcrumbs, the rainbow indent guides. None
+of those wants a slant, so the five inlay keys moved out into a role of their own:
+
+    INLAY_DEFAULT              INLINE_PARAMETER_HINT
+    INLAY_TEXT_WITHOUT_BACKGROUND   INLINE_PARAMETER_HINT_CURRENT
+                               INLINE_PARAMETER_HINT_HIGHLIGHTED
+
+Three of those five are also written by `editorMarkAttributes`, which runs last
+in `allAttributes` and wins, so the slant is repeated there. Setting the role
+alone left three hints upright and two italic — the generated `.icls` is the only
+place that shows it, which is why it is worth checking rather than assuming.
+
+In Zed it is one line: `syntax.hint` gains `font_style: "italic"`, next to
+`predictive`, which already had it.
+
+### `Button.background` is the rectangle, not the button
+
+A Swing button is a rectangle. `DarculaButtonUI` draws the rounded shape *inside*
+that rectangle, and fills the rest with `Button.background`. Set it to anything
+other than the panel the button sits on and the leftover corners show as a square
+patch around every button — which is why neither of the platform's own themes
+sets it at all. They let the `'*'` wildcard hand it the panel's own value, so the
+rectangle is always invisible.
+
+SAFF was setting it to `surface`, the chrome tone, 3.8 units from the dialog it
+was sitting on. It is unset now, and the fill of the rounded shape is named
+directly as `startBackground`/`endBackground` so it comes from the palette rather
+than from whatever the LaF falls back to. `Button.arc` is pinned at 8 so every
+button has one corner radius regardless of what a parent theme decides.
+
+### A floating surface is lifted, and lifted is lighter
+
+`surface` is the chrome tone — toolbar, tabs, status bar — and it is *darker*
+than the page in light and *lighter* than it in dark. That is right for chrome,
+which is attached to the frame, and wrong for anything that floats: popups sank
+in one theme and rose in the other.
+
+`raised` is the rung a popup, menu, completion list or balloon sits on, and it
+goes lighter in both modes: `#F7FAF8` in light, `#20312A` in dark. It needs no
+override in the Islands variants — it already lands on exactly the tone the
+platform's own Islands themes use for `popup-bg`.
+
+### Islands
+
+IntelliJ 2026.1 added a second way to paint the frame: the editor and each tool
+window become rounded panels floating on a ground, and the seams between them are
+replaced by the gap. The platform switches it on for any theme whose `ui` map
+sets `Islands: 1`, paints it from the `Island.*` keys, and files it under Islands
+in Settings → Appearance → Theme when the `themeProvider` carries
+`targetUi="islands"`. All three come from reading the platform's own
+`ManyIslandsLight.theme.json`; the keys are documented in the bundled
+`IntelliJPlatform.themeMetadata.json` as `since: 2026.1`.
+
+`Island.borderWidth` is not a stroke. It is a ring the island paints in its own
+colour, which is why `Island.borderColor` is the island and not the ground.
+
+The variant introduces no new colour. JetBrains puts ground and island 6.3
+(light) and 5.9 (dark) OKLab units apart; the rungs SAFF already has reach 5.6
+and 4.7 on the same measurement, so:
+
+| | ground | island | dialog | popup |
+|---|---|---|---|---|
+| light | `stone` #E1E9E4 | `surface` #F7FAF8 | `page` | `surface` |
+| dark | `stone` #20312A | `surface` #16251F | `surface` | `stone` |
+
+The ground is `stone` in both modes — darker than the island in light, lighter in
+dark. That is not two rules: the rung moves *toward mid-grey* either way, which is
+the direction the platform's own themes move. A dialog is not an island, so light
+seats it between the two and dark, having no rung there, gives it the island's own
+value. A popup floats, so it is the lighter of the pair in both modes.
+
+There is no seam left to colour, so `border` becomes the ground and disappears
+into the gap — which is what the platform's themes do too.
+
+The island themes name their editor scheme by name (`SAFF Light`) rather than by
+resource path. Two providers pointing at the same `/themes/saff-light.xml` would
+register the scheme twice and show it twice in the Color Scheme dropdown.
+
 ### Why terminal syntax highlighting is not SAFF, and is not meant to be
 
 `ghostty +list-themes` previews a `bat` sample drawn with ANSI slot *indices*,
@@ -226,8 +369,16 @@ rm  ~/Library/Application\ Support/JetBrains/<IDE>/plugins/SAFF-theme-<old>.jar
 cp  editor-themes/SAFF-theme-<new>.jar ~/Library/Application\ Support/JetBrains/<IDE>/plugins/
 ```
 
-Minor for a new role or a colour that moves, patch for key coverage and fixes.
-**1.1.0** added the `field` role.
+Minor only for something genuinely new — a syntax role, a whole theme. **Patch
+for every fix**, including one that moves a colour: correcting a value that was
+wrong is not a new feature, and a stream of minor bumps for repairs makes the
+number say nothing.
+
+**1.1.0** added the `field` role. **1.2.0** split the UI seam from the control
+outline and added the two Islands themes. **1.3.0** gave floating surfaces their
+own rung and stopped the dialog button bar painting its own band. **1.3.1** took
+the square patch out from behind every button. **1.4.0** added the `hint` role —
+new role, so minor rather than patch.
 
 ## What the colours mean
 
