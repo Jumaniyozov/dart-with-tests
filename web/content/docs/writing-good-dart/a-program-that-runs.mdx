@@ -10,7 +10,7 @@ but a person at a terminal cannot, and a program nobody can start is not a progr
 
 This study gives the package a front door. By the end of it, `expenses add 12.50 coffee` works.
 
-The whole of that door is nine lines:
+The whole of that door is four statements:
 
 <include cwd lang="dart" meta='title="bin/expenses.dart"'>../code/ch24_expenses/bin/expenses.dart#main</include>
 
@@ -218,8 +218,8 @@ Arguments are a list, so study 14's list patterns read them: a literal for the c
 binding for the next, `...` for the rest, and a `when` guard to separate two mistakes that
 deserve different answers.
 
-The library returns an `Outcome` and never prints. That keeps `dart:io` in one file of nine
-lines and makes every command testable without a terminal.
+The library returns an `Outcome` and never prints. That keeps `dart:io` in one file of four
+statements and makes every command testable without a terminal.
 
 Two things here are deliberately worse than they should be. `penceFrom` answers `null` and
 cannot say why — study 26. The parser handles no `--flags`, no abbreviations and no

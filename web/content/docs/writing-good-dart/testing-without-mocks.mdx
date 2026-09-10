@@ -38,8 +38,9 @@ instead of building one.
 
 Both are the same move. Something the function used to reach out and grab is handed to it
 instead. What is left over is the thing this study is about, and there is only one of it — a
-call to `DateTime.now()`, buried three functions deep, that makes the day an expense is
-recorded on depend on when the test happens to run.
+call to `DateTime.now()` two calls below the function a test can reach, in `run` → `_add` →
+`_record`, which makes the day an expense is recorded on depend on when the test happens to
+run.
 
 The rule underneath: **a function is testable exactly to the extent that its answer depends only
 on what it was given.** Everything else is something you cannot control from a test, and every
@@ -48,9 +49,12 @@ one of them is a seam waiting to be cut.
 ## 27.2 An interface you own
 
 Study 25 shipped `Store` as an ordinary class, on purpose — an interface with one implementation
-is machinery a reader cannot judge. Two things happen when you try to fake it anyway:
+is machinery a reader cannot judge. Here is what it costs to fake one anyway:
 
 ```dart title="bin/faking.dart"
+import 'package:ch25_expenses/expenses.dart';
+
+/// A test double for study 25's concrete `Store`.
 class FakeStore implements Store {
   final List<Expense> kept = [];
 
@@ -146,7 +150,7 @@ with `when(...).thenReturn(...)` for stubbing and `verify(...)` for assertions.
 
 Two reasons it is not in this book. The first is that it needs code generation, and generated
 code is a Book IV subject — putting `build_runner` in study 27 would mean explaining it here.
-The second is the one that matters: everything this study needs is a class with two methods.
+The second is the one that matters: everything this study needs is a class with two members.
 When a fake is that cheap, generating one buys nothing.
 
 Reach for mockito when the interface is large, when you are doubling something you did not
@@ -173,21 +177,38 @@ That test could not have been written yesterday. It would have passed on the 9th
 The obvious next move is the wrong one. A `Clock` interface, a `SystemClock` that answers
 `DateTime.now()`, a `FixedClock` for tests — three types where a parameter does the job, and
 none of them can do anything the parameter cannot. Effective Dart has a name for it, and so
-does the linter:
+does the linter. Three ways to write the same empty promise:
+
+```dart title="bin/clocky.dart"
+abstract class ClockA {
+  DateTime now();
+}
+
+abstract interface class ClockB {
+  DateTime now();
+}
+
+abstract class ClockC {
+  DateTime get now;
+}
+
+void main() => print([ClockA, ClockB, ClockC]);
+```
 
 <Console>
 <include cwd lang="saff-console" meta='title="terminal"'>../code/ch27_expenses/transcripts/one_member.txt</include>
 </Console>
 
-Read both runs. The first is this book's lint set, which does not have `one_member_abstracts` in
-it, so all three declarations pass. The second turns the rule on, and it catches the two that
-declare a **method** — and says nothing about the third, which declares a **getter**. The lint
-is narrower than the guideline it enforces. `abstract class Clock { DateTime get now; }` slips
-past a linter that has been told to look for exactly that shape.
+Read both runs. The first is this book's lint set, which does not carry
+`one_member_abstracts`, so all three pass. The second turns the rule on and it catches lines 1
+and 5 — `ClockA` and `ClockB`, the two that declare a **method**. It says nothing about `ClockC`
+on line 9, which declares a **getter** and is otherwise the same empty promise.
 
-Which is why the rule is worth knowing rather than delegating. The seam is the parameter. An
-interface is one way to make a parameter interesting, and here there is nothing to make
-interesting: a date has no behaviour to swap.
+The lint is narrower than the guideline it enforces, and the shape it misses is the one you
+would actually write. Which is why the rule is worth knowing rather than delegating.
+
+The seam is the parameter. An interface is one way to make a parameter interesting, and here
+there is nothing to make interesting: a date has no behaviour to swap.
 
 Both seams are tied off in the same place, in the only file no test ever runs:
 
@@ -225,8 +246,8 @@ and cutting a seam means handing it in instead.
 
 Two seams, two shapes, and the shape follows from whether there is behaviour worth swapping.
 `Store` is an interface because an in-memory list and a file genuinely differ. `today` is a
-value because one date is much like another, and a one-member abstract class in front of it
-would be three types doing the work of a parameter.
+value because one date is much like another, and a `Clock` in front of it would be three types
+doing the work of a parameter.
 
 Declare an interface as an interface. `abstract interface class` says implement me, do not
 extend me; `implements` against an ordinary class couples a double to every member that class
@@ -244,11 +265,11 @@ Also met: `abstract interface class`, an extension on a type you declared, `setU
 fake per test, and `one_member_abstracts` — a lint narrower than the guideline behind it.
 
 Study 28 gives the tracker a second real `Store`, one that writes to a file, and `async` returns
-after eleven studies away.
+after five studies without it.
 
 ## Challenges
 
-Three challenges, ten failing tests. Make them pass one at a time. Do not edit the tests. The
+Three challenges, nine failing tests. Make them pass one at a time. Do not edit the tests. The
 first two implement `Store`, and the third makes a seam without an interface anywhere in it.
 
 <Console>

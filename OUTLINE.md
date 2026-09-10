@@ -366,6 +366,8 @@ before it is written as prose.
 | `one_member_abstracts` on a one-**getter** abstract class | **Silent.** The lint is narrower than the guideline behind it. |
 | `one_member_abstracts` in this book's lint set | **Not** in it. All three shapes analyze clean until it is switched on. |
 | `Money.fromPence(250) == Money.fromPence(250)` before study 27 | **`false`** — no `==`, and a factory builds a new object each call. |
+| A primary constructor on a mutable class with `implements` | Legal. `class CappedStore(final int limit) implements Store { … }` analyzes clean and runs. |
+| A primary constructor on a generic class | Legal. `class Slots<T>(final int capacity) { … }` analyzes clean and runs. |
 
 ### 23 — Libraries, imports and privacy · `libraries` · `ch23_expenses` — **WRITTEN**
 
@@ -594,10 +596,37 @@ paragraph and the `money` region; `ch25_expenses/SLICE` gained `lib/src/money.da
 Also fixed: the barrel doc comment said **"Five exports now"** over six exports in
 `ch25_expenses` and seven in `ch26_expenses`, and both were on the page.
 
+Found by the audit pass after it shipped, and all of it prose or tooling rather than
+design:
+
+- **Two of Book I's transcripts had been false since `efa9fb6`**, and this study's own
+  `Money` fix falsified three more. `tool/check_transcripts.dart` now re-runs every green
+  `dart test` transcript and every "Three challenges, N failing tests" sentence. It is
+  proved against injected drift in both directions.
+- **Three stubs used the pre-3.13 constructor form**, two of them written this session and
+  one in study 18's challenges since Book I. Measured: the header form is legal on a
+  mutable class with `implements` and on a generic one, so nothing justified the older
+  spelling. ADR 0002 is amended and the sweep is one grep.
+- **Two shown regions used a name declared outside every region** — `day` in
+  `store_test.dart` and `late Store store` in `command_test.dart`. This is the inverse-orphan
+  defect the standing requirements describe and no tool can see. Both declarations moved
+  inside. A sweep of all five Book II packages found no others.
+- **The `one_member` transcript named lines in a file the reader never saw**, and the
+  `faking.dart` block started at the class while the error said line 4. Both files are now
+  inlined whole, so the line numbers in the errors point at code on the page.
+- **"async returns after eleven studies away" is five**, and ADR 0003 said it in a sentence
+  that named all five. Measured: `grep -rl 'async\|await'` over 23–27 returns nothing.
+- **Three more counts were written from an impression**: `Store.totals` "four lines" is ten,
+  and `bin/expenses.dart` "nine lines" is eight, repeated on two pages. Both are now stated
+  as *four statements* or not at all. A standing requirement records the sweep.
+- Challenge 1 lost its `ArgumentError` requirement with the constructor change, so the
+  count is **nine failing tests**, not ten.
+
 ### 28 — Files · `files` · `ch28_expenses`
 
 Teaches `dart:io`: `File`, `readAsString`, `writeAsString`, `exists`, directories, and
-`async`/`await` returning after eleven studies away.
+`async`/`await` returning after five studies away — 23–27 carry no `async` or `await`
+at all, measured.
 
 Toy: `lib/src/file_store.dart` — a second `Store` implementation, one expense per line.
 
@@ -944,6 +973,15 @@ existing transcripts and verified to reproduce.
   `traceOf` declared above `main()` and never shown. Check with: for each shown
   region, every name it calls must be declared either inside a shown region, in
   `dart:core`, or in a package the reader has been told about.
+- **A count in prose is a claim, and none of the counts in this book were counted.**
+  Four were wrong and every one was written from an impression: `Store.totals` called
+  "four lines" is ten; `bin/expenses.dart` called "nine lines" is eight lines of code and
+  fourteen as rendered, and study 25 repeated the number without checking it; the barrel's
+  "Five exports now" stood over six and then seven; `async` returning "after eleven
+  studies away" is five, in a sentence that names all five. Sweep with
+  `grep -rnoE "\b(one|two|…|twelve) (lines?|exports?|studies|types?|members?)\b"` over
+  `web/content/docs/`, and prefer a count that cannot rot — *four statements* over *nine
+  lines*, or no number at all where the number was never the point.
 - **Inline code in prose drifts; transcluded code cannot.** Backtick fragments
   that quote real source are outside the include machinery and nothing checks
   them. Study 20's prose quoted `value == null || value < 0 ? noAmount(typed)
@@ -952,10 +990,14 @@ existing transcripts and verified to reproduce.
 - **`dart format` must be clean across `code/`**, because study 1 tells the
   reader to format on save and two included files had drifted.
   `dart format --output=none --set-exit-if-changed .` is the check.
-- **The challenge intro states a count, so the count is a claim.** Every study
-  from 2 onward opens its Challenges with "Three challenges, N failing tests";
-  N must equal the `-N` on the last line of `dart test exercises/` in that
-  study's package. Studies 2-14 spent the whole of Book I saying "three tests"
+- **The challenge intro states a count, so the count is a claim.** Where a study
+  opens its Challenges with "Three challenges, N failing tests", N must equal the
+  `-N` on the last line of `dart test exercises/` in that study's package.
+  `dart run tool/check_transcripts.dart` now enforces this; all 22 were correct
+  when it was first run. Studies 15-18 deliberately state no count and describe
+  the shape of the challenge instead — a study that states no number cannot have
+  a stale one, and this requirement previously claimed a uniformity the book does
+  not have. Studies 2-14 spent the whole of Book I saying "three tests"
   when the real number was four to seven, which is the smallest possible
   version of this book's central failure — a sentence written from an
   expectation rather than from a run. Re-run the count whenever a challenge
@@ -990,6 +1032,19 @@ existing transcripts and verified to reproduce.
   `dart run tool/check_regions.dart` enforces it and normalises the package name first.
   It found the file-scoped version's four true misses in study 25 and cleared its three
   false alarms.
+- **A transcript is captured once and can be falsified by any later commit, and
+  nothing was watching.** `check_slices` skips `transcripts/` on purpose, because a
+  transcript legitimately differs whenever the suite grows; `check_regions` and
+  `check_promises` never look at one. So the audit at `efa9fb6` — the pass that added
+  tests to `ch07_basket` and `ch08_tally` so two unasserted claims would be executed —
+  left both packages' `all.txt` saying `+12` over a suite of 13, on published pages,
+  for every commit since. Its own message records "90 tests pass": it counted the
+  workspace and not the transcripts. `dart run tool/check_transcripts.dart` re-runs
+  every `dart test` transcript that claims **All tests passed** and compares the count.
+  It cannot check a transcript of a *failure* — those are captured from a temporary
+  broken state that no longer exists, which is what these requirements ask for — nor a
+  truncated one, so it reports how many it skipped rather than implying coverage it
+  does not have.
 - **The promise table is checked, not trusted.** `dart run tool/check_promises.dart`
   asserts that every row corresponds to a study whose page really does name the study it
   is said to promise. Three rows failed on first run, two of them naming a study neither

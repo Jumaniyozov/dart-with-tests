@@ -2,12 +2,12 @@ import 'package:ch27_expenses/expenses.dart';
 import 'package:test/test.dart';
 
 void main() {
-  late Store store;
   // #region setup
   /// The two things the program used to reach out for, made into two values a
   /// test controls. `setUp` runs before every `test`, so no test can be handed
   /// a store another test has already written to.
   final today = Day(2026, 9, 9);
+  late Store store;
   setUp(() => store = InMemoryStore());
   // #endregion setup
 

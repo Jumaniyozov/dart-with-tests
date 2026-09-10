@@ -41,14 +41,20 @@ unresolved `package:` imports. It looks like the book is broken. It is not.
 
 ```bash
 cd code && dart analyze && dart test && dart format --output=none --set-exit-if-changed .
-cd code && dart run tool/check_slices.dart
+cd code && dart run tool/check_slices.dart      # a study changed only what its SLICE says
+cd code && dart run tool/check_regions.dart     # every new or changed region is on a page
+cd code && dart run tool/check_promises.dart    # the promise table matches the prose
+cd code && dart run tool/check_transcripts.dart # every green transcript still runs green
 cd web && npx next build
 ```
 
-The last one is the only real check on the site; the dev server caches stale colour. If
+`next build` is the only real check on the site; the dev server caches stale colour. If
 colours look wrong in dev, `rm -rf .next/cache .source` before believing it.
 
-`check_slices` has nothing to compare until Book II's second package exists.
+The four `check_*` tools cover different halves and none subsumes another —
+`OUTLINE.md`'s standing requirements say what each one can and cannot see.
+`check_transcripts` is the slow one: it re-runs a test suite per green transcript and
+per challenge count, so give it a minute or two.
 
 ## Open, not on the book
 

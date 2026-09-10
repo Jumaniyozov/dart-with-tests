@@ -67,10 +67,12 @@ second implementation exists, is machinery the reader cannot yet evaluate.
 no package in studies 1–22 imports either. Everything about files and JSON is new
 ground, which is why they get two studies rather than one.
 
-**`async` returns after eleven studies away.** Studies 21 and 22 taught futures and
-streams; nothing in 23–27 needs them. Study 28 brings them back, because `dart:io`'s
-file API is asynchronous first and the synchronous forms are the exception. That gap is
-acceptable — but the study must reintroduce rather than assume.
+**`async` returns after five studies away.** Studies 21 and 22 taught futures and
+streams; nothing in 23–27 needs them, and `grep -rl 'async\|await'` over their packages
+returns nothing. Study 28 brings them back, because `dart:io`'s file API is asynchronous
+first and the synchronous forms are the exception. That gap is acceptable — but the study
+must reintroduce rather than assume. **Amended: this said "eleven studies away" while the
+same sentence named the five that skip it. Measured, the gap is 23, 24, 25, 26 and 27.**
 
 **Study 28 cannot cite a lint for preferring async I/O.** `avoid_slow_async_io` is not
 in `package:lints/recommended.yaml`, and it argues the opposite for `exists` and `stat`.
@@ -85,8 +87,12 @@ want. `OUTLINE.md`'s "Deliberately not in Book I" list is amended.
 instant, `local == utc` is false while `local.hashCode == utc.hashCode` is true;
 `DateTime(2026, 9, 9).toIso8601String()` emits no offset; and `DateTime(2026, 2, 31)`
 silently yields the 3rd of March. An `Expense` therefore carries a `Day`, and instants
-live only at the edges, where study 27's injected clock reads them and study 30 explains
-them.
+live only at the edges — `bin/expenses.dart` reads one, `Day.on` converts it, and study
+30 explains why. **Amended: this said "study 27's injected clock", and study 27 does not
+have one.** Writing it settled that a `Clock` interface, a `SystemClock` and a
+`FixedClock` are three types where `run(args, store, today)` does the job, and that the
+guideline against them is *AVOID defining a one-member abstract class when a simple
+function will do*. The seam is the parameter.
 
 **`Money` is non-negative, which breaks with study 19 on purpose.** The tracker records
 money out, so every entry has the same direction and the number needs no sign. Study

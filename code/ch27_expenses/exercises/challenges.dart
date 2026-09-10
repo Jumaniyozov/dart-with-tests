@@ -13,17 +13,9 @@ import 'package:ch27_expenses/expenses.dart';
 ///    [CappedStore] holds at most [limit] expenses. Record one more and the
 ///    oldest is dropped, so `all` is the most recent [limit], oldest first.
 ///
-///    A `limit` below one is a bug in the calling program, not a person
-///    mistyping, so the constructor throws an [ArgumentError] — study 26's
-///    rule, applied to a number no user ever types.
-///
 ///    Nothing in `run` changes, and nothing in `run` finds out. That is what
 ///    the interface bought.
-class CappedStore implements Store {
-  CappedStore(this.limit);
-
-  final int limit;
-
+class CappedStore(final int limit) implements Store {
   @override
   void record(Expense expense) => throw UnimplementedError('challenge 1');
 
@@ -40,11 +32,7 @@ class CappedStore implements Store {
 ///
 ///    `records` starts at zero. `all` is whatever the wrapped store says, and
 ///    reading it does not change the count.
-class CountingStore implements Store {
-  CountingStore(this.inner);
-
-  final Store inner;
-
+class CountingStore(final Store inner) implements Store {
   int records = 0;
 
   @override

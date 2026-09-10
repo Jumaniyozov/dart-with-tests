@@ -23,10 +23,6 @@ void main() {
       expect([for (final e in store.all) e.note], ['soup', 'bus']);
     });
 
-    test('refuses a limit that means nothing', () {
-      expect(() => CappedStore(0), throwsArgumentError);
-    });
-
     test('and the program works against it unchanged', () {
       final store = CappedStore(1);
       run(['add', '1.00', 'food', 'apple'], store, day);

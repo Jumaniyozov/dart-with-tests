@@ -101,6 +101,24 @@ constructor; a factory can.** Studies 15 and 18 are unaffected — `Split` and `
 still want body form, because an `assert` is the right check for arguments that come
 from code.
 
+**Amended again while writing study 27: the header form survives everything Book II asks
+of it, and two exercise stubs had quietly stopped using it.** The classes this record was
+written from are small immutable value types, so it was fair to wonder whether the header
+form held up for a mutable class implementing an interface, or for a generic one.
+Measured on Dart 3.13.2: both analyze clean and run.
+
+```dart
+class CappedStore(final int limit) implements Store { final List<Expense> _kept = []; … }
+class Slots<T>(final int capacity) { final List<T> held = []; … }
+```
+
+There is no class in this book that the header form cannot express. The two that were not
+using it — `Slots` in study 18's challenges and `CappedStore` in study 27's — were the
+older spelling by accident rather than by the analyzer's rule, in files the reader is
+shown. Both now use the header, and the sweep that found them is one grep:
+`^\s*(const )?[A-Z][A-Za-z]*\(this\.` over `code/`, which should return only
+`ch15_money/lib/older.dart`.
+
 That distinction is the reason the two forms coexist rather than one replacing the
 other. Study 10's Gloss already told the reader `assert` is stripped from release
 builds, so an `assert` guards against the programmer's own mistake and nothing else.

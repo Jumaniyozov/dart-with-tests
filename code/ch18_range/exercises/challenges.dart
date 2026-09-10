@@ -17,11 +17,8 @@ Map<T, int> firstSeenAt<T>(List<T> values) {
 /// 2. A box holding at most [capacity] things.
 ///    `add` puts a value in and answers `true`, or answers `false` and
 ///    changes nothing when the box is full. [held] is what is in it.
-class Slots<T> {
-  final int capacity;
+class Slots<T>(final int capacity) {
   final List<T> held = [];
-
-  Slots(this.capacity);
 
   bool add(T value) {
     throw UnimplementedError('challenge 2');

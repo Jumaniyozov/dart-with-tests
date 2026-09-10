@@ -107,7 +107,7 @@ categories:
 data, in a map that thinks it has three keys. Nothing threw. Nothing was reported. The report
 is simply wrong.
 
-This is why `Store.totals` can be four lines and still be trustworthy:
+This is why `Store.totals` can be one pass over a list and still be trustworthy:
 
 <include cwd lang="dart" meta='title="lib/src/store.dart"'>../code/ch25_expenses/lib/src/store.dart#store</include>
 
@@ -205,7 +205,7 @@ store the run needs:
 
 <include cwd lang="dart" meta='title="bin/expenses.dart"'>../code/ch25_expenses/bin/expenses.dart#main</include>
 
-Still nine lines, still the only file in the package that has heard of a terminal. The store it
+Still four statements, still the only file in the package that has heard of a terminal. The store it
 builds is empty every time, and forgets everything when the program stops — which makes `list`
 useless today and is exactly what study 28 repairs.
 

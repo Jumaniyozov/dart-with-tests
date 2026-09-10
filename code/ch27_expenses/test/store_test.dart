@@ -1,9 +1,11 @@
 import 'package:ch27_expenses/expenses.dart';
 import 'package:test/test.dart';
 
+// #region spy
+/// The one day everything in this file happens on. It is a value, so a test can
+/// write it down; that is 27.5's half of the study, used here by the other.
 final day = Day(2026, 9, 9);
 
-// #region spy
 /// A store that remembers how it was called and nothing else.
 ///
 /// This is a **mock**, hand-written. `package:mockito` generates classes like
