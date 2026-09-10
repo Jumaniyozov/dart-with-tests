@@ -1,0 +1,279 @@
+---
+title: Dates, times and periods
+study: 30
+direction: A DateTime is an instant. A calendar day is not one, and a calendar month is not a length of time.
+description: The four ways a DateTime refuses to be a date, why Day and Period exist, and a list command that can be asked for one month.
+---
+
+Study 25 gave the tracker a `Day` and said, in one line, that a `DateTime` was the wrong type
+for it. Studies 26 to 29 took that on trust. This is where the bill arrives, and it is longer
+than the line suggested.
+
+<Drill n={1}>
+
+<Direction>The same wrong date, handed to the type dart:core ships and to the type this book wrote.</Direction>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch30_expenses/transcripts/instants.txt</include>
+</Console>
+
+</Drill>
+
+Three answers and then an error, and the three answers are the study. `DateTime.parse` was
+handed the 31st of February and answered the 3rd of March — no throw, no `null`, just a
+different day than the one it was given. `Day.parse` answered `null`. Then a timestamp written
+by somebody five hours ahead of Greenwich, on the 10th, came back as the 9th. Only the last
+line is an error, and it came from the only type that raised one.
+
+## 30.1 An instant is not a day
+
+A `DateTime` is a point on a timeline. It answers *when*, in the sense a stopwatch means, and
+a calendar date is a different kind of thing: the 9th of September is the 9th of September in
+Tashkent and in London, and it is not a moment at all — it is a box that about twenty-four
+hours' worth of moments fall into, and which moments those are depends on where you stand.
+
+Dart's `DateTime` knows this about itself, which is why it carries a flag:
+
+<include cwd lang="dart" meta='title="test/instant_test.dart"'>../code/ch30_expenses/test/instant_test.dart#equality</include>
+
+The first of the four, and the only one you have already seen: 25.4 measured it to justify
+`Day`, and the assertions have moved here so that all four live in one file. Read the second
+and third tests together. `local` and `utc` are **the same moment** — the same microsecond
+count, and `isAtSameMomentAs` says so — and they are **not equal**, because `==` compares
+`isUtc` as well as the instant. And they have **the same `hashCode`**, because that is derived
+from the instant alone.
+
+Study 25 put that pair in bold: equal hash codes are not evidence of equality. It is a rule you
+rarely get to see broken, and here it is in `dart:core`, on a type every program uses. It is
+not a bug. Two readings of the same moment, one in local time and one in UTC, genuinely are
+different readings — which is `==` being a question each type answers for itself, and
+`DateTime` answering it in a way almost nobody expects.
+
+<Gloss title="So which comparison did you want?">
+`isAtSameMomentAs` is instant equality and ignores the flag. `isBefore` and `isAfter` are the
+same: they compare moments, not calendars.
+
+`==` is the one to be careful with, because it is the one you get by accident — from
+`expect`, from `contains`, from a `Set`, from a `Map` key. A `Set<DateTime>` holding the same
+instant twice, once local and once UTC, has two elements in it. That is worth knowing before
+you meet it.
+</Gloss>
+
+And it does not write down which reading it was:
+
+<include cwd lang="dart" meta='title="test/instant_test.dart"'>../code/ch30_expenses/test/instant_test.dart#offset</include>
+
+`2026-09-09T00:00:00.000`. No `Z`, no `+05:00`, nothing at all to say which midnight that was
+— and the string is byte-identical whether the program ran in Tashkent, London or New York,
+where it named three different moments. Study 29 said this in one paragraph to justify storing
+a `Day`; here it is with the rest of its consequences attached.
+
+The fourth test is the one worth staring at. A timestamp written by somebody five hours ahead
+of Greenwich, on the **10th**, parses to a `DateTime` whose `day` is **9**. `DateTime.parse`
+converts to UTC and keeps the instant, which is the right thing to do with an instant and
+throws away the calendar day the writer meant. Two strings naming different days are `==`,
+because as instants they are the same moment.
+
+## 30.2 What a DateTime will not refuse
+
+The second trap is the one the Drill opens with, and it is quieter:
+
+<include cwd lang="dart" meta='title="test/instant_test.dart"'>../code/ch30_expenses/test/instant_test.dart#overflow</include>
+
+There is no such date as the 31st of February, and `DateTime` builds one anyway by rolling
+forward into March. The 13th month is next January. Month and day arithmetic overflows in
+silence and **never throws**, which means there is no error to catch and nothing to test for
+— the only way to find out is to compare against the answer you expected.
+
+The third test is why this belongs in a study about a file format. Study 29 stores
+`2026-09-09` and reads it back with `Day.parse`, which answers `null` for anything that is not
+a real day, and study 29's tests prove it. Had it stored a `DateTime` string instead, a file
+somebody edited badly would not be rejected and would not throw. It would come back as a
+different day, and the program would carry on.
+
+Then the last test, which is the honest half. Day zero of a month is the last day of the
+month before — `DateTime(2026, 3, 0)` really is the 28th of February, and `DateTime(2024, 3, 0)`
+really is the 29th. It is the standard trick for asking how long a month is, it is correct,
+and it works by *exactly the mechanism that produced the bug three tests above it*.
+
+This book writes the table out instead:
+
+```dart title="lib/src/day.dart"
+static int lastDayOf(int year, int month) => switch (month) { … }
+```
+
+Study 25 shipped that method with an underscore in front of it, and this study took the
+underscore off. That is the whole change. `Period` needs to know how long a month is,
+`Period` lives in another file, and study 23's rule is that a file is the privacy boundary
+— so a helper that two types share cannot stay private to one of them.
+
+## 30.3 A month is not a length of time
+
+The third trap is the one people reach for after they have learned the first two:
+
+<include cwd lang="dart" meta='title="test/instant_test.dart"'>../code/ch30_expenses/test/instant_test.dart#duration</include>
+
+A `Duration` is a count of microseconds. `Duration(days: 1)` is not *a day*, it is twenty-four
+hours, and `inDays` divides and truncates rather than consulting a calendar. There is no
+`Duration` that means *a month*, because February 2026 is 28 days, March is 31 and February
+2024 is 29, and no arithmetic on microseconds turns one of those into another.
+
+So a period is not a start and a length:
+
+<include cwd lang="dart" meta='title="lib/src/period.dart"'>../code/ch30_expenses/lib/src/period.dart#period</include>
+
+Two integers, both of them things a person says out loud, and nothing in the type is an
+instant — so there is nothing in it with a time zone to get wrong. `first` is always the 1st.
+`last` is the only interesting one, and it is where `Day.lastDayOf` earns being public.
+
+`contains` is two integer comparisons and deliberately no ordering. A calendar month *is* the
+days that share its year and its month. Asking whether a day sits between `first` and `last`
+would be a longer road to the same answer with two ends to get wrong, and it would need `Day`
+to be comparable, which it is not yet — study 31 has a reason to want that and this study does
+not.
+
+<include cwd lang="dart" meta='title="test/period_test.dart"'>../code/ch30_expenses/test/period_test.dart#covers</include>
+
+It is a value by study 25's rules, which by now is a checklist rather than an argument: equal
+contents mean equal periods, `hashCode` agrees, and a month that has never existed cannot be
+built.
+
+<include cwd lang="dart" meta='title="test/period_test.dart"'>../code/ch30_expenses/test/period_test.dart#value</include>
+
+`Period.parse` is `Day.parse` with one dash instead of two, and it keeps the positional
+character check for the same reason: `-123-01` is seven characters with a dash in the right
+place, and `int.parse` takes the sign.
+
+<include cwd lang="dart" meta='title="test/period_test.dart"'>../code/ch30_expenses/test/period_test.dart#parse</include>
+
+## 30.4 Where totals went, and what came off with it
+
+`list` can be asked for one month:
+
+<include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch30_expenses/lib/src/command.dart#usage</include>
+
+<include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch30_expenses/lib/src/command.dart#run</include>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch30_expenses/transcripts/month.txt</include>
+</Console>
+
+That feature is small and it forced a change that is not. `list 2026-09` totals **the
+expenses it showed**, and `totals` was hanging off `Store`, which knows only about all of
+them. So it moved:
+
+<include cwd lang="dart" meta='title="lib/src/expense.dart"'>../code/ch30_expenses/lib/src/expense.dart#totals</include>
+
+Study 27 put `totals` on an extension rather than on the `Store` interface, and said in as
+many words that it was a holding position — the extension being what would make the move
+cheap, since nothing implements one. This is the move. It is derived from a list of expenses
+and never needed to know where the list came from, so a caller holding one month of a store's
+expenses asks exactly the same question.
+
+Now notice what came off with it. Hanging off `Store`, `totals` had to be
+`Future<Map<Category, Money>>`, because reaching the expenses meant awaiting. It is a plain
+`Map` now.
+
+<include cwd lang="dart" meta='title="test/store_test.dart"'>../code/ch30_expenses/test/store_test.dart#derived</include>
+
+Study 28 called `async` contagious and it is, but it is worth being precise about how it
+spreads: **along calls**. A function that awaits is a function whose callers await. `totals`
+awaited because it was reached through something that waits, not because adding money up
+takes time — and moving it off the interface removed the call, which removed the future.
+That is the shape of the cure, and it is the only one there is: `async` does not come off a
+function, it comes off the path to it.
+
+<include cwd lang="dart" meta='title="test/command_test.dart"'>../code/ch30_expenses/test/command_test.dart#month</include>
+
+The range line is not decoration. `list 2026-02` says `2026-02-01 to 2026-02-28`, and that is
+the program telling you what it actually covered rather than what you asked for. In a leap
+year it says the 29th. It is one line of output and it is the only place a reader can check
+that the calendar was consulted rather than guessed.
+
+<Gloss title="Daylight saving, which this study will not fake">
+Every trap above reproduces on your machine. Daylight saving does not, and that is precisely
+why it is dangerous.
+
+Twice a year, in most of the world, a local day is 23 or 25 hours long — and once a year one
+local time happens twice. `DateTime` handles the instants correctly and cannot help you with
+the calendar: adding `Duration(hours: 24)` to a local `DateTime` lands on a different
+wall-clock time than it started at, and dart.dev's own warning says so.
+
+A transcript of that would depend on the reader's machine having the right timezone
+database and the right timezone, and this book does not print output it cannot promise you
+will see. So: the hazard is named, and the answer is
+[`package:timezone`](https://pub.dev/packages/timezone) — published by `labs.dart.dev`, which
+ships the IANA database and a `TZDateTime` that knows which rules were in force at a given
+moment. Nothing in this program needs it, because nothing in this program stores an instant.
+</Gloss>
+
+<Practice>
+**Do not store an instant where a date belongs.** This is the book's own convention and
+carries no citation, because no published Dart guideline says it — the closest is a warning
+rather than a rule, quoted below.
+
+A `DateTime` answers *which moment*. A birthday, an invoice date, a public holiday and the
+day an expense happened all answer *which box on the calendar*, which is a different question
+with a different answer in every time zone at once. Putting one in the other's place is not a
+precision problem that a well-chosen format string will fix; the value is wrong before it is
+ever printed.
+
+The rule of thumb that follows: **let instants live at the edges.** Read one where the outside
+world hands you one — `bin/expenses.dart` calls `DateTime.now()` and is the only file in this
+package that does — convert it immediately, and let everything inside work in the type that
+matches the question. Study 27 made the conversion a parameter, so nothing below `main` has
+even that much contact with a clock.
+
+The published caution that comes nearest is on dart.dev's
+[dart:core tour](https://dart.dev/libraries/dart-core#dates-and-times): *"Using a `Duration`
+to shift a `DateTime` by days can be problematic, due to clock shifts (to daylight saving
+time, for example). Use UTC dates if you must shift days."* That is one consequence of the
+rule above rather than the rule itself, and it is worth reading as the tip of it.
+</Practice>
+
+The whole study, run at once:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch30_expenses/transcripts/all.txt</include>
+</Console>
+
+## Wrapping up
+
+A `DateTime` is an instant, and four separate things follow from that, every one of them
+measured above rather than remembered. Study 25 needed the first to justify `Day`; the other
+three are what this study came for.
+
+It is not equal to the same moment in another zone, though it hashes the same — which is
+study 25's rule about hash codes, broken in the standard library, on purpose.
+
+It writes itself down with no offset, and reading a string that *has* an offset throws the
+offset away along with the calendar day it was written with.
+
+It refuses nothing. The 31st of February is the 3rd of March, silently and without an error to
+catch, and `DateTime.parse` does it too, which is how a badly edited file becomes a wrong
+answer rather than a rejected one.
+
+And a `Duration` is microseconds, so no `Duration` means *a month*. `Period` is a year and a
+month for that reason, and works out its own days from the calendar.
+
+The rule underneath all four: let instants live at the edges. One call to `DateTime.now()`, in
+the one file no test runs, converted immediately into the type that matches the question.
+
+Also met: `isAtSameMomentAs`, `isUtc`, `toUtc`, `DateTime.parse` and its silence, `Duration`
+and `inDays`, a second value type built to study 25's rules, and an extension that moved from
+an interface to the data — taking a `Future` with it.
+
+Study 31 turns `list <month>` into a report worth the name: ordering, which needs `Comparable`,
+and adding money up, which needs `Money` to have an `operator +`.
+
+## Challenges
+
+Three challenges, eleven failing tests. Make them pass one at a time. Do not edit the tests.
+None of the three needs to know what time it is, and only the third is allowed to build a
+`DateTime` at all.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch30_expenses/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch30_expenses/exercises/challenges.dart</include>

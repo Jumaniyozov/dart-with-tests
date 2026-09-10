@@ -1,0 +1,6 @@
+$ dart run bin/instants.dart
+DateTime.parse('2026-02-31')  ->  2026-03-03 00:00:00.000
+Day.parse('2026-02-31')       ->  null
+DateTime.parse('2026-09-10T04:30:00+05:00').day  ->  9
+Unhandled exception:
+Invalid argument (day): that month has 28 days: 31

@@ -47,8 +47,8 @@ usage: expenses <command>
 ///
 /// That is worth naming rather than resenting. `async` travels up the call
 /// stack and cannot be hidden: a function that awaits is a function whose
-/// callers await. Study 21 said it; this is the first time this program has
-/// paid it.
+/// callers await. Study 28 is where this program first paid that; study 21
+/// taught the keyword and made no claim about how far it spreads.
 Future<Outcome> run(List<String> args, Store store, Day today) async =>
     switch (args) {
       [] || ['help'] => (code: okay, out: usage, err: ''),

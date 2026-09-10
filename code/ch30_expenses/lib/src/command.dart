@@ -2,6 +2,7 @@ import 'category.dart';
 import 'day.dart';
 import 'expense.dart';
 import 'money.dart';
+import 'period.dart';
 import 'reading.dart';
 import 'store.dart';
 
@@ -34,7 +35,8 @@ const usage = '''
 usage: expenses <command>
 
   add <amount> <category> <note>   record what you spent
-  list                             show what has been recorded
+  list [YYYY-MM]                   show what has been recorded, all of it
+                                   or one calendar month of it
   help                             print this''';
 // #endregion usage
 
@@ -60,7 +62,13 @@ Future<Outcome> run(List<String> args, Store store, Day today) async =>
         out: '',
         err: 'usage: expenses add <amount> <category> <note>',
       ),
-      ['list'] => await _list(store),
+      ['list'] => await _list(store, null),
+      ['list', final month] => await _listMonth(store, month),
+      ['list', ...] => (
+        code: misuse,
+        out: '',
+        err: 'usage: expenses list [YYYY-MM]',
+      ),
       [final unknown, ...] => (
         code: misuse,
         out: '',
@@ -104,15 +112,45 @@ Future<Outcome> _record(
   return (code: okay, out: expense.asText, err: '');
 }
 
-Future<Outcome> _list(Store store) async {
-  final recorded = await store.all;
+/// `list` with a month after it.
+///
+/// The parse is separated from the listing because the two failures are
+/// different: a month nobody can read is misuse, and a month with nothing in it
+/// is a perfectly good answer.
+Future<Outcome> _listMonth(Store store, String month) async {
+  final period = Period.parse(month);
+  if (period == null) {
+    return (
+      code: misuse,
+      out: '',
+      err: '"$month" is not a month; write it as 2026-09',
+    );
+  }
+  return _list(store, period);
+}
+
+Future<Outcome> _list(Store store, Period? period) async {
+  final recorded = [
+    for (final expense in await store.all)
+      if (period == null || period.contains(expense.day)) expense,
+  ];
   if (recorded.isEmpty) {
-    return (code: okay, out: 'nothing recorded yet', err: '');
+    return (
+      code: okay,
+      out: period == null
+          ? 'nothing recorded yet'
+          : 'nothing recorded in ${period.asText}',
+      err: '',
+    );
   }
   final lines = [
+    // What the program actually covered, rather than what was asked for. They
+    // are the same here, and saying so is how a reader finds out that February
+    // stops on the 28th without having to trust that it does.
+    if (period != null) ...['${period.first} to ${period.last}', ''],
     for (final expense in recorded) expense.asText,
     '',
-    for (final entry in (await store.totals).entries)
+    for (final entry in recorded.totals.entries)
       '${entry.key}: ${entry.value.asText}',
   ];
   return (code: okay, out: lines.join('\n'), err: '');

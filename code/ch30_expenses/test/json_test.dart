@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:ch29_expenses/expenses.dart';
+import 'package:ch30_expenses/expenses.dart';
 import 'package:test/test.dart';
 
 // #region fixtures
@@ -144,33 +144,4 @@ void main() {
     );
   });
   // #endregion encode
-
-  // #region instant
-  group('why the file holds a Day and not a DateTime', () {
-    test('a local DateTime writes itself down with no offset at all', () {
-      expect(DateTime(2026, 9, 9).toIso8601String(), '2026-09-09T00:00:00.000');
-    });
-
-    test('and the same instant in UTC writes itself down differently', () {
-      final local = DateTime(2026, 9, 9);
-      final utc = local.toUtc();
-      expect(local.isAtSameMomentAs(utc), isTrue);
-      expect(utc.toIso8601String(), endsWith('Z'));
-      expect(local.toIso8601String(), isNot(endsWith('Z')));
-      expect(
-        utc.toIso8601String(),
-        isNot(local.toIso8601String()),
-        reason: 'one string says which midnight it is and one does not',
-      );
-    });
-
-    test(
-      'a Day has no such hole, because it never claimed to be an instant',
-      () {
-        expect(day.asText, '2026-09-09');
-        expect(Day.parse(day.asText), day);
-      },
-    );
-  });
-  // #endregion instant
 }

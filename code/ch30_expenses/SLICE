@@ -1,0 +1,41 @@
+# Study 30 — what changed since study 29.
+#
+# Added — the calendar month a report covers, and the file that measures every
+# way a DateTime is not one
+lib/src/period.dart
+test/period_test.dart
+test/instant_test.dart
+# Changed — `list` takes a month; `Day.lastDayOf` is public because `Period`
+# lives in another file; and `totals` left `Store` for the expenses themselves,
+# which is the move study 27 said it was waiting for
+lib/src/command.dart
+lib/src/day.dart
+lib/src/store.dart
+lib/src/expense.dart
+lib/expenses.dart
+test/command_test.dart
+test/store_test.dart
+test/file_store_test.dart
+test/json_test.dart
+test/values_test.dart
+pubspec.yaml
+#
+# unshown: lib/src/day.dart#day — one underscore left `_lastDayOf`, and study 25
+#   shows this class whole. Re-showing seventy lines to point at a rename is the
+#   wolf-crying the check exists to avoid; 30.2 quotes the signature.
+# unshown: lib/expenses.dart#barrel — one export added, and 30.3 names it.
+# unshown: lib/src/store.dart#store — the interface is unchanged. What changed
+#   is that `totals` is no longer beside it, which is a deletion, and 30.3 shows
+#   where it went instead.
+# unshown: test/json_test.dart#instant — deleted, not changed. Study 29 measured
+#   two DateTime facts to justify `Day`; this study measures all of them in
+#   test/instant_test.dart, and keeping a second copy would leave two files to
+#   drift apart.
+# unshown: test/command_test.dart#setup — unchanged since study 27 except for
+#   the tests written below it, which 30.4 shows on their own.
+# unshown: test/file_store_test.dart#roundtrip — one call site followed `totals`
+#   from the store to the expenses. The test is study 28's, unchanged otherwise,
+#   and 30.3 shows the move it is following.
+# unshown: test/values_test.dart — study 25's group measuring `DateTime`'s `==`
+#   moved out, into test/instant_test.dart, so that all four of these facts have
+#   one home rather than two copies to drift apart. Nothing was added.

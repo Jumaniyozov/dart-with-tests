@@ -1,0 +1,11 @@
+name: ch30_expenses
+description: Study 30 — an instant is not a day, and a month is not a duration.
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.13.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.26.0
