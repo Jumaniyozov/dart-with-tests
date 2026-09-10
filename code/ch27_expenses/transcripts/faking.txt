@@ -1,0 +1,6 @@
+$ dart analyze bin/faking.dart
+Analyzing faking.dart...
+
+  error - faking.dart:4:7 - Missing concrete implementation of 'getter Store.totals'. Try implementing the missing method, or make the class abstract. - non_abstract_class_inherits_abstract_member
+
+1 issue found.

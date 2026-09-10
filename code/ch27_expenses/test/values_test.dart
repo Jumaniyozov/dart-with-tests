@@ -1,4 +1,4 @@
-import 'package:ch25_expenses/expenses.dart';
+import 'package:ch27_expenses/expenses.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -112,7 +112,7 @@ void main() {
 
   group('the store hands out a list nobody can change', () {
     test('adding to what it returns throws', () {
-      final store = Store()
+      final Store store = InMemoryStore()
         ..record(
           Expense(
             Money.fromPence(100),

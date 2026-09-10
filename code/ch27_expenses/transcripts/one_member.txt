@@ -1,0 +1,11 @@
+$ dart analyze bin/clocky.dart
+Analyzing clocky.dart...
+No issues found!
+
+$ dart analyze bin/clocky.dart   # after adding one_member_abstracts
+Analyzing clocky.dart...
+
+   info - clocky.dart:1:16 - Unnecessary use of an abstract class. Try making 'now' a top-level function and removing the class. - one_member_abstracts
+   info - clocky.dart:5:26 - Unnecessary use of an abstract class. Try making 'now' a top-level function and removing the class. - one_member_abstracts
+
+2 issues found.

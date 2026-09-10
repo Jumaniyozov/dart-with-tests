@@ -1,0 +1,6 @@
+$ dart analyze
+Analyzing ch27_expenses...
+No issues found!
+
+$ dart test
+00:00 +42: All tests passed!

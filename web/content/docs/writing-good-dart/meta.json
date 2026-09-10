@@ -4,6 +4,7 @@
     "libraries",
     "a-program-that-runs",
     "values-and-entities",
-    "errors-by-design"
+    "errors-by-design",
+    "testing-without-mocks"
   ]
 }

@@ -1,0 +1,258 @@
+---
+title: Testing without mocks
+study: 27
+direction: A seam is a parameter. Give it an interface when there is behaviour worth swapping, and a plain value when there is not.
+description: Store becomes an interface, totals becomes derived, today becomes a parameter — and a hand-written mock shows exactly what it cannot tell you.
+---
+
+Study 26 left two lines alone and said so. `run` was handed a `Store`, which was progress, and
+inside it `Day.on(DateTime.now())` still reached out of the program for the date. This study
+turns both into seams — and gives them deliberately different shapes, because they are
+deliberately different problems.
+
+First, a deletion. `lib/src/asserting.dart` and `bin/asserting.dart` existed to show what an
+`assert` is worth when the program runs. They proved it, they were never part of the tracker,
+and they leave with the study that needed them. `SLICE` records the removal, the way it records
+everything else.
+
+<Drill n={1}>
+
+<Direction>A test double the compiler will not let you write, and the change that lets you write it.</Direction>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch27_expenses/transcripts/faking.txt</include>
+</Console>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch27_expenses/transcripts/pass.txt</include>
+</Console>
+
+</Drill>
+
+## 27.1 The thing you cannot reach into
+
+A **seam** is a place where you can change what a program does without editing it. Study 24 made
+the first one without naming it: `run` returns an `Outcome` instead of printing, so a test can
+read what would have been on the terminal. Study 25 made the second: `run` takes a `Store`
+instead of building one.
+
+Both are the same move. Something the function used to reach out and grab is handed to it
+instead. What is left over is the thing this study is about, and there is only one of it — a
+call to `DateTime.now()`, buried three functions deep, that makes the day an expense is
+recorded on depend on when the test happens to run.
+
+The rule underneath: **a function is testable exactly to the extent that its answer depends only
+on what it was given.** Everything else is something you cannot control from a test, and every
+one of them is a seam waiting to be cut.
+
+## 27.2 An interface you own
+
+Study 25 shipped `Store` as an ordinary class, on purpose — an interface with one implementation
+is machinery a reader cannot judge. Two things happen when you try to fake it anyway:
+
+```dart title="bin/faking.dart"
+class FakeStore implements Store {
+  final List<Expense> kept = [];
+
+  @override
+  void record(Expense expense) => kept.add(expense);
+
+  @override
+  List<Expense> get all => kept;
+}
+```
+
+That is the Drill's first transcript. `implements` takes the whole of a class's interface, and
+study 25's `Store` had a `totals` getter, so a double that only wants to hold expenses is
+obliged to write out a fold over categories it does not care about.
+
+This is not a Dart quirk. It is the cost Effective Dart names: implementing a class that was
+never meant to be an interface couples you to every member it has now and every member it grows
+later. Add one method to `Store` and every double in the codebase breaks.
+
+So `Store` says what it is:
+
+<include cwd lang="dart" meta='title="lib/src/store.dart"'>../code/ch27_expenses/lib/src/store.dart#store</include>
+
+`abstract interface class` is two modifiers doing two jobs. `abstract` means no instances of its
+own. `interface` means it can be implemented but not extended — study 16's table, used in
+anger for the first time. There is no behaviour in here to inherit, and saying so is the
+difference between a contract and a class other people happen to be implementing.
+
+## 27.3 Derived is not decided
+
+`totals` left the interface, and it did not become a member of anything:
+
+<include cwd lang="dart" meta='title="lib/src/store.dart"'>../code/ch27_expenses/lib/src/store.dart#totals</include>
+
+The question to ask of every member before you put it on an interface: **is there anything here
+for an implementation to decide?** `record` and `all` are decisions — an in-memory store keeps a
+list, study 28's store keeps a file. `totals` is not. Two stores holding the same expenses must
+answer it identically, so leaving room for them to disagree is not flexibility, it is a bug
+waiting for a volunteer.
+
+An extension is how Dart lets you add a member to a type without adding it to the contract.
+Study 19 introduced them on `int`; here one hangs off an interface you wrote yourself, which is
+the same mechanism with more of a point to it. Study 28's `FileStore` gets `totals` free and
+cannot get it wrong, because there is nothing for it to get wrong.
+
+<Gloss title="Where totals ends up">
+This is a holding position, not the final shape. Study 31 gives the program a `Report`, and
+totalling by category is what a report does rather than something a store lends you.
+
+The extension is exactly what makes that move cheap: nothing implements it, so nothing breaks
+when it goes.
+</Gloss>
+
+And the store the program actually runs on:
+
+<include cwd lang="dart" meta='title="lib/src/store.dart"'>../code/ch27_expenses/lib/src/store.dart#memory</include>
+
+## 27.4 A fake behaves, a mock remembers
+
+Here is the other kind of double, written by hand so that nothing about it is hidden:
+
+<include cwd lang="dart" meta='title="test/store_test.dart"'>../code/ch27_expenses/test/store_test.dart#spy</include>
+
+A **mock** records how it was called. That is genuinely useful, and it is the only thing it can
+tell you:
+
+<include cwd lang="dart" meta='title="test/store_test.dart"'>../code/ch27_expenses/test/store_test.dart#blind</include>
+
+Read the second test. The mock saw `record` happen, so the first assertion passes. Then `list`
+is asked what was recorded and the answer is `nothing recorded yet`, because the mock counted
+the call and kept nothing. It knows the method was called. It has no opinion about whether the
+program works.
+
+The third test is the cost, written down. `spy.calls` ends up `['record', 'all']` — one read,
+because `_list` found the store empty and stopped. That is true of how `run` is written today
+and of nothing else. Rewrite `_list` to build its lines first and ask about emptiness
+afterwards, and the program behaves identically while that assertion fails.
+
+A **fake** implements the behaviour instead:
+
+<include cwd lang="dart" meta='title="test/store_test.dart"'>../code/ch27_expenses/test/store_test.dart#fake</include>
+
+The difference is which question the test asks. `expect(spy.calls, ['record', 'all'])` asks
+*how the code went about it*. `expect(listed, contains('£12.50'))` asks *what the program did*.
+
+A mock fails when the implementation changes. A fake fails when the behaviour changes. Only one
+of those is a test doing its job.
+
+<Gloss title="package:mockito, and why it is not here">
+`package:mockito` is the standard way to write mocks in Dart, and it is good at it. You annotate
+the types you want doubled with `@GenerateMocks`, run `build_runner`, and get generated classes
+with `when(...).thenReturn(...)` for stubbing and `verify(...)` for assertions.
+
+Two reasons it is not in this book. The first is that it needs code generation, and generated
+code is a Book IV subject — putting `build_runner` in study 27 would mean explaining it here.
+The second is the one that matters: everything this study needs is a class with two methods.
+When a fake is that cheap, generating one buys nothing.
+
+Reach for mockito when the interface is large, when you are doubling something you did not
+write, or when *how* a call was made is genuinely the thing under test. None of those is true
+here, and a reader who meets it elsewhere should not think this book was hiding it.
+</Gloss>
+
+## 27.5 The other seam is just a parameter
+
+`run` takes a third thing now, and it is not an interface:
+
+<include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch27_expenses/lib/src/command.dart#run</include>
+
+`Day.on(DateTime.now())` is gone from the middle of the work. `today` arrives, is used, and is
+never looked up — which is what lets a test write down the date it expects:
+
+<include cwd lang="dart" meta='title="test/command_test.dart"'>../code/ch27_expenses/test/command_test.dart#setup</include>
+
+<include cwd lang="dart" meta='title="test/command_test.dart"'>../code/ch27_expenses/test/command_test.dart#day</include>
+
+That test could not have been written yesterday. It would have passed on the 9th of September
+2026 and failed every other day of the program's life.
+
+The obvious next move is the wrong one. A `Clock` interface, a `SystemClock` that answers
+`DateTime.now()`, a `FixedClock` for tests — three types where a parameter does the job, and
+none of them can do anything the parameter cannot. Effective Dart has a name for it, and so
+does the linter:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch27_expenses/transcripts/one_member.txt</include>
+</Console>
+
+Read both runs. The first is this book's lint set, which does not have `one_member_abstracts` in
+it, so all three declarations pass. The second turns the rule on, and it catches the two that
+declare a **method** — and says nothing about the third, which declares a **getter**. The lint
+is narrower than the guideline it enforces. `abstract class Clock { DateTime get now; }` slips
+past a linter that has been told to look for exactly that shape.
+
+Which is why the rule is worth knowing rather than delegating. The seam is the parameter. An
+interface is one way to make a parameter interesting, and here there is nothing to make
+interesting: a date has no behaviour to swap.
+
+Both seams are tied off in the same place, in the only file no test ever runs:
+
+<include cwd lang="dart" meta='title="bin/expenses.dart"'>../code/ch27_expenses/bin/expenses.dart#main</include>
+
+<Practice source="Effective Dart — Design" href="https://dart.dev/effective-dart/design#avoid-implementing-a-class-that-isnt-intended-to-be-an-interface">
+**AVOID implementing a class that isn't intended to be an interface** — *"implementing a class's
+interface is a very tight coupling to that class… adding a new member to a class is usually a
+safe, non-breaking change. But if you are implementing that class's interface, now your class
+has a static error because it lacks an implementation of that new method."*
+
+That is the Drill's first transcript, and it is why the answer was not "write the fake anyway".
+Its companion, [**DO use class modifiers to control if your class can be an
+interface**](https://dart.dev/effective-dart/design#do-use-class-modifiers-to-control-if-your-class-can-be-an-interface),
+says the other half: whether a type may be implemented is a decision to make on purpose, in the
+declaration, rather than something callers discover they can get away with.
+
+And the third, which decided the clock: [**AVOID defining a one-member abstract class when a
+simple function will do**](https://dart.dev/effective-dart/design#avoid-defining-a-one-member-abstract-class-when-a-simple-function-will-do)
+— *"Unlike Java, Dart has first-class functions, closures, and a nice light syntax for using
+them. If all you need is something like a callback, just use a function."* A `Clock` returning
+today's date is not even a callback. It is a date.
+</Practice>
+
+The whole study, run at once:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch27_expenses/transcripts/all.txt</include>
+</Console>
+
+## Wrapping up
+
+A seam is a parameter. Everything a function reaches out for is something a test cannot control,
+and cutting a seam means handing it in instead.
+
+Two seams, two shapes, and the shape follows from whether there is behaviour worth swapping.
+`Store` is an interface because an in-memory list and a file genuinely differ. `today` is a
+value because one date is much like another, and a one-member abstract class in front of it
+would be three types doing the work of a parameter.
+
+Declare an interface as an interface. `abstract interface class` says implement me, do not
+extend me; `implements` against an ordinary class couples a double to every member that class
+will ever have, which is what the Drill measures.
+
+Put on the interface only what an implementation gets to decide. `totals` is derived from `all`,
+so it is an extension, and study 28's file cannot compute it differently because it does not
+compute it at all.
+
+A fake implements behaviour; a mock records calls. Tests built on fakes fail when the program's
+behaviour changes. Tests built on mocks fail when its implementation changes, which is most of
+the time and almost never useful.
+
+Also met: `abstract interface class`, an extension on a type you declared, `setUp` with a fresh
+fake per test, and `one_member_abstracts` — a lint narrower than the guideline behind it.
+
+Study 28 gives the tracker a second real `Store`, one that writes to a file, and `async` returns
+after eleven studies away.
+
+## Challenges
+
+Three challenges, ten failing tests. Make them pass one at a time. Do not edit the tests. The
+first two implement `Store`, and the third makes a seam without an interface anywhere in it.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch27_expenses/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch27_expenses/exercises/challenges.dart</include>

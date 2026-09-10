@@ -1,8 +1,12 @@
 # Outline
 
 Book I: Foundations (studies 1–22) — written. Book II: Writing good Dart
-(studies 23–34) — outlined below, not yet written. Book III (35–39) and Book IV
-(40–44) have no outline.
+(studies 23–34) — written through study 27, outlined to 34. Book III (35–39) and
+Book IV (40–44) have no outline.
+
+Entries marked **WRITTEN** are no longer plans. They are the record of what
+construction measured, including the places where it contradicted the plan, and
+they are the reason a later study can trust the one before it.
 
 ## Book I: Foundations (studies 1–22)
 
@@ -104,7 +108,7 @@ the loops deleted), 12→13 and 12→14, 13→14, 3→15 (`const` constructors),
 as the record of what was intended, and each study's own commit message
 records what construction actually measured.
 
-**Book II is outlined below** and no part of it is written. It opens at study 23
+**Book II is outlined below**, and studies 23–27 are written. It opens at study 23
 with libraries, imports and `_` privacy, which pays the only debt Book I leaves
 unpaid. `part` / `export` was folded into that study as a Gloss rather than taught.
 
@@ -357,6 +361,11 @@ before it is written as prose.
 | `DateTime(2026, 2, 31)` | `2026-03-03`. Silent overflow, never throws. |
 | `dart pub add args` | Resolves to **2.7.0**. |
 | `avoid_slow_async_io` | **Not** in this book's lint set, and argues the opposite for `exists`/`stat`. |
+| `implements` against study 25's concrete `Store` | `non_abstract_class_inherits_abstract_member` — the double must write `totals` too. |
+| `one_member_abstracts` on a one-**method** abstract class | Fires, on `abstract class` and `abstract interface class` alike. |
+| `one_member_abstracts` on a one-**getter** abstract class | **Silent.** The lint is narrower than the guideline behind it. |
+| `one_member_abstracts` in this book's lint set | **Not** in it. All three shapes analyze clean until it is switched on. |
+| `Money.fromPence(250) == Money.fromPence(250)` before study 27 | **`false`** — no `==`, and a factory builds a new object each call. |
 
 ### 23 — Libraries, imports and privacy · `libraries` · `ch23_expenses` — **WRITTEN**
 
@@ -523,40 +532,68 @@ code: `readMoney` checks the sign itself rather than catching `Money.fromPence`'
 
 Gloss: `Error` against `Exception` in `dart:core`, and why `ArgumentError` is an `Error`.
 
-### 27 — Testing without mocks · `testing-without-mocks` · `ch27_expenses`
+### 27 — Testing without mocks · `testing-without-mocks` · `ch27_expenses` — **WRITTEN**
 
-Teaches seams: an interface you own, an in-memory fake, constructor injection, `setUp`
-and `group`, and why `package:mockito` is not needed here.
+Teaches seams: an interface you own, an extension for what is derived from it, an
+in-memory fake, injection by parameter, `setUp`, and why `package:mockito` is not needed
+here.
 
-Toy: `lib/src/store.dart` becomes an interface; `InMemoryStore` implements it; a `Clock`
-is injected so "today" is a value, not a call.
+Toy: `lib/src/store.dart` becomes `abstract interface class Store`; `InMemoryStore`
+implements it; `totals` leaves the interface and becomes an extension; `run` takes a
+`Day today`.
 
-First job: **delete study 26's demonstration files.** `lib/src/asserting.dart` and
-`bin/asserting.dart` exist to prove what an assert is worth at run time and are not part
-of the tracker. Study 27's SLICE declares the removals, and `test/reading_test.dart` drops
-its import of them.
+First job, done: study 26's `lib/src/asserting.dart` and `bin/asserting.dart` are gone,
+and `test/reading_test.dart` dropped its import and its two assert tests. The `SLICE`
+names all three.
 
-The mechanism to name: a fake is not a lesser mock. A **mock asserts on calls**, so the
-test is coupled to how the code works; a **fake implements behaviour**, so the test is
-coupled only to what it does. The reason this works at all is that `Store` is an
-interface *you* declared — you cannot fake `File`, which is why study 28's file code is
-kept behind `Store` rather than sprinkled through the domain.
+The mechanism to name: a fake is not a lesser mock. A **mock records calls**, so the test
+is coupled to how the code works; a **fake implements behaviour**, so the test is coupled
+only to what it does. `test/store_test.dart` ships both, and the mock's blindness is a
+passing assertion rather than a claim: it sees `record` happen, and then `list` through
+the same mock answers `nothing recorded yet`.
 
-Principle 4 settled: study 25 shipped `Store` as a concrete class on purpose. An
-interface introduced before a second implementation exists is machinery the reader
-cannot evaluate. Say that this is the study where it earns its keep.
+Principle 4 settled, and measured rather than asserted: study 25's concrete `Store` could
+not be doubled at all without writing out `totals`. `bin/faking.dart`, captured from a
+temporary state of `ch25_expenses` and then deleted, is the Drill's first transcript —
+`non_abstract_class_inherits_abstract_member`, *"Missing concrete implementation of
+'getter Store.totals'"*. That is the cost Effective Dart names, on this book's own code.
 
-Seeds: the injected `Clock` is what makes study 30's date tests deterministic, and
-`InMemoryStore` is what studies 28–32 test against instead of a disk.
+**The `Clock` the outline planned does not exist, and its absence is the study's second
+half.** A `Clock` interface, a `SystemClock` and a `FixedClock` are three types where a
+parameter does the job, and study 27's own Principle-4 paragraph would have condemned
+them two sections later. `run(args, store, today)` is the seam. The prose says so out
+loud and cites the guideline that decides it.
 
-Practice: candidate is *Effective Dart — Design*, on preferring narrow interfaces.
-**Unverified.** Open the page and confirm the rule exists as written before quoting it;
-if it does not, this study's `<Practice>` omits both props, the way study 2's does.
+Seeds: `today` as a parameter is what makes study 30's date tests deterministic, and
+`InMemoryStore` is what studies 28–32 test against instead of a disk. Study 31 is
+promised `totals` — the Gloss says the extension is a holding position and a `Report` is
+where it ends up.
 
-Gloss: `package:mockito` exists and is widely used, and it needs `build_runner` to
-generate its mocks. Name it, say this book does not need it, and point at Book IV where
-generated code is explained. A reader who meets mockito elsewhere should not think the
-book was hiding it.
+Practice: **the planned citation did not exist.** *Effective Dart — Design* has no rule
+about "narrow interfaces". It has three that decide this study instead, all verified on
+the live page and none previously cited by this book: **AVOID implementing a class that
+isn't intended to be an interface** (the Drill), **DO use class modifiers to control if
+your class can be an interface** (`abstract interface class`), and **AVOID defining a
+one-member abstract class when a simple function will do** (no `Clock`).
+
+Gloss 1: `package:mockito`, what it generates, that it needs `build_runner`, and the
+three cases where it is the right tool — a large interface, a type you did not write, or
+a test whose subject really is *how* a call was made. None applies here.
+
+Gloss 2: where `totals` ends up — study 31's `Report`. The extension is what makes that
+move cheap, because nothing implements it.
+
+Found while writing, and fixed in place: **`Money` had no `operator ==`.** It is the
+book's flagship value type and study 25's own 25.3 states the rule that decides it —
+identical contents, one thing or two. `Money.fromPence(250) == Money.fromPence(250)` was
+`false`, and the first line in the book to compare two of them was study 27's
+`expect(store.totals, {…})`, which failed with `<Instance of 'Money'> instead of
+<Instance of 'Money'>`. Fixed in `ch25_expenses` and carried forward; 25.3 gained a
+paragraph and the `money` region; `ch25_expenses/SLICE` gained `lib/src/money.dart`.
+
+Also fixed: the barrel doc comment said **"Five exports now"** over six exports in
+`ch25_expenses` and seven in `ch26_expenses`, and both were on the page.
+
 ### 28 — Files · `files` · `ch28_expenses`
 
 Teaches `dart:io`: `File`, `readAsString`, `writeAsString`, `exists`, directories, and
@@ -633,8 +670,9 @@ production:
 
 Which is the argument for `Day`: the 9th of September is the same day everywhere, an
 expense happens on a day, and a type that cannot represent a timezone cannot get one
-wrong. Instants live at the edges — study 27's injected `Clock` reads one, and this
-study converts it.
+wrong. Instants live at the edges — `bin/expenses.dart` reads one and `Day.on` converts
+it, and study 27 is where that stopped happening in the middle of the work. There is no
+`Clock` interface to name; the seam is a `Day today` parameter.
 
 Seeds: `Period` is what study 32's budget is scoped to.
 
@@ -785,16 +823,17 @@ told will be explained or fixed.
 
 | Owed by | Made in | The reader is promised |
 | --- | --- | --- |
-| 27 | 24 | the idea behind returning an `Outcome` gets a name and goes further |
-| 27 | 25 | `Store` becomes an interface when a second implementation exists |
-| 27 | 26 | the injected `Store` and `Day.on(DateTime.now())` become a seam |
 | 28 | 25 | the store stops forgetting everything when the program stops |
+| 31 | 27 | `totals` is a holding position and becomes a `Report` |
 | 29 | 28 | the line format breaks on a note containing a comma |
 | 30 | 25 | why `Expense` carries a `Day` and not a `DateTime` |
 | 33 | 24 | a parser with `--help`, abbreviations and `--flag=value` |
 
 Paid: 26←24 (`null` could not say which part was wrong; a sealed `Reading` can),
-26←24 again (`dart compile exe` named in a Gloss, measured in 26.4).
+26←24 again (`dart compile exe` named in a Gloss, measured in 26.4), 27←24 (the seam
+behind `Outcome` is named and two more are cut), 27←25 (`Store` is an interface now that
+a second implementation exists), 27←26 (both lines study 26 left alone became
+parameters).
 
 Removed as fiction, found by checking the prose rather than the plan: **31←25** — the
 outline meant study 25 to promise study 31 that `Category`'s equality is what makes
@@ -980,6 +1019,14 @@ existing transcripts and verified to reproduce.
   nothing warned. Check the characters before parsing them, and make the check an
   assertion. The same applies to any type that claims to be a real-world value: study 25's
   `Day` accepted the 31st of February until it was measured.
+- **A value type with no `==` fails silently, and keeps failing until something
+  compares two of them.** `Money` went four studies without one. Nothing warned:
+  `hash_and_equals` fires when you override one half, not when you override neither, and
+  every test until study 27 compared `.asText` or `.pence` instead. The first line to
+  compare two `Money` objects failed with `<Instance of 'Money'> instead of <Instance of
+  'Money'>`, which names nothing. Study 25 states the test — *identical contents, one
+  thing or two?* — so apply it to every type the moment it exists, not the moment a map
+  needs it.
 - **Book II only — the domain never holds a `DateTime`.** Measured: for one
   instant `local == utc` is `false` while their hash codes are equal,
   `toIso8601String()` drops the offset, and `DateTime(2026, 2, 31)` is the 3rd of

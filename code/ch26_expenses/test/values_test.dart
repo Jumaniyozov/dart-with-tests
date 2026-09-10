@@ -25,6 +25,18 @@ void main() {
     });
   });
 
+  group('money is a value too', () {
+    test('two amounts of the same pence are the same amount', () {
+      expect(Money.fromPence(250), Money.fromPence(250));
+      expect(Money.fromPence(250) == Money.fromPence(251), isFalse);
+    });
+
+    test('so it survives a set and a map key', () {
+      expect({Money.fromPence(250), Money.fromPence(250)}, hasLength(1));
+      expect(Money.fromPence(250).hashCode, Money.fromPence(250).hashCode);
+    });
+  });
+
   group('an expense is an entity', () {
     final day = Day(2026, 9, 9);
     Expense coffee() =>

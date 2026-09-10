@@ -1,0 +1,5 @@
+$ dart test exercises/
+00:00 +0: loading exercises/challenges_test.dart
+00:00 +0: exercises/challenges_test.dart: challenge 1 — a second implementation keeps everything while there is room
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — a second implementation keeps everything while there is room [E]
+  UnimplementedError: challenge 1

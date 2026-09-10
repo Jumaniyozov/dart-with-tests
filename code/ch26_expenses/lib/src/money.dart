@@ -17,6 +17,15 @@ class const Money._(final int pence) {
     return Money._(pence);
   }
 
+  /// Two amounts of the same pence are the same amount. 25.3 asks one question
+  /// of every new type — identical contents, one thing or two? — and money is
+  /// the plainest *one thing* in the program.
+  @override
+  bool operator ==(Object other) => other is Money && other.pence == pence;
+
+  @override
+  int get hashCode => pence.hashCode;
+
   /// Pounds and pence, written the way a person says them.
   String get asText =>
       '£${pence ~/ 100}.${(pence % 100).toString().padLeft(2, '0')}';

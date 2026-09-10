@@ -6,7 +6,9 @@ lib/src/day.dart
 lib/src/expense.dart
 lib/src/store.dart
 test/values_test.dart
-# Changed — `run` takes a Store, `add` takes a category, `list` arrives
+# Changed — `run` takes a Store, `add` takes a category, `list` arrives;
+# and Money finally answers 25.3's question about itself
+lib/src/money.dart
 lib/expenses.dart
 lib/src/command.dart
 bin/expenses.dart

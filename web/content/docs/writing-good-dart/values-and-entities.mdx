@@ -126,6 +126,22 @@ answers this well.
 to match; they are the same category. Values have no identity of their own, and that is why
 giving them `==` is right.
 
+`Money` is one too, and it has been since study 4 without ever saying so. Two amounts of 250
+pence are not two amounts that happen to match — there is one such amount, and every field it
+has is the same one.
+
+<include cwd lang="dart" meta='title="lib/src/money.dart"'>../code/ch25_expenses/lib/src/money.dart#money</include>
+
+Leave the override out and `Money.fromPence(250) == Money.fromPence(250)` is `false`. That is
+not a guess about `Money`; it is what `Expense` demonstrates three paragraphs down, where two
+identical coffees are deliberately unequal for exactly the same reason. `Money.fromPence` is a
+factory, every call builds an object, and `==` with nothing overridden asks only whether two
+names point at the same one.
+
+It is the kind of wrong that never throws. A test comparing two totals simply fails, and the
+failure reads `<Instance of 'Money'> instead of <Instance of 'Money'>` — which tells you
+nothing at all.
+
 `Expense` is an **entity**.
 
 <include cwd lang="dart" meta='title="lib/src/expense.dart"'>../code/ch25_expenses/lib/src/expense.dart#expense</include>

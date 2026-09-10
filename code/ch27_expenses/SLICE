@@ -1,0 +1,17 @@
+# Study 27 — what changed since study 26.
+#
+# Added — a mock and a fake, side by side
+test/store_test.dart
+# Changed — Store is an interface, totals is derived, today is a parameter
+lib/src/store.dart
+lib/src/command.dart
+bin/expenses.dart
+test/command_test.dart
+test/values_test.dart
+pubspec.yaml
+# Removed — study 26's demonstration of what an assert is worth. It proved what
+# an assert costs at run time and was never part of the tracker, so it goes out
+# with the study that needed it. test/reading_test.dart drops its import.
+lib/src/asserting.dart
+bin/asserting.dart
+test/reading_test.dart
