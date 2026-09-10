@@ -1,0 +1,8 @@
+$ dart run bin/expenses.dart list          # study 30, three expenses in
+2026-09-10  £1.00  food  apple
+2026-09-10  £9.00  rent  room
+2026-09-10  £3.00  transport  bus fare
+
+food: £1.00
+rent: £9.00
+transport: £3.00

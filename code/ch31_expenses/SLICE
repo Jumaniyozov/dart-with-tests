@@ -1,0 +1,31 @@
+# Study 31 — what changed since study 30.
+#
+# Added — the type study 27 promised, and its tests
+lib/src/report.dart
+test/report_test.dart
+# Changed — `Money` gained `+`, an identity and an order; `Day` gained an order;
+# `totals` left for good, absorbed into the report that was always going to
+# replace it
+lib/src/money.dart
+lib/src/day.dart
+lib/src/expense.dart
+lib/src/command.dart
+lib/expenses.dart
+test/command_test.dart
+test/store_test.dart
+test/file_store_test.dart
+pubspec.yaml
+#
+# unshown: lib/src/day.dart#day — one method added to a class study 25 shows
+#   whole. 31.2 quotes `compareTo` on its own, which is the whole change.
+# unshown: lib/expenses.dart#barrel — one export added, and 31.1 names it.
+# unshown: test/command_test.dart#setup — unchanged since study 27; the tests
+#   written below it are shown on their own.
+# unshown: test/command_test.dart#month — unchanged since study 30. The report
+#   changed underneath it and the assertions did not, which is the point 31.3
+#   makes in prose rather than by re-showing forty lines.
+# unshown: test/file_store_test.dart#roundtrip — one call site followed
+#   `totals` into `Report`. Shown in study 28 and unchanged otherwise.
+# unshown: test/store_test.dart#spy — unchanged. What changed in this file is a
+#   deletion: study 30's `#derived` group tested the `totals` extension, and
+#   there is no extension now. 31.1 shows the deletion as an analyzer run.

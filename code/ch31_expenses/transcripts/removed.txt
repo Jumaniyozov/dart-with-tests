@@ -1,0 +1,9 @@
+$ dart analyze          # after deleting the `totals` extension and nothing else
+Analyzing ch31_expenses...
+
+  error - lib/src/command.dart:153:34 - The getter 'totals' isn't defined for the type 'List<Expense>'. Try importing the library that defines 'totals', correcting the name to the name of an existing getter, or defining a getter or field named 'totals'. - undefined_getter
+  error - test/file_store_test.dart:56:32 - The getter 'totals' isn't defined for the type 'List<Expense>'. Try importing the library that defines 'totals', correcting the name to the name of an existing getter, or defining a getter or field named 'totals'. - undefined_getter
+  error - test/store_test.dart:91:26 - The getter 'totals' isn't defined for the type 'List<Expense>'. Try importing the library that defines 'totals', correcting the name to the name of an existing getter, or defining a getter or field named 'totals'. - undefined_getter
+  …
+
+8 issues found.

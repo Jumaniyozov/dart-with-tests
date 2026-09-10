@@ -8,6 +8,7 @@
     "testing-without-mocks",
     "files",
     "json",
-    "dates-and-times"
+    "dates-and-times",
+    "reports"
   ]
 }

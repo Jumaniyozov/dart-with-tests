@@ -1,0 +1,5 @@
+$ dart run bin/ties.dart
+32 ties -> order kept
+33 ties -> order kept
+34 ties -> order changed: c100 was first, c111 is now
+35 ties -> order changed: c100 was first, c112 is now

@@ -1,0 +1,252 @@
+---
+title: Reports
+study: 31
+direction: An order is a promise, and a type that implements Comparable is making it. Ties are where the promise gets broken.
+description: Report, grouping with a Map, Comparable and compareTo, sort with and without a comparator, and operator + on Money.
+---
+
+`list` has been printing the same thing since study 25: the expenses, then a total per
+category, in whatever order they turned up. Both halves of that are decisions nobody made.
+
+<Drill n={1}>
+
+<Direction>The same three expenses, before and after anything is sorted or added up.</Direction>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch31_expenses/transcripts/unordered.txt</include>
+</Console>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch31_expenses/transcripts/report.txt</include>
+</Console>
+
+</Drill>
+
+The first output is not wrong, it is silent. `food`, `rent`, `transport` is the order those
+categories were **first seen** — Dart's `Map` keeps insertion order, so the output depends on
+what somebody bought first, which is not a fact anybody wants to read a report by. And there
+is no total, because nothing had a place to put one.
+
+## 31.1 A report is a type, not a map
+
+Study 27 put `totals` on an extension and said, in the study itself, that it was a holding
+position. Study 30 moved that extension off `Store` and onto the expenses. This is where it
+stops being an extension at all:
+
+<include cwd lang="dart" meta='title="lib/src/report.dart"'>../code/ch31_expenses/lib/src/report.dart#report</include>
+
+Deleting the extension and changing nothing else is the honest way to find out what it was
+doing:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch31_expenses/transcripts/removed.txt</include>
+</Console>
+
+Eight call sites, one of them in `lib/`. That is what study 27 meant by *the extension is what
+makes the move cheap*: nothing implements an extension, so nothing had to be re-implemented —
+the compiler just listed every place that asked.
+
+The one in `lib/` is `run`, and it got shorter:
+
+<include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch31_expenses/lib/src/command.dart#run</include>
+
+Every line of formatting that used to be written out in `_list` is now one call to
+`Report.of(recorded).asText`. `run` was never a good place to decide what order a report
+prints in.
+
+<include cwd lang="dart" meta='title="test/command_test.dart"'>../code/ch31_expenses/test/command_test.dart#reported</include>
+
+A map answers one question. A report answers three — what happened, where it went, how much
+there was — and the reason to make it a type is that all three come from one walk over the
+same expenses, computed once in the factory rather than three times by three callers.
+
+<Gloss title="Why grouping is a loop and totalling is a fold">
+`fold` collapses many values into one, starting from an identity. `Money.zero` exists exactly
+to be that starting value, and `lines.fold(Money.zero, (sum, line) => sum + line.spent)` reads
+as what it is.
+
+Grouping is not that shape. It needs the running map available at every step so it can look
+up the key it is about to add to, and writing it as a `fold` means threading that map through
+an accumulator to get the same loop back with more punctuation. The plain `for` loop is the
+clearer of the two, and choosing it is not a failure to use the functional one.
+</Gloss>
+
+## 31.2 Comparable is a promise about a total order
+
+`sort` with no arguments asks the elements how they compare. To be asked, a type has to
+implement `Comparable`:
+
+<include cwd lang="dart" meta='title="lib/src/report.dart"'>../code/ch31_expenses/lib/src/report.dart#line</include>
+
+`Money` and `Day` learned the same trick. `Money` delegates to `int`:
+
+```dart title="lib/src/money.dart"
+int compareTo(Money other) => pence.compareTo(other.pence);
+```
+
+`Day` cannot delegate, because it has three fields and they are not equally important:
+
+```dart title="lib/src/day.dart"
+if (year != other.year) return year.compareTo(other.year);
+if (month != other.month) return month.compareTo(other.month);
+return day.compareTo(other.day);
+```
+
+Comparing `asText` would give the same answers, because an ISO date is zero-padded on purpose
+and sorts as text. That is a true fact about the format, not about calendars, and a type
+should not depend on its own `toString` to know which of two days came first.
+
+<include cwd lang="dart" meta='title="test/report_test.dart"'>../code/ch31_expenses/test/report_test.dart#fixtures</include>
+
+<include cwd lang="dart" meta='title="test/report_test.dart"'>../code/ch31_expenses/test/report_test.dart#grouping</include>
+
+The second test there is study 25 being paid, quietly. Four spellings of *food* land on one
+line because `Category` normalised them on the way in and its `==` and `hashCode` agree —
+and nothing in `Report` mentions any of that. Grouping is the feature that would have made a
+broken `hashCode` visible, and it is exactly the feature that never has to think about it.
+
+<include cwd lang="dart" meta='title="test/report_test.dart"'>../code/ch31_expenses/test/report_test.dart#ordering</include>
+
+Two sorts, two shapes. `lines..sort()` takes no comparator and asks `CategoryTotal`. The
+expenses take one — `sort((a, b) => a.day.compareTo(b.day))` — because `Expense` is not
+`Comparable` and should not be. Implementing it would claim that day order is *the* order for
+an expense, and study 25 spent a section on `Expense` being an entity: two coffees at £3.20 on
+the same day are two expenses, and no comparison should suggest otherwise.
+
+The rule of thumb: **implement `Comparable` when a type has one obvious order that is a
+property of the value.** Money does. A day does. An expense has several plausible orders and
+no obvious one, so callers pass a comparator and say which they meant.
+
+## 31.3 Ties are where the promise gets broken
+
+Both `compareTo` methods above break ties on purpose, and it is worth showing why, because the
+reason does not show up in testing:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch31_expenses/transcripts/ties.txt</include>
+</Console>
+
+**`List.sort` is not a stable sort**, and it does not degrade gently. Thirty-three elements
+that all compare equal come back in the order they went in. Thirty-four do not, and the first
+element is suddenly the twelfth. The implementation changes strategy at a size threshold, and
+every list a person writes by hand in a test is on the safe side of it.
+
+<include cwd lang="dart" meta='title="test/report_test.dart"'>../code/ch31_expenses/test/report_test.dart#unstable</include>
+
+So a report with two categories on the same amount would hold its order in every test anyone
+writes, and reorder itself in front of somebody with thirty-four categories. The tie-break in
+`CategoryTotal.compareTo` is not tidiness — it is the difference between an order and an
+accident.
+
+Which is what implementing `Comparable` actually promises: not "these can be sorted" but
+**this is a total order**. Any two values compare, the answer does not depend on what the list
+looked like beforehand, and returning 0 is a claim that the two really are interchangeable.
+The last test above holds that claim to its word — where `compareTo` says 0, `==` agrees.
+
+<Gloss title="compareTo returning 0 is not ==, in general">
+Dart does not enforce the connection, and plenty of useful comparators break it deliberately.
+`byNameThenAmount` in this study's challenges is one; `(a, b) => a.day.compareTo(b.day)` above
+is another, and it returns 0 for two entirely different expenses.
+
+The distinction is between a **comparator**, which is one caller's opinion about order, and
+`Comparable`, which is the type's own claim about itself. A comparator may say two things are
+equivalent *for this sort*. A type saying it about itself, while `==` disagrees, is the same
+kind of inconsistency as `hashCode` disagreeing with `==` in study 25 — and it will surface in
+the same way, as something that works until the collection is big enough.
+</Gloss>
+
+## 31.4 Operators are just methods with punctuation
+
+`Money + Money` is what totalling wants, and it is the same machinery as the `operator ==`
+study 25 already wrote:
+
+<include cwd lang="dart" meta='title="lib/src/money.dart"'>../code/ch31_expenses/lib/src/money.dart#money</include>
+
+`+` goes through the private constructor rather than `Money.fromPence`, and that is a claim
+worth making explicitly: both sides are already non-negative, so their sum is, so there is
+nothing left to check. The invariant survives the operator without the operator defending it.
+
+<include cwd lang="dart" meta='title="test/report_test.dart"'>../code/ch31_expenses/test/report_test.dart#money</include>
+
+There is no `operator -`, and its absence is the more interesting half.
+
+Subtraction on this type can land below zero, which `Money` forbids — so unlike `+`, it is a
+**partial operation**: defined for some pairs of arguments and not others. Dart will happily
+let you write one that throws, and then every caller has an invisible way to fail. The
+alternative is a return type that says so, `Money? operator -(Money other)`, and then the
+question is what a caller is supposed to do with the `null`.
+
+That question has no good answer in a report, because a report never subtracts. It has an
+excellent one in a budget, where a subtraction that will not go is precisely what an overspend
+*is*. So `-` waits for study 32, and arrives with something for its failure to mean.
+
+<Practice source="Dart lints — prefer_for_elements_to_map_fromIterable" href="https://dart.dev/tools/linter-rules/prefer_for_elements_to_map_fromiterable">
+**"Prefer `for` elements when building maps from iterables."** The rule is in
+`package:lints/recommended.yaml` 6.1.0, which this book's `analysis_options.yaml` includes, so
+it is enforced here rather than merely recommended — measured by writing a `Map.fromIterable`
+and watching the analyzer answer *Use 'for' elements when building maps from iterables.*
+
+`Report.of` builds its lines with a collection-`for` for this reason:
+
+```dart
+[for (final entry in sums.entries) CategoryTotal(entry.key, entry.value)]
+```
+
+The rule's page lists five benefits over `Map.fromIterable`: *"Performance, Flexibility,
+Readability, Improved type inference, Improved interaction with null safety."* The last two
+are the ones that bite. `Map.fromIterable` takes two closures, one for the key and one for the
+value, and their parameters arrive as `dynamic` — so the map's type arguments do not follow
+from what you wrote, and neither does anything null safety would otherwise have caught. A
+collection-`for` is an expression like any other: it nests, it takes an `if`, and the element
+types are inferred.
+
+Worth knowing where the rule stops. It is about building a map *from an iterable*, one entry
+per element. Grouping, where several elements accumulate into one key, is not that shape — so
+the `for` loop above this one is not a lint violation waiting to be found, and rewriting it as
+a `fold` to look more functional would buy nothing.
+</Practice>
+
+The whole study, run at once:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch31_expenses/transcripts/all.txt</include>
+</Console>
+
+## Wrapping up
+
+A report is a type because it answers three questions from one walk over the expenses, and
+because ordering and totalling are what a report is *for* rather than services a store lends
+you. Deleting the extension it replaced named eight call sites and no implementations, which
+is what study 27 meant when it said the move would be cheap.
+
+`sort()` with no comparator asks the elements, and only `Comparable` types can be asked.
+`sort(f)` takes one caller's opinion instead. Implement `Comparable` when the type has one
+obvious order that belongs to the value; pass a comparator when the order belongs to the
+question.
+
+`Comparable` promises a **total** order, and `List.sort` will collect on that promise. It is
+stable at 33 equal elements and not at 34, so ties that keep their order in your tests will
+not keep it for your users. Break every tie explicitly.
+
+Operators are methods with punctuation, and their signatures carry the same information as any
+other. `Money + Money` is total and returns `Money`. Subtraction is partial, so it does not
+exist yet.
+
+Also met: `Comparable<T>` and `compareTo`, `sort` with and without a comparator, the cascade
+`..sort()` that returns the list, `fold` with an identity, `Money.zero`, and
+`prefer_for_elements_to_map_fromIterable`.
+
+Study 32 gives the tracker a rule that no single object can check, and hands `Money` the
+subtraction this study left out.
+
+## Challenges
+
+Three challenges, twelve failing tests. Make them pass one at a time. Do not edit the tests.
+All three are about order: what one is, when a type may claim one, and what happens to the
+elements a comparison calls equal.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch31_expenses/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch31_expenses/exercises/challenges.dart</include>

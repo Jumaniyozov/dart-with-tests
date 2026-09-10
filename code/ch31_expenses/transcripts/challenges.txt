@@ -1,0 +1,5 @@
+$ dart test exercises/
+00:00 +0: loading exercises/challenges_test.dart
+00:00 +0: exercises/challenges_test.dart: challenge 1 — the dearest expense is the one that cost the most
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — the dearest expense is the one that cost the most [E]
+  UnimplementedError: 1
