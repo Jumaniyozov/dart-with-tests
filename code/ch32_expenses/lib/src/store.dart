@@ -23,7 +23,7 @@ import 'expense.dart';
 /// coupled to every member it grows later. `Store` is an `interface class` on
 /// purpose, so growing it is allowed — and every double in the book stopped
 /// compiling the moment these two lines appeared. That is the bill study 27
-/// described, itemised in 32.2.
+/// described, itemised in 32.4.
 ///
 /// `totals` is not among them. It used to hang off this type and does not any
 /// more: it was derived from the expenses rather than from the store, and study

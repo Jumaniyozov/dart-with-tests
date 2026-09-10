@@ -145,6 +145,13 @@ void main() {
     });
 
     test('a limit the domain refuses, which JSON was happy with', () {
+      expect(
+        () => Limit(Category('food'), Money.zero),
+        throwsArgumentError,
+        reason:
+            'the refusal lives on the type; the reader below only asks '
+            'first, so a hand-edited file never reaches the throw',
+      );
       expect(limitFromJson({...food.toJson(), 'pence': 0}), isNull);
       expect(limitFromJson({...food.toJson(), 'pence': -1}), isNull);
       expect(limitFromJson({...food.toJson(), 'category': '  '}), isNull);

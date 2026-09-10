@@ -40,7 +40,8 @@ unresolved `package:` imports. It looks like the book is broken. It is not.
 ## The checks
 
 ```bash
-cd code && dart analyze && dart test && dart format --output=none --set-exit-if-changed .
+cd code && dart analyze && dart format --output=none --set-exit-if-changed .
+cd code && for d in ch*/; do (cd "$d" && dart test test/) || break; done   # 915 green
 cd code && dart run tool/check_slices.dart      # a study changed only what its SLICE says
 cd code && dart run tool/check_regions.dart     # every new or changed region is on a page
                                                 # or exempted, with a reason, in its SLICE
@@ -53,6 +54,10 @@ cd web && npx next build
 
 `next build` is the only real check on the site; the dev server caches stale colour. If
 colours look wrong in dev, `rm -rf .next/cache .source` before believing it.
+
+`dart test` from `code/` does **not** run the suite. The root is a pub workspace whose own
+package has no `test/`, so it exits with *No test files were passed* — the loop above is what
+runs every study package. It runs `test/` only: `exercises/` is red on purpose in every study.
 
 The six `check_*` tools cover different halves and none subsumes another —
 `OUTLINE.md`'s standing requirements say what each one can and cannot see.

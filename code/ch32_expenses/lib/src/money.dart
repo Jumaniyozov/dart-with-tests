@@ -32,14 +32,11 @@ class const Money._(final int pence) implements Comparable<Money> {
 
   /// Two amounts, added.
   ///
-  /// Total, and it goes through [Money._] rather than [Money.fromPence]
+  /// **A total operation, and the signature says so.** Every pair of amounts
+  /// has a sum, and it goes through [Money._] rather than [Money.fromPence]
   /// because there is nothing left to check: both sides are already
   /// non-negative, so their sum is too. The invariant survives the operator
   /// without the operator having to defend it.
-  ///
-  /// `+` is **total**: every pair of amounts has a sum, and it goes through
-  /// [Money._] rather than [Money.fromPence] because there is nothing left to
-  /// check. Both sides are already non-negative, so the sum is too.
   Money operator +(Money other) => Money._(pence + other.pence);
 
   /// Two amounts, subtracted — or `null` when the answer would be money this

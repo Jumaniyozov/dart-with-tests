@@ -10,7 +10,32 @@ import 'period.dart';
 /// nothing about any particular month — a limit set once is meant to apply
 /// every month, which is how people talk about budgets and why this is not a
 /// [Budget] on its own.
-class const Limit(final Category category, final Money amount) {
+class const Limit._(final Category category, final Money amount) {
+  /// The only door in, and it refuses the one amount [Money] is happy to hold.
+  ///
+  /// Nothing is wrong with £0.00 as *money*, so `Money` lets it through. It is
+  /// wrong as a *limit*: a budget of nothing is not a rule somebody set, it is
+  /// the absence of one. 32.1's rule of thumb says where that check goes — a
+  /// limit is the smallest thing that can see its own amount — and putting it
+  /// here rather than at each edge is what keeps a `Limit` this program can
+  /// build from being one it cannot read back.
+  ///
+  /// It throws for the reason [Money.fromPence] does: both are handed a value
+  /// by *code*, and code getting this wrong is a bug rather than a typo. The
+  /// two edges that take the amount from outside ask first, so no caller has
+  /// to catch anything — `budget` at the terminal answers an exit code, and
+  /// [limitFromJson] answers `null`.
+  factory Limit(Category category, Money amount) {
+    if (amount == Money.zero) {
+      throw ArgumentError.value(
+        amount.pence,
+        'amount',
+        'a budget of nothing is not a budget',
+      );
+    }
+    return Limit._(category, amount);
+  }
+
   /// Two keys and a `kind`, which is new.
   ///
   /// Study 29's file held one shape and needed no way to say which. It holds
@@ -38,6 +63,11 @@ class const Limit(final Category category, final Money amount) {
 /// `'kind': 'limit'` in a map pattern is a **constant** pattern where the
 /// others are variable patterns: it does not bind anything, it just has to
 /// match. That one line is what keeps an expense from being read as a limit.
+///
+/// The `when` clause asks what [Limit] would refuse, before [Limit] is built —
+/// the same shape as `readMoney` asking about the sign before calling
+/// [Money.fromPence]. A file somebody edited by hand is not a bug in this
+/// program, so it answers `null` rather than throwing.
 Limit? limitFromJson(Object? json) => switch (json) {
   {'kind': 'limit', 'category': final String category, 'pence': final int pence}
       when pence > 0 && category.trim().isNotEmpty =>

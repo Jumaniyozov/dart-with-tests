@@ -397,6 +397,7 @@ before it is written as prose.
 | `Money? operator -` | Legal. An operator may return a nullable type, which is how a partial operation says so. |
 | Adding two members to `Store` | **4 implementations broken**, two of them test doubles with no opinion about the new members. |
 | `SpyStore.calls` after study 32's budget check | `['limits', 'record']` where study 27 asserted `['record']`, with no change to what the program does. |
+| A **factory in the unnamed slot** beside a private primary constructor | Legal. `class const Limit._(…) { factory Limit(…) }` — a published type gains a check and no call site moves. |
 
 ### 23 — Libraries, imports and privacy · `libraries` · `ch23_expenses` — **WRITTEN**
 
@@ -888,6 +889,18 @@ of it.*
 Gloss: CQRS, units of work and transaction boundaries named and refused, with the reason stated
 as concurrency this program does not have.
 
+**Found by the audit after shipping: `Limit` did not enforce its own invariant.** `Money` allows
+zero and should; a limit of nothing is not a limit. That rule was written twice — the `budget`
+command refused it with an exit code, and `limitFromJson`'s `when` clause refused it with `null`
+— and the type between them had neither. So `Limit(Category('food'), Money.zero)` constructed,
+serialised to `{'kind': 'limit', 'category': 'food', 'pence': 0}`, and read back as `null`: a
+value the program could write and could not read. Measured, then fixed by making the primary
+constructor private and putting a factory in the unnamed slot, which cost no call site. The page
+gained the paragraph and a Gloss, because the fix is a better lesson than the original code was.
+
+The study's own rule of thumb is what names the defect: *put the rule on the smallest thing that
+can see all of it.* It was stated in bold on the page and broken four inches below by the page's
+own code.
 ### 33 — Taking a dependency · `taking-a-dependency` · `ch33_expenses`
 
 Teaches `dart pub add`, `pubspec.yaml` dependencies, caret constraints, the lockfile,
@@ -1247,6 +1260,14 @@ existing transcripts and verified to reproduce.
   'Money'>`, which names nothing. Study 25 states the test — *identical contents, one
   thing or two?* — so apply it to every type the moment it exists, not the moment a map
   needs it.
+- **A rule enforced at two edges belongs on the type between them.** `Limit` refused a
+  zero amount in the `budget` command and again in `limitFromJson`, and permitted it
+  itself, so the program could construct and store a limit it could not read back. When
+  the same condition is written in two places, neither of them is the owner — ask which
+  single type can see the whole condition, and put it there. Adding the check later is
+  free: a factory takes the unnamed constructor slot and no caller moves. This is the
+  companion to the `==` requirement above; both are questions to ask of a value type the
+  moment it exists.
 - **Book II only — the domain never holds a `DateTime`.** Measured: for one
   instant `local == utc` is `false` while their hash codes are equal,
   `toIso8601String()` drops the offset, and `DateTime(2026, 2, 31)` is the 3rd of

@@ -142,6 +142,30 @@ and simply has to match, and it is the single line keeping an expense from being
 limit — which matters, because both have a `category` and a `pence` and map patterns ignore
 the keys they were not asked about.
 
+Note where the £0 check went. `Money` is happy to hold zero — nothing is wrong with £0.00 as
+money — and a limit of nothing is not a rule somebody set. That makes it `Limit`'s invariant,
+and 32.1's rule of thumb puts it on the smallest thing that can see it: the type. Written any
+other way, the `when` clause above and the `budget` command would each be enforcing a rule
+that the type they build does not have, and this program could construct a limit it could not
+read back.
+
+<Gloss title="A check added to a published type, and no caller moved">
+Giving a check to a type that already has callers usually means renaming its constructor and
+chasing every one of them. It does not have to. A primary constructor may not have a *generative*
+constructor beside it — 23.3 measured that — but a **factory** is not generative, and a
+factory may take the unnamed slot:
+
+```dart
+class const Limit._(final Category category, final Money amount) {
+  factory Limit(Category category, Money amount) { … }
+}
+```
+
+The primary constructor becomes private, the factory takes the name the callers already write,
+and `Limit(category, amount)` goes on meaning what it meant. No call site moves; the check
+arrives and the build never notices.
+</Gloss>
+
 ## 32.4 Two bills, both from study 27
 
 `Store` grew by two members, because a limit has to survive the program stopping and the store

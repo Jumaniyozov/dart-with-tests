@@ -141,3 +141,38 @@ builds, so an `assert` guards against the programmer's own mistake and nothing e
 world arriving at run time, so it must throw. Book II's `Money` therefore uses the
 factory form and study 26 says why — which confirms study 10's Gloss rather than
 contradicting it.
+
+**Amended a fourth time, during the study-32 audit: the factory may take the *unnamed*
+slot, so a published type can gain a check without a single caller moving.** The second
+amendment established that a factory can sit beside a primary constructor; it assumed the
+factory would be named, as `Money.fromPence` is, because `Money` was designed that way from
+the start. A type that is already in use is the harder case, and it is the common one.
+
+Measured on Dart 3.13.2, `Limit` in study 32 was rewritten from
+
+```dart
+class const Limit(final Category category, final Money amount) { … }
+```
+
+to
+
+```dart
+class const Limit._(final Category category, final Money amount) {
+  factory Limit(Category category, Money amount) { … }
+}
+```
+
+and every existing `Limit(category, amount)` compiled unchanged. Making the primary
+constructor private frees the unnamed slot; the factory takes it and keeps the call syntax.
+
+That closes a gap this record left open. The rule was *when a type must check something, the
+check goes on a constructor with a body to put it in* — true, but it read as a decision made
+once, when the type is written. It is not. The check can arrive later, at no cost to callers,
+which means there is never a reason to leave an invariant unenforced on the grounds that the
+type already shipped.
+
+The audit that found this found it as a bug, and the bug is the argument. `Limit` permitted a
+zero amount that the CLI refused and `limitFromJson` refused, so the program could construct
+and serialise a limit it could not read back. Two edges each enforcing a rule that the type
+between them did not have is the shape to watch for, and the fix is always to move the rule
+onto the type.

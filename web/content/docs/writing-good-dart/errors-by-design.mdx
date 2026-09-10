@@ -160,8 +160,9 @@ That pair decides the shape of this whole study. If a failure can be caught and 
 never a bug, so it should have been an `Exception` or a value in the first place. If it really is
 a bug, catching it hides the one thing that would have told you where it is.
 
-Grep this package for `catch` and there is none in `lib/`. Every failure is either a case of
-`Reading` that the caller must handle, or an `Error` nobody has any business handling.
+Run `grep -r 'catch (' lib/` in this package and it comes back empty. Every failure is either a
+case of `Reading` that the caller must handle, or an `Error` nobody has any business handling.
+(A bare `catch` does match — in comments, explaining why there is none.)
 
 Study 20's Practice covers the lints that police the machinery — `empty_catches`,
 `use_rethrow_when_possible`, `control_flow_in_finally`. This is the rule that decides whether you
