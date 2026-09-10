@@ -6,6 +6,7 @@
     "values-and-entities",
     "errors-by-design",
     "testing-without-mocks",
-    "files"
+    "files",
+    "json"
   ]
 }

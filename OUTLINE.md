@@ -1,7 +1,7 @@
 # Outline
 
 Book I: Foundations (studies 1–22) — written. Book II: Writing good Dart
-(studies 23–34) — written through study 28, outlined to 34. Book III (35–39) and
+(studies 23–34) — written through study 29, outlined to 34. Book III (35–39) and
 Book IV (40–44) have no outline.
 
 Entries marked **WRITTEN** are no longer plans. They are the record of what
@@ -108,7 +108,7 @@ the loops deleted), 12→13 and 12→14, 13→14, 3→15 (`const` constructors),
 as the record of what was intended, and each study's own commit message
 records what construction actually measured.
 
-**Book II is outlined below**, and studies 23–28 are written. It opens at study 23
+**Book II is outlined below**, and studies 23–29 are written. It opens at study 23
 with libraries, imports and `_` privacy, which pays the only debt Book I leaves
 unpaid. `part` / `export` was folded into that study as a Gloss rather than taught.
 
@@ -376,6 +376,13 @@ before it is written as prose.
 | `''.split('\n')` | `['']` — **length one**, not zero. |
 | `'a\nb\n'.split('\n')` | `['a', 'b', '']` — always one empty entry too many. |
 | A note with a newline, through the line format | Reads back as an ordinary expense with **half its note gone**. Silent. |
+| `jsonEncode` on a note with `,` and a newline | Escapes both; **no literal newline**, so one expense is still one line. |
+| `jsonEncode` on an object with no `toJson` | `JsonUnsupportedObjectError` — an **`Error`**. Forgetting it is a bug, not an input. |
+| `jsonDecode('not json')` | `FormatException`, "Unexpected character" — an **`Exception`**, so catching is licensed. |
+| `map['pence'] as int` where it is a `String` | `TypeError` — an `Error`, which study 26 forbids catching. |
+| `const LineSplitter().convert('')` | `[]`. And `'a\nb\n'` gives `['a', 'b']` — no phantom last line. |
+| `DateTime(2026, 9, 9).toUtc().toIso8601String()` | `2026-09-08T19:00:00.000Z` — **a different date** from its local form. |
+| `avoid_dynamic_calls` | **Not** in this book's lint set. Nothing would flag the cast version. |
 
 ### 23 — Libraries, imports and privacy · `libraries` · `ch23_expenses` — **WRITTEN**
 
@@ -698,33 +705,72 @@ line and watching it fail. 55 regions changed, 50 shown, 5 exempted.
 Also: `.gitignore` gained `code/ch*/expenses.txt`, because running the study's own program
 from its package writes one.
 
-### 29 — JSON · `json` · `ch29_expenses`
+### 29 — JSON · `json` · `ch29_expenses` — **WRITTEN**
 
-Teaches `dart:convert`: `jsonEncode`, `jsonDecode`, `toJson` and `fromJson` by hand,
-`Map<String, dynamic>` at the boundary, and round-trip tests.
+Teaches `dart:convert`: `jsonEncode`, `jsonDecode`, `toJson` by hand, `LineSplitter`,
+`Object?` where `dynamic` was on offer, and round-trip tests.
 
-Toy: `file_store.dart` rewritten to write JSON, and the note with a comma in it that
-made study 28's format fail.
+Toy: `file_store.dart` rewritten to write one JSON object per line, and both notes that
+study 28 could not carry.
 
-The mechanism to name: `jsonDecode` returns `dynamic`, which is the one place this book
-lets a type go. Everything the analyzer knew is gone at that line, so the conversion
-back into `Expense` is where the checking has to happen — which makes `fromJson` a
-parser, and study 26's rule applies to it unchanged.
+Drill: the same command in both programs. Study 28 prints the expense, writes it to the
+file, and then answers `nothing recorded yet` — three separate things saying it worked
+while the money is gone. Captured by running each package's own `bin/expenses.dart`.
 
-Then the measured trap, and it is the reason `Day` exists: a local `DateTime`
-serialises as `2026-09-09T00:00:00.000` with **no offset**, and that string is byte-identical
-whether the program runs in Tashkent, London or New York. The file looks fine. The
-instant it means is different. A `Day` has no such hole because it never claimed to be
-an instant.
+**One object per line, not one array.** An array is the usual shape for a JSON file and
+cannot be appended to — you would read every expense, add one, and write them all back on
+every `add`. Measured: `jsonEncode` escapes a newline as the two characters `\` and `n`,
+so one expense is still one line and study 28's `FileMode.append` survives.
 
-Seeds: this file format is what study 35's API reads.
+The mechanism to name, and it is better than the outline planned: **a map pattern is the
+cast that checks.** `jsonDecode` returns `dynamic`, and the obvious way out is
+`map['pence'] as int` — which throws a `TypeError` on a file somebody edited. Measured:
+`TypeError` implements `Error`, so study 26's rule leaves no good move — catch an `Error`
+(forbidden) or die because of a stray quote. `{'pence': final int pence}` asks instead of
+asserting, ignores keys it has not heard of, and answers `null`. Study 14's patterns doing
+the work, at the one place in the program where the analyzer knows nothing.
 
-Practice: candidate is *dart.dev — JSON serialization*, on hand-written `fromJson`
-against generated code. **Unverified** — open it, and note whether it recommends
-`json_serializable`, which this book defers to Book IV with the rest of codegen.
+Then the second question, which JSON has no opinion about: `-1250` is a perfectly good
+`int` and is not money; `2026-02-31` is a perfectly good string and is not a day. The type
+check and the domain check are separate and run in that order.
 
-Gloss: `jsonEncode` calls `toJson()` if your object has one, and throws if it does not.
-*Unverified — run the failure and capture its message.*
+`lib/` gains its **first `catch` since study 26 removed them all**, and the study says why
+it is not a retreat: `jsonDecode` throws `FormatException`, which is an `Exception` and not
+an `Error`, and unlike study 28's `exists()` there is no way to ask first — deciding whether
+text is JSON *is* parsing it.
+
+Found while writing, by the study's own test: **the first version of `Day.parse` had the
+exact hole it was written to close.** Checking that every character is a digit *or* a dash
+is not enough — `-123-01-01` is ten characters with a dash in both the places the shape
+wants one, and `int.parse` takes the sign, giving the year -123. The check has to be
+positional. Written into the method's doc and asserted.
+
+Practice: **the outline's candidate is an index page, not a guideline.**
+*dart.dev — JSON serialization* lists `dart:convert`, `json_serializable` and `built_value`
+and recommends nothing, so there is nothing to cite there. What fits exactly, and is
+uncited, is *Effective Dart — Design*: **AVOID using `dynamic` unless you want to disable
+static checking**, whose body says *"Rely on `is` checks and type promotion to ensure that
+the value's runtime type supports the member you want to access before you access it"* — a
+map pattern is precisely that. It is also why `expenseFromJson` takes an `Object?`.
+Verified on the live page. `avoid_dynamic_calls` is **not** in this book's lint set, so
+nothing would have flagged the cast version; `strict-casts` catches only implicit casts and
+every cast in that version was written out.
+
+Gloss 1 (the outline's, now measured): `jsonEncode` calls `toJson()` and throws
+`JsonUnsupportedObjectError` — *"Converting object to an encodable object failed"* — when
+there is none. An **`Error`**, which is the right category: forgetting `toJson` is a fact
+about the code.
+
+Gloss 2: the first `catch` in `lib/`, above.
+
+`toJson` is an **extension** and `expenseFromJson` a top-level function, both in
+`expense.dart`, by study 27's rule — serialisation is one thing done to an expense and not
+part of what an expense is. `Day.parse` stays on `Day`, because a type that writes itself
+down owns reading itself back.
+
+`#day` is exempted in the SLICE: `Day.parse` was added to a class study 25 shows whole, and
+re-showing seventy lines to point at one method is what the exemption exists for. What
+`parse` does is on the page as assertions, and 29.4 quotes the one line that matters.
 
 ### 30 — Dates, times and periods · `dates-and-times` · `ch30_expenses`
 
@@ -902,7 +948,7 @@ told will be explained or fixed.
 | Owed by | Made in | The reader is promised |
 | --- | --- | --- |
 | 31 | 27 | `totals` is a holding position and becomes a `Report` |
-| 29 | 28 | a comma loses the expense and a newline corrupts it silently |
+| 30 | 29 | the other three ways a `DateTime` catches people out |
 | 33 | 28 | which file the tracker keeps becomes something you can say |
 | 30 | 25 | why `Expense` carries a `Day` and not a `DateTime` |
 | 33 | 24 | a parser with `--help`, abbreviations and `--flag=value` |
@@ -911,7 +957,8 @@ Paid: 26←24 (`null` could not say which part was wrong; a sealed `Reading` can
 26←24 again (`dart compile exe` named in a Gloss, measured in 26.4), 27←24 (the seam
 behind `Outcome` is named and two more are cut), 27←25 (`Store` is an interface now that
 a second implementation exists), 27←26 (both lines study 26 left alone became
-parameters), 28←25 (the store stops forgetting when the program stops).
+parameters), 28←25 (the store stops forgetting when the program stops), 29←28 (both
+characters study 28's format could not carry now survive a round trip).
 
 Removed as fiction, found by checking the prose rather than the plan: **31←25** — the
 outline meant study 25 to promise study 31 that `Category`'s equality is what makes

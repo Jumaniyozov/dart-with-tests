@@ -1,0 +1,236 @@
+---
+title: JSON
+study: 29
+direction: Somewhere at the edge of every program a value arrives with no type. The only question that matters is how few lines it stays that way.
+description: jsonEncode and jsonDecode, toJson and fromJson by hand, and why a map pattern is the cast that checks.
+---
+
+Study 28 shipped a format that loses money, said so, and left it. Here is what that looked
+like from the outside.
+
+<Drill n={1}>
+
+<Direction>The same expense, in the study that could not keep it and the study that can.</Direction>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch29_expenses/transcripts/lost.txt</include>
+</Console>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch29_expenses/transcripts/persist.txt</include>
+</Console>
+
+</Drill>
+
+Read the first one again, because it is worse than losing the expense. The program said it
+recorded it. The file visibly contains it. And `list` says *nothing recorded yet*. Three
+separate things told you it worked and the money is gone anyway.
+
+## 29.1 The format was never the interesting part
+
+The fix is small and it is not the lesson:
+
+<include cwd lang="dart" meta='title="lib/src/file_store.dart"'>../code/ch29_expenses/lib/src/file_store.dart#filestore</include>
+
+One JSON object per line, and `jsonEncode` deals with the two characters study 28 could not.
+A comma inside a string is just a comma. A newline becomes the two characters `\` and `n`, so
+one expense is still one line and `FileMode.append` still works — which is why this is not a
+JSON *array*. An array is the more usual shape for a file and it cannot be added to: you
+would read every expense, put one on the end, and write every expense back, on every `add`.
+
+`LineSplitter` quietly settles study 28's other complaint. `''.split('\n')` is `['']` and has
+a length of one, so study 28 had to answer `null` for a line nobody wrote. `LineSplitter`
+gives `[]` for empty text, no phantom entry after a trailing newline, and handles `\r\n` as
+well.
+
+<include cwd lang="dart" meta='title="test/file_store_test.dart"'>../code/ch29_expenses/test/file_store_test.dart#append</include>
+
+And the two notes that broke study 28 now survive, along with one nobody had thought about:
+
+<include cwd lang="dart" meta='title="test/file_store_test.dart"'>../code/ch29_expenses/test/file_store_test.dart#repaired</include>
+
+## 29.2 Where the analyzer stops helping
+
+Everything up to here was easy. This is the study:
+
+<include cwd lang="dart" meta='title="lib/src/expense.dart"'>../code/ch29_expenses/lib/src/expense.dart#json</include>
+
+`jsonDecode` hands back `dynamic`. Not `Map<String, String>`, not `Object` — `dynamic`, the
+one type that means *the analyzer has stopped checking*. Every guarantee the program has built
+up since study 23 ends at that call, and the file it came from is a text file somebody can
+open in an editor.
+
+The obvious way to get out of it is a cast:
+
+```dart
+final map = json as Map<String, dynamic>;
+final expense = Expense(
+  Money.fromPence(map['pence'] as int),
+  Category(map['category'] as String),
+  Day.parse(map['day'] as String)!,
+  map['note'] as String,
+);
+```
+
+Every one of those casts is a crash waiting for a file that has been edited. And study 26
+already decided what kind of crash:
+
+<include cwd lang="dart" meta='title="test/json_test.dart"'>../code/ch29_expenses/test/json_test.dart#checked</include>
+
+A failed cast throws a **`TypeError`**, and `TypeError` implements `Error`. Study 26's rule
+is that an `Error` means the program is wrong and must not be caught — so if `pence` arriving
+as a string is a `TypeError`, then either you catch an `Error` (which the rule forbids) or the
+program dies because a person put a quote in the wrong place.
+
+Neither is right, because neither is true. A file somebody edited is the world being awkward.
+It should never have been an `Error` in the first place.
+
+## 29.3 A map pattern is the cast that checks
+
+```dart
+{
+  'day': final String day,
+  'pence': final int pence,
+  'category': final String category,
+  'note': final String note,
+}
+```
+
+Study 14's patterns, doing the job the casts were doing, and doing it as a question rather
+than an assertion. The key has to be there **and** the value has to really be that type, or
+the arm does not match and the switch falls through to `null`. Nothing is thrown, so nothing
+has to be caught.
+
+Two things it gives away for free. Extra keys are ignored, so a later version of this program
+can add a field and this one will still read the file. And the type test is where a reader
+looks for it — beside the name — rather than trailing after the value in an `as`.
+
+That leaves the second half, which JSON has no opinion about at all:
+
+`1250` is an `int`. So is `-1250`, and only one of them is money. The map pattern answers
+*what JSON knows*; `_assembled` answers *what the domain knows*, and the two are different
+questions asked in that order. Study 26's rule reaches all the way down here: every one of
+these failures is expected, so every one of them is a value.
+
+<include cwd lang="dart" meta='title="test/file_store_test.dart"'>../code/ch29_expenses/test/file_store_test.dart#unreadable</include>
+
+<Gloss title="The first catch in lib/ since study 26">
+Study 26 ended with a `lib/` containing no `catch` at all, and said so. This study puts one
+back, in `FileStore._expenseFrom`, and it is worth being explicit about why that is not a
+retreat.
+
+`jsonDecode` throws a `FormatException` for text that is not JSON. `FormatException`
+implements `Exception` and not `Error`, which is the language saying *this is about the input,
+not about your code* — exactly study 26's distinction, and exactly the case where catching is
+the right answer rather than the lazy one.
+
+There is also no way to ask first. `exists()` let study 28 avoid a `catch` because you can ask
+whether a file is there without opening it. You cannot ask whether text is JSON without
+parsing it; the question and the answer are the same work.
+</Gloss>
+
+## 29.4 A day is not an instant, and this is where it would have shown
+
+`Day` learned to read its own writing back:
+
+<include cwd lang="dart" meta='title="test/json_test.dart"'>../code/ch29_expenses/test/json_test.dart#parsing</include>
+
+`Day.parse` answers `null` rather than throwing, for the same reason everything else in this
+study does. The interesting line in it is the character check, and it has to be **positional**
+— `i == 4 || i == 7` are dashes and every other index must be a digit. Asking only whether
+each character is a digit *or* a dash is not enough, and that was the first version of this
+method: `-123-01-01` is ten characters with a dash in each of the two places the shape wants
+one, and `int.parse` takes the sign, and you get the year -123. The test above caught it.
+
+Now the reason any of this exists. Put a `DateTime` in that file instead:
+
+<include cwd lang="dart" meta='title="test/json_test.dart"'>../code/ch29_expenses/test/json_test.dart#instant</include>
+
+`2026-09-09T00:00:00.000`. No offset, no `Z`, nothing at all to say which part of the world
+that midnight belonged to — and the string is byte-identical whether the program ran in
+Tashkent, London or New York. The file looks fine. Read it back on another machine and it is
+still the 9th of September, which is the bug: it was a different instant in each of them.
+
+A `Day` cannot have that problem, because it never claimed to be an instant. Study 30 measures
+the other three ways `DateTime` catches people out.
+
+<include cwd lang="dart" meta='title="test/json_test.dart"'>../code/ch29_expenses/test/json_test.dart#fixtures</include>
+
+<include cwd lang="dart" meta='title="test/json_test.dart"'>../code/ch29_expenses/test/json_test.dart#roundtrip</include>
+
+<Gloss title="jsonEncode asks your object how to write itself down">
+`jsonEncode` handles maps, lists, strings, numbers, booleans and `null`. For anything else it
+calls `toJson()` — and if your class has not got one, it throws:
+
+*Converting object to an encodable object failed: Instance of 'Unencodable'*
+
+The type is `JsonUnsupportedObjectError`, and the last word is the point. Forgetting `toJson`
+is not a fact about the data; it is a fact about the code, discoverable the first time anybody
+runs it. Study 26 would have put it in exactly that category.
+
+<include cwd lang="dart" meta='title="test/json_test.dart"'>../code/ch29_expenses/test/json_test.dart#encode</include>
+</Gloss>
+
+<Practice source="Effective Dart — Design" href="https://dart.dev/effective-dart/design#avoid-using-dynamic-unless-you-want-to-disable-static-checking">
+**AVOID using `dynamic` unless you want to disable static checking** — *"The type `dynamic`
+not only accepts all objects, but it also permits all operations… Otherwise, prefer using
+`Object?` or `Object`. Rely on `is` checks and type promotion to ensure that the value's
+runtime type supports the member you want to access before you access it."*
+
+The last sentence is this study written by somebody else. A map pattern *is* an `is` check
+with type promotion — `{'pence': final int pence}` tests the runtime type and binds a properly
+typed `pence` in the same breath.
+
+It is also why `expenseFromJson` takes an **`Object?`** and not a `dynamic`, even though
+`jsonDecode` hands back the latter. `Object?` accepts everything and permits nothing until you
+have proved something about it. `dynamic` accepts everything and permits everything, including
+the typo that compiles.
+
+No lint enforces this. `avoid_dynamic_calls` exists in the wider catalogue and is not in
+`package:lints/recommended.yaml`, so nothing here would have complained about the cast version
+— the analyzer's `strict-casts` setting this book turns on catches *implicit* casts, and every
+cast in that version was written out. It is a guideline you follow because you read it.
+</Practice>
+
+The whole study, run at once:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch29_expenses/transcripts/all.txt</include>
+</Console>
+
+## Wrapping up
+
+Pick a format that somebody else has already argued about. Study 28's commas were not a bug
+in the code; they were a format that had never met a person typing.
+
+`jsonDecode` returns `dynamic`, and that is the one line in this program where the analyzer
+knows nothing. The job is to get out of it immediately, and to get out of it by asking rather
+than asserting.
+
+A map pattern is the cast that checks. It tests the key and the type together, ignores fields
+it has not heard of, and answers `null` instead of throwing — so a corrupt file is a line
+skipped rather than a program stopped.
+
+JSON knows about strings and numbers and nothing else. `-1250` is a perfectly good `int` and
+is not money, `2026-02-31` is a perfectly good string and is not a day. The type check and the
+domain check are two separate questions and they run in that order.
+
+Catch a `FormatException` and never a `TypeError`. One is the input being wrong, which is
+expected; the other is the code being wrong, which is not.
+
+Also met: `jsonEncode`, `jsonDecode`, `toJson` by hand, `LineSplitter`,
+`JsonUnsupportedObjectError`, and `Object?` where `dynamic` was on offer.
+
+Study 30 takes `DateTime` apart properly — the three traps this study did not need — and gives
+the program a `Period` for a report to cover.
+
+## Challenges
+
+Three challenges, nine failing tests. Make them pass one at a time. Do not edit the tests. All
+three are the same boundary: something arrives with no type and has to leave with one.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch29_expenses/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch29_expenses/exercises/challenges.dart</include>

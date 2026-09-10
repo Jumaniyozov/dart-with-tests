@@ -1,0 +1,16 @@
+# Study 29 — what changed since study 28.
+#
+# Added — the boundary where dynamic arrives, and its tests
+test/json_test.dart
+# Changed — the file holds JSON now, Day can read its own writing back, and the
+# tests that measured study 28's two broken characters now measure the repair
+lib/src/file_store.dart
+lib/src/expense.dart
+lib/src/day.dart
+test/file_store_test.dart
+pubspec.yaml
+#
+# unshown: lib/src/day.dart#day — `Day.parse` was added to a class study 25 shows
+#   whole; re-showing seventy lines to point at one method is the wolf-crying this
+#   check exists to avoid. What `parse` does is on the page as assertions —
+#   test/json_test.dart#parsing — and 29.4 quotes the one line that matters.
