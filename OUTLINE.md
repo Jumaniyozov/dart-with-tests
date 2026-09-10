@@ -987,6 +987,17 @@ a program that compiles with one `info` — captured in `undeclared.txt`.
 Gloss: `dependencies` against `dev_dependencies`, argued from what a *caller* receives
 rather than from tidiness.
 
+**Audit, pass nine — the first pass to reach this study.** Passes one to eight all predate
+it. One false count: the page said `package:args` "replaced a parser three studies had
+apologised for", and two did — study 24, which wrote the parser and named study 33 as its
+replacement, and study 32, which built more parsing on top of it and said so on the page and
+again in a `command.dart` doc comment. Study 28 is the near-miss that makes the sentence easy
+to write from memory: it mentions the parser to say it *did not have to be rewritten* to go
+async, which is the opposite of an apology. Everything else re-measured true — 165 green under
+`TZ=UTC` and `TZ=Pacific/Kiritimati`, `dash.txt` still shows a test that really exists at
+`ch32_expenses/test/command_test.dart:339`, and every code-shaped backtick fragment on the
+page is either a filename, CLI syntax, or an `args` API the study deliberately does not use.
+
 ### 34 — Being a dependency · `being-a-dependency` · `ch34_expenses` — **WRITTEN**
 
 Shipped: 168 green, 3 challenges at 10 failing, 7 transcripts. Closes Book II. Study 23's
@@ -1047,6 +1058,20 @@ never cited before. Apt here because it is the study where `///` stops being a p
 comment and becomes the thing `dart doc` publishes and an IDE shows a caller.
 
 Gloss: `dart compile exe`, paying study 24's Gloss with numbers.
+
+**Audit, pass nine — also its first.** One false count: 34.4 said study 1's argument arrives
+"twenty-three studies later", and 34 − 1 is thirty-three. The counts that could be settled
+against something all held — nineteen types (counted from `dart doc`'s generated pages, not
+from the source), eleven files under `lib/src/` and eleven exports, seven files in the SLICE,
+twenty-two lint issues, thirty-three kilobytes down to eighteen. The caret claims were
+re-measured against `pub_semver` in a throwaway package: `^1.4.2` is `>=1.4.2 <2.0.0-0`,
+`^0.4.2` is `>=0.4.2 <0.5.0-0`, and `^2.7.0` refuses `3.0.0-dev` — all three as the page and
+the measured-facts table state them.
+
+The pass also found the ADR defect this study's own subject exposes: **ADR 0003 predicted that
+study 28 would cite nothing, and study 28 cites something.** The record's premises were sound
+and its conclusion was a guess made before the study was written. Both are now standing
+requirements.
 
 ### Promises Book II makes to itself
 
@@ -1381,6 +1406,28 @@ existing transcripts and verified to reproduce.
   instant `local == utc` is `false` while their hash codes are equal,
   `toIso8601String()` drops the offset, and `DateTime(2026, 2, 31)` is the 3rd of
   March. `Expense` carries a `Day`. Instants live at the edges only.
+- **A count of *studies* is a claim, and the count sweep has never read the corpus that
+  proves it.** The existing count requirement above sweeps for lines, exports, types and
+  members — things that live in `code/`, where a grep can settle them. A sentence that
+  counts *studies* is settled by the pages instead, and nothing was reading them. Both
+  instances were in studies 33 and 34, the two the audits had never reached: "study 1's
+  argument, arriving at its conclusion **twenty-three** studies later" on study 34's page,
+  where 34 − 1 is thirty-three; and "`package:args` replaced a parser **three** studies had
+  apologised for", where two did — study 24, which wrote it, and study 32, which built on
+  it and said so twice. Study 28 mentions the parser and is not a third: it says the parser
+  *did not have to be rewritten* to go async, which is praise. Sweep by grepping the pages
+  for the thing being counted, not by remembering it — an apology and a mention read the
+  same from memory and do not read the same on the page.
+- **An ADR's "therefore" is a separate claim from its premises, and it decays on its own.**
+  ADR 0003 said `avoid_slow_async_io` is not in the lint set and argues the opposite for
+  `exists` — both still true, re-measured — and concluded that study 28's `<Practice>`
+  therefore carries no attribution. The shipped page cites *DO use `Future<void>` as the
+  return type of asynchronous members that do not produce values*, which is about a return
+  type rather than about async versus sync. The record had reasoned from *no lint for this
+  argument* to *nothing to cite* while the study was still unwritten, and writing it found a
+  different guideline. Check an ADR's consequences against the artifact, not against its own
+  premises: a consequence written before the work is a prediction, and this book's method is
+  to prefer the measurement.
 - Deliberately-broken code that fails to **compile** cannot live in `lib/`: it
   would put the workspace analyze above zero and contradict study 1's Practice.
   Capture its transcript from a temporary state and inline the code in the MDX

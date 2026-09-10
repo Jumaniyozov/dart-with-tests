@@ -4,7 +4,7 @@
 stale here before and cost a session. The living documents listed below are the source
 of truth.
 
-Last checked: 2026-09-09.
+Last checked: 2026-09-10.
 
 ## Read these, in this order
 

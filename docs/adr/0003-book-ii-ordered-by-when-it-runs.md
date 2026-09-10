@@ -82,6 +82,21 @@ same sentence named the five that skip it. Measured, the gap is 23, 24, 25, 26 a
 in `package:lints/recommended.yaml`, and it argues the opposite for `exists` and `stat`.
 That study's `<Practice>` therefore carries no attribution, the way study 2's does.
 
+**Amended when the study was written: the premises held and the conclusion did not.**
+Both halves of the sentence above re-measured true — `avoid_slow_async_io` is still absent
+from `package:lints/recommended.yaml`, and its own documentation still resolves the
+diagnostic by replacing `exists` with `existsSync`. What was wrong was the step between:
+*no lint for preferring async I/O* was read as *nothing to cite*, and those are different
+questions. Study 28 cites **DO use `Future<void>` as the return type of asynchronous members
+that do not produce values** (Effective Dart — Design), which is not about async versus sync
+at all. `record` produces nothing; the reason it is not `void` is that the caller might need
+to `await` it, and with plain `void` the caller could not.
+
+Four studies in this book carry a `<Practice>` with no attribution — 2, 24, 30 and 32 — and
+28 is not among them. The three in Book II each say on the page why they cite nothing, which
+is the form this record should have predicted: a guideline *this record* could not find is
+not a guideline *the study* could not find.
+
 **Operator overloading moves from Book IV to Book II.** Study 25 overrides
 `operator ==`, so the book teaches operator overloading whether or not it admits to it.
 Study 31 owns it properly, where totalling makes `Money + Money` the obvious thing to
