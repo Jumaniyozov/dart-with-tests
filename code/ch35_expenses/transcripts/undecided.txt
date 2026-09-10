@@ -1,0 +1,9 @@
+$ dart test test/surface_test.dart          # study 34's test, before this study decided
+00:00 +0: loading test/surface_test.dart
+00:00 +0: the barrel is the contract and it offers exactly what it says it offers
+00:00 +1: the barrel is the contract and every file under lib/src is either offered or deliberately not
+00:00 +1 -1: the barrel is the contract and every file under lib/src is either offered or deliberately not [E]
+  Expected: empty
+    Actual: Set:['src/server.dart']
+  a new file under lib/src reaches nobody until the barrel says so — which is the point, but it should be a decision
+…

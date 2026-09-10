@@ -1,0 +1,8 @@
+$ curl -sD - -o /dev/null http://localhost:8080/ | sed 's/^date: .*/date: <elided, so this can be re-run>/'
+HTTP/1.1 200 OK
+content-type: text/plain; charset=utf-8
+x-frame-options: SAMEORIGIN
+x-xss-protection: 1; mode=block
+transfer-encoding: chunked
+x-content-type-options: nosniff
+

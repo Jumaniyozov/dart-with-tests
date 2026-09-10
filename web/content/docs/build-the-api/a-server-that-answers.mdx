@@ -1,0 +1,236 @@
+---
+title: A server that answers
+study: 35
+direction: shelf does not replace dart:io — it hands the same HttpServer back. What it replaces is the loop, with a function a test can call.
+description: HttpServer by hand, then package:shelf; a Handler is FutureOr<Response> Function(Request); what serve puts on the wire that your code never said; and the first file this package keeps out of its own barrel.
+---
+
+Study 28 changed `Store` so that every member returns a `Future`, and the argument was not
+about files. It was this: *a server that blocks on a disk stops answering everybody*. That
+sentence was a bet on a program nobody had written. This is the study that collects it.
+
+The tracker keeps everything else. The command line still works, and it is not a claim: this
+study's `SLICE` names one new file under `lib/src/`, and `check_slices` asserts that every
+other file there is byte-for-byte study 34's copy. *Reusing the domain* stops being something
+the prose says and becomes something a tool refuses to let go stale.
+
+<Drill n={1}>
+
+<Direction>The same answer, twice: once with nothing between the program and the socket, and once with a dependency there.</Direction>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch35_expenses/transcripts/answers.txt</include>
+</Console>
+
+</Drill>
+
+## 35.1 A server is a loop somebody has to write
+
+`dart:io` has everything needed and hides none of it. `HttpServer.bind` answers a `Stream`
+of requests, and a `for` loop over that stream is the server.
+
+<include cwd lang="dart" meta='title="bin/by_hand.dart"'>../code/ch35_expenses/bin/by_hand.dart#byhand</include>
+
+That runs, and it answers. It is also the first program in this book that never finishes: the
+loop has no exit, and `dart run` will sit there until you stop it. Everything in Book II was
+a process with a beginning and an end, and the difference is the reason this book exists —
+a CLI that is wrong prints the wrong thing and stops, and a server that is wrong keeps
+answering.
+
+Ask it what it actually put on the wire:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch35_expenses/transcripts/byhand.txt</include>
+</Console>
+
+Three of those headers nobody wrote. `x-frame-options`, `x-xss-protection` and
+`x-content-type-options` are `dart:io`'s own defaults, set on every response an `HttpServer`
+sends. The fourth is the interesting one, and it is a decision this program made by not
+making it: **`transfer-encoding: chunked` is what you get when you never say how long the
+body is.**
+
+<include cwd lang="dart" meta='title="test/server_test.dart"'>../code/ch35_expenses/test/server_test.dart#length</include>
+
+Two responses from a bare `HttpServer`, differing in one line. Say how long the body is and
+`dart:io` sends `content-length`; say nothing and it chunks. Nothing in `bin/by_hand.dart`
+says, so that server ships a different wire format from the one in the next section — chosen
+by omission, which is the only way this kind of decision ever gets made.
+
+## 35.2 `shelf` is `dart:io` plus a function type
+
+<include cwd lang="dart" meta='title="lib/src/server.dart"'>../code/ch35_expenses/lib/src/server.dart#handler</include>
+
+There is no loop, no socket and no `HttpServer` in that file. A `Handler` is
+`FutureOr<Response> Function(Request)` — a *function type*, not a class to implement — so
+what this package contributes to the server is a function that takes a request and answers.
+
+The loop it replaced has to go somewhere, and it goes into one call:
+
+<include cwd lang="dart" meta='title="bin/serve.dart"'>../code/ch35_expenses/bin/serve.dart#serve</include>
+
+`shelf_io.serve` answers a `Future<HttpServer>` — the same `dart:io` type the file in 35.1
+bound by hand. That is worth asserting rather than believing, because it is the whole shape
+of this dependency:
+
+<include cwd lang="dart" meta='title="test/server_test.dart"'>../code/ch35_expenses/test/server_test.dart#returns</include>
+
+`shelf` is not an alternative to `dart:io`. It is `dart:io` with a function type in front of
+it, and it hands the server straight back — the port it really bound, and a `close` that is
+yours to call. A dependency that gives you back the thing it wrapped is a dependency you can
+stop using one call at a time.
+
+The wire says the rest:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch35_expenses/transcripts/wire.txt</include>
+</Console>
+
+The three `dart:io` headers are still there, because `dart:io` is still there — the test above
+asserts all three arrive through `shelf` too, and the transcript in 35.1 shows the same three
+with no `shelf` anywhere. Three more are not in the hand-written version. `date` and `x-powered-by` are `serve` introducing itself, and
+`content-length` is the one that matters: **`shelf` buffers the body and works the length out
+for you.** The fifteen lines in 35.1 shipped a different wire format than this because nobody
+told them not to, and that is a better argument for the dependency than any count of lines.
+
+`x-powered-by` is the one you can decline:
+
+<include cwd lang="dart" meta='title="test/server_test.dart"'>../code/ch35_expenses/test/server_test.dart#headers</include>
+
+The second test is the shape to copy. Asserting that `x-powered-by` is gone would pass if
+`poweredByHeader: null` had removed six headers; asserting that the *difference between the
+two responses* is exactly that one name is the claim actually being made.
+
+## 35.3 The seam was already there
+
+Study 27 spent a whole study on this: a seam is a parameter, and only one of the two ends
+wants an interface. `Store` earned one because there are real implementations of it. The
+server end does not need anything built at all.
+
+<include cwd lang="dart" meta='title="test/server_test.dart"'>../code/ch35_expenses/test/server_test.dart#calling</include>
+
+No port. No socket. No `setUp` that binds anything, and nothing to tear down. `Request` is a
+class you construct, `Handler` is a function you call, and the answer is a value you read. A
+test of this server is a test of a function, which is what a function type buys that a
+one-method interface does not.
+
+It also answers the same thing at every path, which is deliberate and is the reason study 36
+exists. `recorded: 3` is the whole of what this program can currently say over HTTP. Every use
+case the tracker has — `_add`, `_list`, `_setLimit` — is private to `command.dart`, and the
+one public way in, `run`, answers an `Outcome`: an exit code and text written for a person
+standing at a terminal. The second edge cannot use either. Finding that out is study 36's job,
+and it is the first thing a second caller ever tells you about code that only had one.
+
+## 35.4 What the dependency cost, counted
+
+<include cwd lang="dart" meta='title="test/server_test.dart"'>../code/ch35_expenses/test/server_test.dart#counting</include>
+
+Fifteen lines against fifteen. That is not the answer this study expected, and it is a better
+one — a count that comes out even is a count that stops being the argument.
+
+Read it as a split instead. The hand-written fifteen are one file, and every one of them is
+behind a socket: to find out whether that server answers correctly you have to start it, bind
+a port, connect, and take it down again. The other fifteen are six and nine, and the six are a
+function that a test calls in a microsecond with no operating system involved.
+
+So the honest sentence is not *`shelf` is shorter*. It is: **`shelf` costs the same lines and
+puts a different proportion of them where a test can reach.** Say that with the number, or do
+not print the number — this book has been wrong before by comparing two things that were not
+doing quite the same work.
+
+## 35.5 A file that reaches nobody
+
+`lib/src/server.dart` is the first file this package has ever added that the barrel does not
+export. Study 34 left a test standing over exactly this moment, and it fired the moment the
+file existed:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch35_expenses/transcripts/undecided.txt</include>
+</Console>
+
+Read the failure message: *which is the point, but it should be a decision*. So here is the
+decision, written down where the test can read it:
+
+<include cwd lang="dart" meta='title="test/surface_test.dart"'>../code/ch35_expenses/test/surface_test.dart#surface</include>
+
+`expensesHandler` answers a `Handler`, and `Handler` belongs to `package:shelf`. Export it and
+every caller of this package inherits a dependency they never chose: the day `shelf` ships a
+major version, they move too, through *this* package's major version. That is study 34's
+argument, and this is the first study where declining it costs something — the server is the
+most interesting thing in the package and it stays behind the door.
+
+The third test is new, and it is the argument made mechanical: nothing the barrel offers may
+so much as mention `package:shelf`. A rule you can state is a rule that drifts; a rule that
+reads the files is one that does not.
+
+The version moved to `1.1.0`. A new executable and a new dependency are things added, and
+nothing offered was removed — which is a minor version, and study 34's table is where that
+sentence comes from.
+
+<Practice source="Effective Dart — Design" href="https://dart.dev/effective-dart/design#prefer-making-declarations-private">
+**"PREFER making declarations private."** A public declaration, the guideline says, is a
+signal that other libraries can and should reach it — *and a commitment on your library's part
+to support that*.
+
+It has been quietly true since study 23, and this is the first study where obeying it costs
+something. Study 23 built the mechanism, `lib/src/`. Study 34 made it a contract with a
+version number attached. Here the package writes the most interesting file it has ever had and
+declines to offer it, because `expensesHandler` answers a `Handler` and `Handler` is not this
+package's to promise.
+
+The cost is real and worth naming: a caller who wants this server has to write their own
+`serve` call. The alternative is a caller who cannot upgrade `shelf` on their own schedule,
+and study 34 measured what that trade looks like from the other end.
+</Practice>
+
+<Gloss title="A transcript of a program that does not exit">
+Every transcript in this book is real captured output, and `tool/check_transcripts.dart`
+re-runs the ones it can so that a later commit cannot quietly falsify them. Neither idea
+survives contact with a server: the command the reader types is `curl`, in a second terminal,
+against a process that is still listening, and there is no single command a checker can
+repeat.
+
+So `tool/capture_server.dart` owns the whole scenario — which entrypoint, what its store
+starts with, and the commands to run while it is up. It starts the server, waits for a
+readiness line, runs the commands, kills the server, and writes the file. `--check` does the
+same and compares.
+
+That works only because of a rule the server obeys: **it logs nothing time-varying.** A fixed
+port, no timestamps, no elapsed times. And the one clock that is not ours — HTTP's `date`
+header — is elided by the command on line 1 of the transcript, where you can see it and run it
+yourself. A transcript containing a clock reading is a transcript that fails on somebody's
+second run, which is the one thing this book's checkers exist to prevent.
+</Gloss>
+
+## Wrapping up
+
+`dart:io` is a complete HTTP server and always was. `HttpServer.bind` gives you a stream of
+requests and a loop over it is the whole program — fifteen lines, and two of the headers it
+sends are decisions it made by not making them.
+
+`shelf` is that, plus a function type. `shelf_io.serve` takes a `Handler` and answers the same
+`Future<HttpServer>`, so the dependency sits in front of `dart:io` rather than instead of it.
+On the wire it adds `date`, a `x-powered-by` you can switch off, and a `content-length` it
+computed for you.
+
+A `Handler` is `FutureOr<Response> Function(Request)`. That is the seam study 27 described,
+arriving with nothing to build: a test constructs a request, calls the function, and reads the
+answer, with no port and no socket anywhere.
+
+The line counts came out even. What changed is which lines a test can reach — six of the
+fifteen, against none.
+
+And the package has its first withheld file. The server is not exported, because its type
+belongs to somebody else, and `test/surface_test.dart` now holds that decision rather than
+this paragraph.
+
+Also met: `HttpServer.bind`, `HttpStatus`, `ContentType`, `shelf_io.serve`, `Handler`,
+`Request`, `Response.ok`, and a `curl` transcript that a checker can re-run.
+
+## Challenges
+
+Three challenges, eight failing tests. Make them pass one at a time. Do not edit the tests.
+Every one of them is a `Handler`, so not one of them needs a port.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch35_expenses/transcripts/challenges.txt</include>
+</Console>

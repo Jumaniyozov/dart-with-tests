@@ -4,7 +4,7 @@
 stale here before and cost a session. The living documents listed below are the source
 of truth.
 
-Last checked: 2026-09-10.
+Last checked: 2026-09-11.
 
 ## Read these, in this order
 
@@ -21,12 +21,14 @@ Last checked: 2026-09-10.
 
 Book I (studies 1-22) is written, audited and pushed. **Book II (23-34) is complete** —
 all twelve snapshots exist, and its promise table is empty because every promise the prose
-made has been paid. **Book III (35-40) is outlined, with provisional titles and no code**;
-ADR 0005 records its order and why it costs a sixth study. Book IV (41-45) has no outline.
+made has been paid. **Book III (35-40) is outlined and open: study 35 is written**, and
+36-40 have provisional titles and no code. ADR 0005 records the order and why it costs a
+sixth study. Book IV (41-45) has no outline.
 
-The next piece of work is the spike, not study 35: the smallest real `shelf` server in
-front of `ch34_expenses`'s `Store`. `OUTLINE.md`'s Book III section lists what it must
-measure, and it is allowed to rename studies.
+The next piece of work is study 36, `ch36_expenses` — `OUTLINE.md`'s entry for it, and
+ADR 0005's ruling that `Tracker` takes the header constructor form. Book III's promise
+table now has a row in it: study 35 tells the reader why the server can only answer
+`recorded: N`, and study 36 is what it was promised to.
 
 Counts are not restated here. `OUTLINE.md` and the git log carry them, and a number
 copied into this file is a number that will be wrong within a week. That is exactly how
@@ -57,6 +59,8 @@ cd code && dart run tool/check_transcripts.dart # every green transcript still r
 cd code && dart run tool/check_also_met.dart    # every `Also met:` item was actually met
 cd code && dart run tool/check_shipped.dart     # OUTLINE.md's `Shipped:` counts match
                                                 # the packages they describe
+cd code && dart run tool/capture_server.dart --check   # the server transcripts still
+                                                # re-run; check_transcripts runs this too
 cd web && npx next build
 ```
 
@@ -72,13 +76,18 @@ has no `test/` at all — the standing requirements say so, because the reader h
 `test()` yet — so the previous version of this loop broke on the first package and ran
 nothing. It printed a failure and stopped, which reads like a broken book rather than a
 broken command. Corrected while outlining Book III: 33 packages have a `test/`, and they
-hold **1248 tests**, which is the number this file's predecessors quoted without a working
-loop to produce it.
+held **1248 tests**, which is the number this file's predecessors quoted without a working
+loop to produce it. Study 35 makes it 34 packages and **1426 tests**; re-run the loop
+rather than trusting either number.
 
 The seven `check_*` tools cover different halves and none subsumes another —
 `OUTLINE.md`'s standing requirements say what each one can and cannot see.
 **`check_transcripts` and `check_shipped` are the slow two**, because both run a suite per
 claim; give them a minute or two each.
+
+`capture_server` is not an eighth checker; it is the one tool that can re-run a transcript
+of a program that does not exit, and `check_transcripts` delegates to it. Listed separately
+above only because running it alone is much faster while you are capturing.
 
 **`check_shipped` is the newest, and it exists because `OUTLINE.md` was the one corpus no
 checker read.** Nine `Shipped:` lines, six carrying a wrong number when first swept by
@@ -98,17 +107,18 @@ a constructor"* — now recorded as `19→23` so the tool can see it.
 
 ## Open, on the book
 
-- **Book III's server transcripts need `tool/capture_server.dart`**, and
-  `check_transcripts` needs to learn to re-run it. A server does not exit, so Book II's
-  convention does not cover it. ADR 0005 carries the constraint that makes it possible:
-  the server logs nothing time-varying.
+- Nothing. `tool/capture_server.dart` was the one item here and it landed with study 35,
+  which is exactly what this entry said to do: it was deliberately not written while the
+  server it had to start did not exist, and writing it against the real `bin/serve.dart`
+  cost no guesses. It owns the scenario — entrypoint, seeded store, commands — and
+  `check_transcripts` defers any transcript containing a `curl` command to it.
 
-  **Deliberately not written yet, and this is the reason.** It was meant to land with the
-  other two checkers. It cannot: the tool has to start Book III's server, and Book III has
-  no server. Writing it now means inventing an entrypoint, a readiness signal and a request
-  format for a program that does not exist, then rewriting all three when it does — a tool
-  built against a guess, which is the shape this book has been burned by twice already.
-  Build it **with study 35**, when the interface it wraps is a real file.
+  **One thing ADR 0005's rule did not cover, found by building it.** *The server logs
+  nothing time-varying* is about the server's own output. HTTP's `date:` header is not the
+  server's output and no rule here can remove it, so each scenario's command pipes through
+  a `sed` that elides that one value — **on line 1 of the transcript**, where the reader
+  can see it and run it. Anything else would be a transcript normalised behind the
+  reader's back.
 
 ## Open, not on the book
 

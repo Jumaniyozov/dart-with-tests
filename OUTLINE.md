@@ -1332,8 +1332,15 @@ one green test: `limit=1` and `limit=1000` both make the store hand over **1000 
 
 **7. Thirty `<Practice>` hrefs are already spent** across 34 studies — 34 Practice blocks
 for 34 pages, so the one-per-study rule holds and four carry no attribution. Book III needs
-six outside that set. Regenerate the exclusion list rather than trusting this sentence:
-`grep -rhoE 'href="[^"]+"' web/content/docs/ | sort -u`.
+six outside that set.
+
+**And the exclusion list is not the `<Practice>` hrefs.** Study 35 followed the command this
+row originally gave — `grep -rhoE 'href="[^"]+"' web/content/docs/ | sort -u` — chose the
+guideline it cleared, wrote the Practice, and then found study 27 citing the same guideline
+as a plain markdown link in its prose. Thirty hrefs, **34** distinct `dart.dev` URLs. The
+standing requirements now carry the wider sweep; use that one:
+`grep -rhoE 'https://dart\.dev/[^")>[:space:]]+' web/content/docs/ | sed 's/[.,)]*$//' |
+sort -u`.
 
 ### The debt Book III takes on purpose
 
@@ -1361,7 +1368,9 @@ first write route does, and the page can name the study it began in. And what st
 fixes is not "concurrency": it is the suspension between the decision and the write, which
 is measurable, deterministic and small enough to state in one sentence.
 
-### 35 — A server that answers · `a-server-that-answers` · `ch35_expenses`
+### 35 — A server that answers · `a-server-that-answers` · `ch35_expenses` — **WRITTEN**
+
+Shipped: 181 green, 3 challenges at 8 failing, 6 transcripts. Opens Book III.
 
 Stand up `HttpServer` from `dart:io` by hand, feel what it costs, then take `shelf` in the
 same study. One study and not two, because `shelf_io.serve` **returns** an `HttpServer`:
@@ -1380,6 +1389,50 @@ had not been.
 
 The server answers at one path with no routing at all. That is deliberate — study 36 is
 what lets it answer about expenses, and 37 is what gives it a surface.
+
+**The line count came out even, and the outline's number was for a different comparison.**
+The spike measured **18 against 11**, warning in the same breath that the two sides were not
+doing the same work. Written out, they are: `bin/by_hand.dart` is **15** code lines and
+`lib/src/server.dart` plus `bin/serve.dart` is **15** too, counting imports and discounting
+blanks and comments. The spike's asymmetry is the whole difference — its `shelf` side omitted
+the `serve` call and its raw side hand-wrote a 404 that `Router` gives away, and study 35 has
+no routing on either side, so neither term applies. `test/server_test.dart#counting` asserts
+all three numbers, so this one cannot rot the way the counts this book has been wrong about
+did.
+
+**The better sentence was there once the number stopped being the argument**: `shelf` costs
+the same lines and puts a different proportion of them where a test can reach — **6** of the
+15, against none. Every line of the hand-written server is behind a socket.
+
+**Confirmed on the wire, and sharper than "shelf adds two headers".** The hand-rolled server
+sends **no `date` and no `x-powered-by` at all**; `shelf` sends both, plus the
+`content-length` it computed by buffering the body. `x-frame-options`, `x-xss-protection` and
+`x-content-type-options` come from `dart:io` and are on both. The `poweredByHeader: null`
+claim is asserted as a **difference between two responses** rather than as an absence, because
+an absence would also pass if it had dropped five other headers.
+
+**The first file this package keeps out of its own barrel, and study 34's test found it
+before the prose did.** `lib/src/server.dart` answers a `Handler`, which is a `shelf` type, so
+exporting it would put somebody else's major version inside this package's. `surface_test`'s
+`onDisk.difference(offered)` failed the moment the file existed, with the reason study 34 had
+written for exactly this moment — *which is the point, but it should be a decision*. It gains
+a `withheld` set, and a third test asserting that **nothing the barrel offers so much as
+mentions `package:shelf`**. Captured as `undecided.txt`, which is the failure itself.
+
+**Version `1.1.0`.** A second entrypoint and a new dependency are things added with nothing
+removed, which study 34's table calls a minor. `surface_test`'s existing check that
+`pubspec.yaml` and `CHANGELOG.md` agree is what makes that a claim rather than a habit.
+
+**`tool/capture_server.dart` exists, and ADR 0005's rule was necessary but not sufficient.**
+That record says the server logs nothing time-varying, which covers the server's own output —
+a fixed port, no timestamps — and does not cover HTTP's own `date:` header, which no rule of
+this repository's can remove. So the tool's scenarios pipe through a `sed` that elides that
+one value, **on line 1 of the transcript**, where the reader can see it and run it. That keeps
+the transcript real captured output of a real command rather than something normalised behind
+their back. Proved both ways: alter a captured line and `--check` names it; delete a
+transcript and it says so; an empty scenario list exits 1 rather than reporting green.
+`check_transcripts` defers any transcript containing a `curl` command to it and counts those
+as checked rather than skipped.
 
 ### 36 — A second edge finds what the first one hid · `a-second-edge` · `ch36_expenses`
 
@@ -1568,8 +1621,9 @@ checked by `check_promises`, and Book II's had three rows that were fiction.
 
 | Owed by | Made in | The reader is promised |
 | --- | --- | --- |
+| 36 | 35 | The server can only say `recorded: N` because every use case is private to `command.dart` and `run` answers an `Outcome`; study 36 is where the second edge can reach them |
 
-**Empty, because nothing is written yet.** `check_promises` distinguishes an empty table
+**One row, made by the first written study.** `check_promises` distinguishes an empty table
 from a missing one and fails on the second.
 
 **But nothing checks this table, and that must be fixed before study 35 ships.**
@@ -1645,6 +1699,28 @@ existing transcripts and verified to reproduce.
   (first green), `all.txt` (the study's full suite), `challenges.txt` (the
   deliberately-failing exercises). Topical ones are named for what they show —
   `const-runtime.txt`, `generated.txt`, `hello.txt`.
+- **Book III adds a transcript of a program that does not exit**, and it is the
+  one kind a person must not capture by hand. The command a reader types is
+  `curl`, in a second terminal, against a server that is still listening, so
+  there is no single command a checker can repeat. `tool/capture_server.dart`
+  owns the whole scenario instead — entrypoint, seeded store, the commands to
+  run — and starts the server, waits for a fixed readiness line, runs them, and
+  writes the file. `--check` re-runs and compares; `check_transcripts` defers
+  every transcript containing a `curl` command to it and counts those as
+  checked rather than skipped.
+
+  Two rules make that possible and both were earned. ADR 0005's *the server logs
+  nothing time-varying* covers the server's own output — a fixed port, no
+  timestamps. It does **not** cover HTTP's `date:` header, which is on every
+  response and which nothing in this repository can switch off, so each header
+  scenario's command ends in a `sed` that elides that one value. **The `sed` is
+  on line 1 of the transcript, where the reader can see it and run it.** Eliding
+  it inside the tool would produce the same bytes and a worse artifact: line 1
+  is a command the reader can type, and a transcript normalised behind their
+  back stops being one.
+
+  A store is seeded as JSON lines rather than by running the CLI, because
+  `expenses add` files an expense under *today*.
 
 ## Standing requirements for every study
 
@@ -1772,6 +1848,22 @@ existing transcripts and verified to reproduce.
   version of this book's central failure — a sentence written from an
   expectation rather than from a run. Re-run the count whenever a challenge
   test is added.
+- **The sweep that finds a spent `<Practice>` was itself blind to four citations.** This
+  file told Book III to regenerate the exclusion list with
+  `grep -rhoE 'href="[^"]+"' web/content/docs/`. That finds the `<Practice href=…>` blocks —
+  **30** of them across Books I and II — and it does not find a guideline cited in ordinary
+  prose as a markdown link, `[**TEXT**](url)`, which carries no `href=`. Counting the URLs
+  instead gives **34**. Four guidelines were therefore invisible to the sweep, and one of
+  them cost a rewrite: study 27 cites *AVOID defining a one-member abstract class when a
+  simple function will do* in prose, which is the single most apt guideline for study 35's
+  argument, and study 35 chose it, verified it against the exclusion list, wrote the whole
+  Practice, and only then found it spent.
+
+  Sweep on the URL rather than on the attribute:
+  `grep -rhoE 'https://dart\.dev/[^")>[:space:]]+' web/content/docs/ | sed 's/[.,)]*$//' |
+  sort -u`, and after adding one, `sort | uniq -d` to prove no duplicate. The general form
+  is worth more than the fix: **a sweep is only as wide as the syntax it greps for**, and
+  a citation in this book has two spellings.
 - One `<Practice>` per study. When it carries an attribution it must be a real
   link the writer has opened: `<Practice source="Effective Dart — Usage"
   href="https://dart.dev/…">`. The candidate rules named above are starting

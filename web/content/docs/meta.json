@@ -2,6 +2,7 @@
   "pages": [
     "index",
     "foundations",
-    "writing-good-dart"
+    "writing-good-dart",
+    "build-the-api"
   ]
 }

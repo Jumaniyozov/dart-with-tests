@@ -1,0 +1,15 @@
+# Study 35 — what changed since study 34.
+#
+# Added — a server, twice: once with nothing between the program and the
+# socket, and once with `package:shelf` there. The handler is the only new file
+# under `lib/`, and it is the first one the barrel does not export.
+bin/by_hand.dart
+bin/serve.dart
+lib/src/server.dart
+test/server_test.dart
+# Changed — a dependency, a minor version to say so, and the test study 34 left
+# standing over the first file that would have to be a decision
+pubspec.yaml
+CHANGELOG.md
+README.md
+test/surface_test.dart

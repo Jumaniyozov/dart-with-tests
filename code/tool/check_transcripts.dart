@@ -32,6 +32,14 @@
 //
 // Everything skipped is counted, so the coverage is visible rather than assumed.
 //
+// Book III added a transcript of a program that does not exit, which none of the
+// above covers: the command a reader types is `curl`, in a second terminal,
+// against a server that is still listening. Those are handed to
+// `tool/capture_server.dart`, which owns the scenario — the entrypoint, the
+// store behind it and the commands — and can therefore re-run the whole thing.
+// A transcript with a `curl` command in it is that tool's, not this one's, and
+// is reported as checked rather than skipped.
+//
 //   dart run tool/check_transcripts.dart     # from code/
 
 import 'dart:io';
@@ -79,6 +87,8 @@ void main(List<String> args) {
       if (!file.path.endsWith('.txt')) continue;
       final leaf = file.path.split(Platform.pathSeparator).last;
       final lines = file.readAsLinesSync();
+      // A server transcript. `capture_server` re-runs it below, as one scenario.
+      if (lines.any((line) => line.startsWith(r'$ curl'))) continue;
 
       for (var i = 0; i < lines.length; i++) {
         final command = _commandPattern.firstMatch(lines[i])?.group(1)?.trim();
@@ -107,9 +117,14 @@ void main(List<String> args) {
 
   problems.addAll(_challengeCounts(root));
 
+  final servers = _serverTranscripts(root);
+  problems.addAll(servers.problems);
+  checked += servers.checked;
+
   if (problems.isEmpty) {
     stdout.writeln(
-      'check_transcripts: $checked re-runnable command(s) still true, '
+      'check_transcripts: $checked re-runnable command(s) still true '
+      '(${servers.checked} of them against a running server), '
       '$skipped not re-runnable by design.',
     );
     return;
@@ -157,6 +172,29 @@ String? _run(String directory, List<String> arguments) {
   );
   return _statusIn('${result.stdout}\n${result.stderr}'.split('\n'));
 }
+
+/// The server transcripts, re-run by the tool that knows how to start one.
+///
+/// Delegated rather than reimplemented. Knowing which entrypoint to run, what
+/// its store must contain and when it is listening is a scenario, and a scenario
+/// belongs beside the transcripts it produces.
+({List<String> problems, int checked}) _serverTranscripts(String root) {
+  final result = Process.runSync('dart', [
+    'run',
+    'tool/capture_server.dart',
+    '--check',
+    root,
+  ], workingDirectory: '$root/code');
+  final printed = '${result.stdout}'.trim();
+  final counted = RegExp(r'(\d+) server command\(s\)').firstMatch(printed);
+  if (result.exitCode == 0 && counted != null) {
+    return (problems: const [], checked: int.parse(counted.group(1)!));
+  }
+  return (problems: ['capture_server said:\n${_indent(printed)}'], checked: 0);
+}
+
+String _indent(String text) =>
+    text.split('\n').map((line) => '    $line').join('\n');
 
 /// "Three challenges, N failing tests" against `dart test exercises/`.
 List<String> _challengeCounts(String root) {

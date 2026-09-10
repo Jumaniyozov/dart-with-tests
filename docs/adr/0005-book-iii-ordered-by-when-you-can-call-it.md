@@ -132,6 +132,17 @@ against this record's premises.
   transcript is not a `dart test` transcript, so nothing re-runs it until the tool is
   taught — which is on `HANDOFF.md`'s open list, and is the reason this constraint has to
   be a rule rather than a habit.
+
+  **Amended while writing study 35: the rule is necessary and it is not sufficient.** It
+  governs what the server prints, and `bin/serve.dart` obeys it — port 8080, one fixed
+  readiness line. It says nothing about what `shelf` puts on the *wire*, and every HTTP
+  response carries a `date:` header that no rule in this repository can remove. So
+  `tool/capture_server.dart` exists, `check_transcripts` defers every transcript with a
+  `curl` command to it, and each header scenario's command ends in a `sed` that elides that
+  one value — **on line 1 of the transcript**, where the reader sees it and can run it.
+  Eliding it inside the tool would have been the same output and a worse artifact: a
+  transcript normalised behind the reader's back is no longer real captured output of a
+  command they can type.
 - Deliberately not in Book III: isolates and codegen (Book IV), deployment, an ORM, CORS
   and a browser client, versioned schema migrations, and authenticating a *user* —
   `CONTEXT.md` says there is no Account, so the shared key in study 37 authenticates a

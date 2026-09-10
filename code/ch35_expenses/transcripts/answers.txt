@@ -1,0 +1,5 @@
+$ curl -s http://localhost:8080/
+recorded: 3
+
+$ curl -s http://localhost:8080/expenses/2026-09/summary
+recorded: 3

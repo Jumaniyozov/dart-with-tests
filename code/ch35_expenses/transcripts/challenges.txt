@@ -1,0 +1,6 @@
+$ dart test exercises/
+00:00 +0: loading exercises/challenges_test.dart
+00:00 +0: exercises/challenges_test.dart: challenge 1 — a handler that always says the same thing it answers 200 with the body it was given
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — a handler that always says the same thing it answers 200 with the body it was given [E]
+  UnimplementedError: 1
+…
