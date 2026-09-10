@@ -1123,9 +1123,9 @@ existing transcripts and verified to reproduce.
 - **A test must pass on the reader's machine, not only on this one.** The transcript rule
   has always said output must reproduce; assertions are held to the same standard and were
   not. Study 29 shipped `expect(local.toUtc()…, isNot(local…))` — that `local.toUtc()`
-  lands on a different *date* — which is true in Tashkent, false at UTC and false
-  everywhere west of it, so the book's suite failed for roughly half its readers from the
-  day it was published. Sweep with
+  lands on a different *date* — which is true only where the offset from UTC is
+  positive. At UTC itself and everywhere west of it the suite failed, from the day it was
+  published. Sweep with
   `TZ=UTC dart test` and `TZ=Pacific/Kiritimati dart test`; exactly one test in 915 was
   machine-dependent when this was first run. Where a fact genuinely depends on where you
   stand, assert **the dependence** — the local form lacks the `Z` the UTC form carries,
