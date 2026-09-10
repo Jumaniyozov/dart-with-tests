@@ -1132,6 +1132,21 @@ existing transcripts and verified to reproduce.
   which is true everywhere — rather than the answer. The same applies to anything read off
   the host: a locale, a path separator, a clock.
 
+- **`Also met:` is a list of claims, and it was written from intention.** The same defect
+  as the promise table, found the same way and one audit later: study 8 told the reader
+  they had met `values` and `entries`, and neither appears in `ch08_tally`, in any code
+  on the page, or anywhere but that sentence. `dart run tool/check_also_met.dart` now
+  checks every item against the study's package plus the **code** on its own page —
+  backticks and fences with `//` comments stripped, because `// 2 — pairs, not values` is
+  not the reader meeting `Map.values`, and because a claim cannot be its own evidence. It
+  found two false claims in 116 across 31 lines.
+
+- **A section reference like `19.5` is a claim that the section exists.** Swept once:
+  `ch19_pence/lib/pence.dart` said "19.5 measures what it hands away" in a region shown on
+  study 19's page, and study 19 stops at 19.4. Exactly one in the book, so this is a sweep
+  rather than a tool — collect every `## N.M` heading and grep prose and `.dart` comments
+  for `N.M` that is not one of them, discounting money (`12.5`) and versions.
+
 - **`dart format` must be clean across `code/`**, because study 1 tells the
   reader to format on save and two included files had drifted.
   `dart format --output=none --set-exit-if-changed .` is the check.

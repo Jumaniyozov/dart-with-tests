@@ -88,8 +88,20 @@ orphan-region rule, rather than a private note to the writer.
 **The workspace grows from 22 packages to 34.** `code/pubspec.yaml` lists each one.
 Resolution stays trivial because they share the workspace lock.
 
-**A retroactive fix costs twelve edits.** Correcting a bug in study 23's `Money` means
-applying it to every later snapshot. This is the real price of the layout.
+**A retroactive fix costs one edit per snapshot from the bug onwards.** Correcting a bug
+in study 23's `Money` means applying it to every later snapshot. This is the real price of
+the layout.
+
+**Amended while writing studies 30-32, which paid it three times.** A false attribution in
+a `#run` doc comment spanned three snapshots; a machine-dependent test spanned one; an
+inverted sentence in `Report.of` spanned two. So the price is not hypothetical, and the
+number is not twelve — it is *however many snapshots exist from the mistake onwards*,
+which is why a defect found early is cheap and one found late is not.
+
+The guard was measured rather than assumed: reverting the doc-comment fix in
+`ch29_expenses` alone made `check_slices` report `ch28_expenses -> ch29_expenses: changed
+but not in SLICE — lib/src/command.dart`. A half-applied retroactive fix is exactly the
+shape this check was built for, and it holds.
 
 **And the check is narrower than this record first claimed.** `check_slices` compares a
 file only when the study's `SLICE` does *not* name it. For a file the study does change,

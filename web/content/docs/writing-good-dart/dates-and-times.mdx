@@ -144,6 +144,12 @@ built.
 character check for the same reason: `-123-01` is seven characters with a dash in the right
 place, and `int.parse` takes the sign.
 
+It is written out again rather than shared, which is a choice and not an oversight. The two
+loops differ in length, in how many dashes they expect and in where, so the shared version
+would take those as parameters — and a `_digitsExcept(text, length, dashes)` helper is
+harder to read than either of the things it replaces, for one caller each. Duplication is
+cheaper than the wrong abstraction until there is a third case, and Book II never has one.
+
 <include cwd lang="dart" meta='title="test/period_test.dart"'>../code/ch30_expenses/test/period_test.dart#parse</include>
 
 ## 30.4 Where totals went, and what came off with it

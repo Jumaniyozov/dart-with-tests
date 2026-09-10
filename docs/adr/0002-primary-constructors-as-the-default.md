@@ -112,6 +112,21 @@ class CappedStore(final int limit) implements Store { final List<Expense> _kept 
 class Slots<T>(final int capacity) { final List<T> held = []; … }
 ```
 
+**Amended a third time while writing study 32: the header takes optional named
+parameters with defaults.** `Expense` needed a fifth field that every older call site
+could go on ignoring, and the header form does it — measured on Dart 3.13.2, analyzes
+clean and runs:
+
+```dart
+class const Expense(final Money amount, …, {final bool acknowledged = false}) { … }
+```
+
+That matters more than it looks. The reason to reach for the body form has always been
+*a check the header cannot make*; it has never been *a parameter shape the header cannot
+express*. Adding a defaulted field to a published type without touching a single existing
+caller is the ordinary way a class grows, and the header does it without the class
+changing form.
+
 There is no class in this book that the header form cannot express. The two that were not
 using it — `Slots` in study 18's challenges and `CappedStore` in study 27's — were the
 older spelling by accident rather than by the analyzer's rule, in files the reader is

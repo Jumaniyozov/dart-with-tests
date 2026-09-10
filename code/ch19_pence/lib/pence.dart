@@ -69,7 +69,7 @@ extension PenceTotals on Iterable<Pence> {
 /// The same wrapper with the door left open.
 ///
 /// `implements int` hands back every `int` member and makes the type
-/// assignable to `int` again. 19.5 measures what it hands away.
+/// assignable to `int` again. 19.4 measures what it hands away.
 extension type const OpenPence(int value) implements int {}
 // #endregion open
 

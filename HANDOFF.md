@@ -47,13 +47,14 @@ cd code && dart run tool/check_regions.dart     # every new or changed region is
 cd code && dart run tool/check_shown.dart       # no shown region leans on an unshown name
 cd code && dart run tool/check_promises.dart    # the promise table matches the prose
 cd code && dart run tool/check_transcripts.dart # every green transcript still runs green
+cd code && dart run tool/check_also_met.dart    # every `Also met:` item was actually met
 cd web && npx next build
 ```
 
 `next build` is the only real check on the site; the dev server caches stale colour. If
 colours look wrong in dev, `rm -rf .next/cache .source` before believing it.
 
-The five `check_*` tools cover different halves and none subsumes another —
+The six `check_*` tools cover different halves and none subsumes another —
 `OUTLINE.md`'s standing requirements say what each one can and cannot see.
 `check_transcripts` is the slow one: it re-runs a test suite per green transcript and
 per challenge count, so give it a minute or two.
