@@ -19,16 +19,23 @@ book is a thing the CLI was right to do and the server is not.
 | 36 | A second edge finds what the first one hid | A seam cut for testing turns out to be a layer |
 | 37 | The caller is a stranger | A thrown `Error` is a 500 the client must never read |
 | 38 | The server holds on | Held state has two halves, and the date is the one you forget |
-| 39 | *(blank until the spike reports)* | A schema is a type system somebody else checks |
+| 39 | The transaction that does not roll back | A failing statement leaves the transaction open, and does not undo it |
 | 40 | A second writer | `await` on a completed future resumes on the microtask queue |
 
 **The titles are provisional and the numbering is not.** Book II's two best studies —
 33 and 34 — got their theses from measurement rather than from this file's ancestor:
 study 33's argument appeared when `package:args` silently changed one test of 165, and
 study 34 turned on `public_member_api_docs`, read 22 issues, and declined the lint on the
-page. Study 39 is deliberately left blank here, because naming it would be predicting
-what `sqlite3` does before anyone has run it, and this book's method is to prefer the
-measurement. See *Consequences*, which says the same thing about this record's own claims.
+page. See *Consequences*, which says the same thing about this record's own claims.
+
+**Study 39's row was left blank until the spike filled it in, and that worked.** Naming it
+in advance would have been a prediction about `sqlite3` made before anyone ran it. What the
+spike found is better than the two candidates this record would have guessed: `BEGIN` and
+`COMMIT` are plain `db.execute`, and a failing statement throws while **leaving the
+transaction open** — catch it, commit anyway, and the partial write is committed. A study
+about a database that begins with an error-handler that did the opposite of what it looks
+like is study 26's argument with something underneath it. The method is now used once and
+worth repeating: leave a row blank rather than filling it from expectation.
 
 ## Book III costs a sixth study, and the sixth was bought rather than found
 
@@ -109,6 +116,14 @@ against this record's premises.
   defect to find rather than a glossary entry to write.
 - `Tracker` is exported from the barrel; the server is not. `Tracker` names no `shelf`
   type, and study 34's whole lesson is what a dependency's types in a public API cost.
+- **The server serves from `FileStore` from study 35, and the lost update is a declared
+  debt paid at 40.** Decided after the spike. The alternative — an `InMemoryStore` until
+  study 38 — shares no data with the CLI, so a reader who adds an expense on the command
+  line and then calls `GET /expenses` gets an empty list, which breaks the demonstration
+  the CLI was kept for and costs study 38 its second writer. Book III therefore has one
+  debt where Book II had three, declared the way ADR 0003 declares those: a sentence in the
+  study where it begins, never a silent handover. It begins with the first **write** route,
+  because a read has no read-decide-write, so the page can name the study exactly.
 - **The server logs nothing time-varying** — no timestamps, no elapsed times, no random
   ports. Not a style rule: a transcript carrying a clock reading cannot be re-run, and
   `check_transcripts` exists because a transcript nobody re-runs is one any later commit
@@ -134,11 +149,10 @@ re-read against the finished study and amended here if it was wrong.
   Two requests on two already-open sockets: `InMemoryStore` gives `A enter, A exit, B enter,
   B exit`; `FileStore` and a bare `Future.delayed` both interleave. Book III's order stands.
 
-  **But the same measurement opened something this record did not foresee.** `FileStore`
-  interleaves, so a server reading and writing a file has live concurrency from the first
-  study that uses one — not from study 38, where this outline put it. Either studies 35-37
-  serve from an `InMemoryStore`, or the race is named early and left standing until 40.
-  Undecided, and it must be decided before study 35 is written.
+  **But the same measurement opened something this record did not foresee, and it is now
+  decided — see *Decided* above.** `FileStore` interleaves, so a server reading and writing
+  a file has live concurrency from the first study that uses one, not from study 38 where
+  this record put it.
 
   **And the lost update is probabilistic, which no prediction here allowed for.** Against
   `FileStore` it breaches *sometimes*, and the rate is not a property of the program: three

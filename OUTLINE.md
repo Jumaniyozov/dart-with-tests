@@ -1331,15 +1331,31 @@ for 34 pages, so the one-per-study rule holds and four carry no attribution. Boo
 six outside that set. Regenerate the exclusion list rather than trusting this sentence:
 `grep -rhoE 'href="[^"]+"' web/content/docs/ | sort -u`.
 
-### What the spike did not settle
+### The debt Book III takes on purpose
 
-- **`FileStore` interleaves, so studies 35–37 have live concurrency** if the server reads
-  and writes a file. The outline assumed concurrency arrives at 38. It arrives with the
-  first real I/O in the request path, which is study 35 if study 35 uses `FileStore`. Either
-  35–37 serve from an `InMemoryStore` and the file arrives at 38 with the caching argument,
-  or the race is named early and left unfixed until 40. **This needs a decision before
-  study 35 is written**, and it is the one structural question the spike opened rather than
-  closed.
+The spike opened one structural question and it is now settled: **the server serves from
+`FileStore` from study 35**, and the lost update is a debt study 40 pays.
+
+`FileStore` interleaves, and the budget check lives in the add path — `limitOn`, then
+`Budget.of`, then `store.record` — so the first route that adds an expense carries a race.
+The alternative was an `InMemoryStore` until study 38, and it fails on the thing the CLI
+was kept for: the CLI writes a file, so an in-memory server shares **nothing** with it. A
+reader who runs `dart run bin/expenses.dart add 4.50 coffee` and then calls
+`GET /expenses` would get an empty list, which contradicts "reusing the CLI's domain
+package" at the level a reader actually notices. It would also cost study 38 its free
+second writer.
+
+So Book III has one debt where Book II had three, and it is declared the same way ADR 0003
+declares those: **a sentence in the earlier study, never a silent handover.** From the
+first study with a write route, the page says that two callers can both pass the budget
+check, that the program can therefore record a breach, and that study 40 is where it is
+fixed. The reader is told before they can be surprised.
+
+Two things make this honest rather than convenient. The race is **not** reachable in a
+study that only reads — a `GET` has no read-decide-write — so it begins exactly when the
+first write route does, and the page can name the study it began in. And what study 40
+fixes is not "concurrency": it is the suspension between the decision and the write, which
+is measurable, deterministic and small enough to state in one sentence.
 
 ### 35 — A server that answers · `a-server-that-answers` · `ch35_expenses`
 
@@ -1437,9 +1453,22 @@ arriving where something depends on it.
 Two kinds of stale state, one mechanism: a value read once is a bet that nothing else can
 change it.
 
-### 39 — *(no title until the spike reports)* · `ch39_expenses`
+### 39 — The transaction that does not roll back · `transactions` · `ch39_expenses`
 
-`sqlite3` 3.5.2. What it is for: durability, a schema, and a store that can keep a bound.
+**Titled by the spike, which is what it was for.** `sqlite3` 3.5.2 brings durability, a
+schema and a store that can keep a bound — and one measured trap that is better than all
+three as a thesis.
+
+`BEGIN`, `COMMIT` and `ROLLBACK` are plain `db.execute`; there is no transaction helper to
+hide behind. A failing statement throws `SqliteException` carrying `message`,
+`extendedResultCode` — 275 for a `CHECK` violation — and `causingStatement`, and it
+**leaves the transaction open**: `db.autocommit` is `false` afterwards. It does not roll
+back for you. Measured: catch the exception, commit anyway, and the partial write is
+committed. That is a program that looks like it handled an error and did the opposite,
+which is study 26's argument arriving with a database behind it.
+
+It also sets up study 40 exactly: a transaction is the fix for the lost update, and a
+reader who has just watched one fail to roll back will not take that fix on trust.
 
 The parts that are already known: the build hook **downloads a prebuilt 3.53.4**, so it is
 the same on every reader's machine and the prerequisite is **network on first build, not a
