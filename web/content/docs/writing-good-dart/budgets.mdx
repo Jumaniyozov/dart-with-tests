@@ -1,0 +1,271 @@
+---
+title: Budgets
+study: 32
+direction: Every rule so far fitted inside one object. This one does not, and the smallest thing that can see all of it is the thing the rule belongs to.
+description: An invariant across several objects, a partial operator that finally has something to mean, and the difference between a rule and a warning.
+---
+
+`Money` checks its own sign. `Category` normalises its own name. `Day` knows how many days
+February has. Every invariant this program has ever had fitted inside the object that held the
+data, because everything the rule needed was already in there.
+
+A limit of £200 on food for September is not like that.
+
+<Drill n={1}>
+
+<Direction>A rule that no object in the program can check on its own, and a refusal that is not the last word.</Direction>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch32_expenses/transcripts/refused.txt</include>
+</Console>
+
+</Drill>
+
+## 32.1 A rule nobody can check alone
+
+Ask each type in turn whether that £9 dinner is allowed.
+
+`Expense` cannot answer. £9 is fine in an empty month and not fine in a full one, and an
+expense has never met another expense. `Money` cannot: it knows what it is worth and nothing
+about limits. `Category` has never heard of an amount. And a limit cannot either — it knows
+£200 and has no idea what has been spent.
+
+The rule needs the limit **and** every expense in that category **and** the month they fall
+in, all at once. The smallest thing that can see all of that is a new one:
+
+<include cwd lang="dart" meta='title="lib/src/budget.dart"'>../code/ch32_expenses/lib/src/budget.dart#budget</include>
+
+That cluster — the objects a rule spans, gathered so the rule can be checked — is called a
+**consistency boundary**, and that is the last this page will say about the name. The
+mechanical part is what matters, and it is all in `Budget.of`: gather the limit, gather the
+expenses that count, ignore everything else in the store. A budget on food in September has
+no opinion about rent, and none about August, and leaving those out is the difference between
+a boundary and a pile.
+
+The rule of thumb, which is this book's own and has no citation: **put the rule on the
+smallest thing that can see all of it.** Smaller than that and it cannot be checked. Larger
+and you have a class that knows about everything, which is the same as having no boundary at
+all.
+
+<include cwd lang="dart" meta='title="test/budget_test.dart"'>../code/ch32_expenses/test/budget_test.dart#fixtures</include>
+
+<include cwd lang="dart" meta='title="test/budget_test.dart"'>../code/ch32_expenses/test/budget_test.dart#gathering</include>
+
+## 32.2 The subtraction study 31 would not write
+
+Study 31 gave `Money` an `operator +` and refused it an `operator -`, on the grounds that
+subtraction is partial and a `null` with nothing to mean is worse than no operator at all.
+Here is the thing it means:
+
+<include cwd lang="dart" meta='title="lib/src/money.dart"'>../code/ch32_expenses/lib/src/money.dart#money</include>
+
+`Money? operator -` says in its return type what `+` does not have to: this does not always
+work. There is no amount of money that means *twelve pounds fifty overspent*, so the type
+declines to invent one. The three things you can do about that are throw, which hides the
+failure from every caller's signature; clamp to zero, which reports a number that is wrong;
+or return `Money?` and make the caller decide. Only the third is honest, and it costs one
+question mark.
+
+<include cwd lang="dart" meta='title="test/budget_test.dart"'>../code/ch32_expenses/test/budget_test.dart#partial</include>
+
+Read the middle two tests together, because they are the pair that matters. Spending exactly
+the limit leaves `Money.zero`, which is an amount. Spending a penny more leaves `null`, which
+is not. `remaining == null` *is* the definition of a broken budget, and `isBroken` is one line
+because of it.
+
+## 32.3 A refusal is a value, not an exception
+
+<include cwd lang="dart" meta='title="lib/src/budget.dart"'>../code/ch32_expenses/lib/src/budget.dart#verdict</include>
+
+Study 26 divided failures in two: a mistake by the programmer throws, and an expected outcome
+of using the program correctly comes back as data. Every failure the book has returned so far
+has been a *typing* failure — an amount nobody can read, a day that is not a day. This is the
+first **business** failure, and it lands on exactly the same side of the line. Somebody with a
+budget who spends past it has not misused the program. They have used it precisely as intended
+and reached an outcome the program has something to say about.
+
+<include cwd lang="dart" meta='title="test/budget_test.dart"'>../code/ch32_expenses/test/budget_test.dart#verdict</include>
+
+And a **rule** rather than a warning is the whole reason any of this exists. A warning is a
+query: it computes a number, prints it, and prevents nothing — and a query needs no boundary,
+because nothing depends on the facts being consistent when it runs. Only a refusal is an
+invariant. Only an invariant needs all the facts at once.
+
+Which raises the honest problem, and the study would be a lie without it: **software that
+refuses to record what a person actually spent is lying about their money.** The £9 was spent.
+No amount of budgeting makes it not have happened.
+
+So the escape is in the domain rather than in a flag the program ignores. `run` learns one
+word, and has to learn it awkwardly:
+
+<include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch32_expenses/lib/src/command.dart#flag</include>
+
+`--anyway` has to come out of the arguments *before* the patterns see them, because
+`['add', …, ...final note]` would otherwise swallow it and put it in somebody's note. That is
+hand-rolled argument parsing on top of the hand-rolled parser study 24 wrote, and it is the
+last debt from ADR 0003 still outstanding — study 33 deletes all of it.
+
+<include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch32_expenses/lib/src/command.dart#record</include>
+
+An acknowledged overspend is a **different thing** from an ordinary expense, and it is
+representable — `acknowledged: true`, printed as `(over budget)`, stored in the file. Only the
+*unacknowledged* breach is refused. The invariant holds, the program never argues with reality,
+and the person is told once rather than stopped.
+
+<include cwd lang="dart" meta='title="lib/src/expense.dart"'>../code/ch32_expenses/lib/src/expense.dart#expense</include>
+
+<include cwd lang="dart" meta='title="test/command_test.dart"'>../code/ch32_expenses/test/command_test.dart#refusing</include>
+
+<include cwd lang="dart" meta='title="test/command_test.dart"'>../code/ch32_expenses/test/command_test.dart#anyway</include>
+
+<include cwd lang="dart" meta='title="test/budget_test.dart"'>../code/ch32_expenses/test/budget_test.dart#acknowledged</include>
+
+The last two tests are study 29's forward-compatibility being collected:
+
+<include cwd lang="dart" meta='title="lib/src/expense.dart"'>../code/ch32_expenses/lib/src/expense.dart#json</include>
+
+`toJson` writes the fifth key only when it is true, so an ordinary expense is byte-identical to
+the line study 29 wrote. And `expenseFromJson` reads the key off the matched map rather than
+binding it in the pattern, because a map pattern has no way to say *optional* —
+`'acknowledged': final bool ack` would refuse every file this program has ever written.
+
+The file holds two shapes of line now, and the new one says which it is:
+
+<include cwd lang="dart" meta='title="lib/src/budget.dart"'>../code/ch32_expenses/lib/src/budget.dart#limit</include>
+
+<include cwd lang="dart" meta='title="test/budget_test.dart"'>../code/ch32_expenses/test/budget_test.dart#stored</include>
+
+<include cwd lang="dart" meta='title="test/file_store_test.dart"'>../code/ch32_expenses/test/file_store_test.dart#limits</include>
+
+`{'kind': 'limit', …}` is a **constant** pattern sitting among variable ones. It binds nothing
+and simply has to match, and it is the single line keeping an expense from being read as a
+limit — which matters, because both have a `category` and a `pence` and map patterns ignore
+the keys they were not asked about.
+
+## 32.4 Two bills, both from study 27
+
+`Store` grew by two members, because a limit has to survive the program stopping and the store
+is what does that:
+
+<include cwd lang="dart" meta='title="lib/src/store.dart"'>../code/ch32_expenses/lib/src/store.dart#store</include>
+
+Study 27 said what growing an interface costs, and here is the invoice:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch32_expenses/transcripts/interface.txt</include>
+</Console>
+
+Four implementations, two of them test doubles that have no opinion about limits and had to
+grow two members anyway. `Store` is an `abstract interface class` precisely so that this is
+allowed — but *allowed* is not *free*, and study 27's warning was not hypothetical.
+
+The second bill is more interesting, because nothing broke and a test failed anyway:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch32_expenses/transcripts/mock.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="test/store_test.dart"'>../code/ch32_expenses/test/store_test.dart#spy</include>
+
+<include cwd lang="dart" meta='title="test/store_test.dart"'>../code/ch32_expenses/test/store_test.dart#blind</include>
+
+The transcript above is study 27's `SpyStore`, unedited, asserting `spy.calls == ['record']`. Adding the
+budget check made `add` ask for the limits first, so the list is `['limits', 'record']` now.
+**The program does exactly what it did before.** Every fake-based test in the file passed
+without being touched. The mock-based one failed because it was never testing the program — it
+was testing the order `run` happens to do things in, which is the thing this study changed.
+
+Study 27 predicted the shape of this and could only demonstrate it by describing a hypothetical
+edit. Five studies later it happened by itself, twice: that assertion has now been rewritten
+for two changes that broke nothing.
+
+<Gloss title="What Book II does not take from this">
+Aggregates travel in company, and the rest of the company is staying outside.
+
+**Commands and queries as separate handlers** answer a problem where reads and writes scale
+differently and can be served by different models. This program has one user and one file.
+
+**Units of work and transaction boundaries** answer a problem where two writers can interleave
+and leave the store in a state neither intended. This program appends one line at a time from
+one process.
+
+Every one of those is a real answer to a real problem, and none of those problems is in this
+program. Naming them here and implementing them here are different things, and implementing
+machinery whose problem you do not have is how a codebase gets architecture nobody can remove.
+Book III puts a concurrent writer on the page, and that is where the argument gets made with
+something at stake.
+
+`Budget` is the only aggregate in Book II, and it is the only invariant in the tracker that
+spans more than one object. That ratio is not an accident of this program — it is the usual
+one, which is why this study's third challenge is a rule that fits inside one object after all.
+</Gloss>
+
+<Practice>
+**Put the rule on the smallest thing that can see all of it.** This is the book's own
+convention and carries no citation, because no published Dart guideline covers where an
+invariant that spans several objects should live — the language has nothing to say about it,
+and neither does Effective Dart.
+
+Work it in the order the rule forces. First ask what facts the rule needs: for a budget, a
+limit, a set of expenses, and the period that decides which expenses count. Then find the
+smallest thing that can hold all of them at once. If that is one object you already have, the
+rule goes there and you have no aggregate — which is the ordinary case, and most of this
+program.
+
+The failure to avoid is scattering it. A check in `run`, another in the store, a third in a
+validator that runs somewhere else: three places that must agree, no type that says what the
+rule is, and no compiler to notice when one of them drifts. `Budget` is a type so that there
+is one answer to *where is the budget rule*, and `Budget.of` is a factory so that there is one
+answer to *what does it need in order to answer*.
+
+And keep the boundary as small as the rule. `Budget.of` deliberately drops every expense from
+another category and every expense from another month. An aggregate that gathers more than its
+rule needs is not being careful, it is being large — and a large one has the same problem as no
+boundary at all.
+</Practice>
+
+The whole study, run at once:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch32_expenses/transcripts/all.txt</include>
+</Console>
+
+## Wrapping up
+
+Some rules do not fit inside one object. A budget needs a limit, a period, and every expense
+that falls in both — so the rule lives on the smallest thing that can see all three, and
+gathering exactly that and nothing more is what makes it a boundary rather than a pile.
+
+Most rules are not like that, and this study is not an argument for building one of these every
+time. The tracker has exactly one aggregate, and every other rule in it still lives on the
+object that holds the data.
+
+A refusal is a value. A business failure is an expected outcome of correct use, so it comes
+back as a sealed `Verdict` the caller must switch on, exactly as a typing failure has since
+study 26.
+
+A rule prevents something; a warning prints something. Only the first needs a boundary. And a
+program that refuses to record what somebody actually spent is lying to them — so the
+acknowledged overspend is a representable thing and only the unacknowledged breach is refused.
+
+`Money? operator -` is a partial operation admitting it in its return type, which is the one
+of the three available options that does not hide or falsify the failure.
+
+Also met: an optional named parameter on a primary constructor, a constant pattern inside a
+map pattern doing the work of a tag, a `toJson` that writes a key only when it is true, and
+the second half of study 27's bill for growing an interface.
+
+Study 33 takes the tracker's first dependency, and starts by deleting the hand-rolled argument
+handling this study just added a flag to.
+
+## Challenges
+
+Three challenges, fourteen failing tests. Make them pass one at a time. Do not edit the tests.
+The first two need facts no single object holds; the third is a rule that fits inside one
+after all, which is the comparison the study is built on.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch32_expenses/transcripts/challenges.txt</include>
+</Console>
+
+<include cwd lang="dart" meta='title="exercises/challenges.dart"'>../code/ch32_expenses/exercises/challenges.dart</include>

@@ -9,6 +9,7 @@
     "files",
     "json",
     "dates-and-times",
-    "reports"
+    "reports",
+    "budgets"
   ]
 }

@@ -1,0 +1,9 @@
+$ dart analyze          # after adding two members to the Store interface
+Analyzing ch32_expenses...
+
+  error - lib/src/file_store.dart:19:7 - Missing concrete implementations of 'Store.setLimit' and 'getter Store.limits'. Try implementing the missing methods, or make the class abstract. - non_abstract_class_inherits_abstract_member
+  error - lib/src/store.dart:56:7 - Missing concrete implementations of 'Store.setLimit' and 'getter Store.limits'. Try implementing the missing methods, or make the class abstract. - non_abstract_class_inherits_abstract_member
+  error - test/store_test.dart:14:7 - Missing concrete implementations of 'Store.setLimit' and 'getter Store.limits'. Try implementing the missing methods, or make the class abstract. - non_abstract_class_inherits_abstract_member
+  error - test/store_test.dart:91:7 - Missing concrete implementations of 'Store.setLimit' and 'getter Store.limits'. Try implementing the missing methods, or make the class abstract. - non_abstract_class_inherits_abstract_member
+
+4 issues found.

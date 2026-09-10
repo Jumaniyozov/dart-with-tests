@@ -1,0 +1,17 @@
+$ dart run bin/expenses.dart budget food 20.00
+food: £20.00
+$ dart run bin/expenses.dart add 15.00 food shopping
+2026-09-10  £15.00  food  shopping
+
+$ dart run bin/expenses.dart add 9.00 food dinner
+food is budgeted at £20.00 and this would put it £4.00 over. Record it anyway with --anyway.
+exit: 1
+
+$ dart run bin/expenses.dart add 9.00 food dinner --anyway
+2026-09-10  £9.00  food  dinner  (over budget)
+exit: 0
+
+$ dart run bin/expenses.dart budget
+2026-09-01 to 2026-09-30
+
+food: £24.00 of £20.00, £4.00 over

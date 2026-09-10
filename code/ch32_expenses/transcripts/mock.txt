@@ -1,0 +1,5 @@
+$ dart test test/store_test.dart          # study 27's mock, untouched, after study 32 added a budget check
+00:00 +0 -1: a mock knows how it was called and can say record happened exactly once [E]
+  Expected: ['record']
+    Actual: ['limits', 'record']
+     Which: at location [0] is 'limits' instead of 'record'

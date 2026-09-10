@@ -36,6 +36,10 @@ keeps a runnable program from study 24 without lying about it. Each of these is 
 sentence in the earlier study, not a silent handover.
 
 - Study 24's argument parser is hand-rolled. Study 33 replaces it with `package:args`.
+  **Amended: study 32 added to it rather than only waiting.** `--anyway` cannot be matched
+  by the list patterns without being swallowed by `...final note`, so it is stripped
+  first, in a `_flagged` function that exists to be deleted. The debt got larger before it
+  got paid, and study 32 says so on the page.
 - Study 28 writes one expense per line. Study 29 replaces it the first time a note
   contains a comma.
 - Study 25's `Store` is a concrete class. Study 27 turns it into an interface so a fake
@@ -81,12 +85,19 @@ That study's `<Practice>` therefore carries no attribution, the way study 2's do
 **Operator overloading moves from Book IV to Book II.** Study 25 overrides
 `operator ==`, so the book teaches operator overloading whether or not it admits to it.
 Study 31 owns it properly, where totalling makes `Money + Money` the obvious thing to
-want. `OUTLINE.md`'s "Deliberately not in Book I" list is amended.
+want. `OUTLINE.md`'s "Deliberately not in Book I" list is amended. **Amended again: it
+takes two studies, not one.** `+` is total and lands in 31; `-` on a non-negative type is
+partial, and a `Money?` whose `null` means nothing would teach the syntax and not the
+lesson. It waits for study 32, where `null` is an overspend and the caller has a decision
+to make about it.
 
 **`DateTime` is kept out of the domain entirely.** Measured on Dart 3.13.2: for the same
 instant, `local == utc` is false while `local.hashCode == utc.hashCode` is true;
 `DateTime(2026, 9, 9).toIso8601String()` emits no offset; and `DateTime(2026, 2, 31)`
-silently yields the 3rd of March. An `Expense` therefore carries a `Day`, and instants
+silently yields the 3rd of March. **Amended when study 30 was written: `DateTime.parse`
+does not validate either** — `2026-02-31` parses to the 3rd of March — which is the
+version of this that reaches a file, and the reason `Day.parse` answering `null` is
+load-bearing rather than fastidious. An `Expense` therefore carries a `Day`, and instants
 live only at the edges — `bin/expenses.dart` reads one, `Day.on` converts it, and study
 30 explains why. **Amended: this said "study 27's injected clock", and study 27 does not
 have one.** Writing it settled that a `Clock` interface, a `SystemClock` and a

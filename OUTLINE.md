@@ -383,6 +383,20 @@ before it is written as prose.
 | `const LineSplitter().convert('')` | `[]`. And `'a\nb\n'` gives `['a', 'b']` — no phantom last line. |
 | `DateTime(2026, 9, 9).toUtc().toIso8601String()` | `2026-09-08T19:00:00.000Z` — **a different date** from its local form. |
 | `avoid_dynamic_calls` | **Not** in this book's lint set. Nothing would flag the cast version. |
+| `DateTime.parse('2026-09-10T04:30:00+05:00')` | `2026-09-09T23:30:00.000Z`, `isUtc` true, `.day` **9**. The written calendar day is discarded. |
+| `DateTime.parse('2026-02-31')` | `2026-03-03`. **`parse` does not validate either**, so a badly edited file is a wrong day rather than a rejected one. |
+| `DateTime.parse('2026-09-09T25:00')` | The 10th at 01:00. Hours overflow too. |
+| `DateTime(2026, 3, 0)` | `2026-02-28`; `DateTime(2024, 3, 0)` is the 29th. The overflow that is a bug is also the standard idiom. |
+| `local == utc` / `hashCode` / `isAtSameMomentAs` | Measured in seven zones from UTC−11 to UTC+14: **timezone-independent**, because `==` compares `isUtc` too. |
+| `local.toUtc()` landing on a different **date** | **Timezone-dependent.** True in Tashkent, false at UTC and in the Americas. Study 29 shipped a test asserting it; fixed. |
+| A primary constructor with an optional named parameter | Legal. `class const Expense(…, {final bool acknowledged = false})` analyzes clean. |
+| A constant pattern inside a map pattern | Legal and load-bearing: `{'kind': 'limit', …}` binds nothing and is what keeps an expense from reading as a limit. |
+| An optional JSON key beside a map pattern | Cannot be expressed as a pattern. Read off the matched map instead — a bound `'acknowledged': final bool` refuses every older line. |
+| `List.sort` stability | **Stable to 33 equal elements, not at 34.** Deterministic across runs, and every hand-written test list is on the safe side. |
+| `Map.fromIterable` under this lint set | `prefer_for_elements_to_map_fromiterable` fires — note the analyzer lowercases the name the yaml spells `fromIterable`. |
+| `Money? operator -` | Legal. An operator may return a nullable type, which is how a partial operation says so. |
+| Adding two members to `Store` | **4 implementations broken**, two of them test doubles with no opinion about the new members. |
+| `SpyStore.calls` after study 32's budget check | `['limits', 'record']` where study 27 asserted `['record']`, with no change to what the program does. |
 
 ### 23 — Libraries, imports and privacy · `libraries` · `ch23_expenses` — **WRITTEN**
 
@@ -772,106 +786,107 @@ down owns reading itself back.
 re-showing seventy lines to point at one method is what the exemption exists for. What
 `parse` does is on the page as assertions, and 29.4 quotes the one line that matters.
 
-### 30 — Dates, times and periods · `dates-and-times` · `ch30_expenses`
+### 30 — Dates, times and periods · `dates-and-times` · `ch30_expenses` — **WRITTEN**
 
-Teaches `DateTime`, `Duration`, `isUtc`, `toUtc`/`toLocal`, `isAtSameMomentAs`,
-`DateTime.parse`, and the `Day` and `Period` value types the domain actually uses.
+Shipped: 103 green, 3 challenges at 11 failing, 4 transcripts. Four `DateTime` traps, one of
+which (`==` against `isAtSameMomentAs`, with hash codes agreeing) study 25 had already spent —
+so study 30 measures four and calls three of them its own, which is what study 29's "the other
+three" had promised. The equality assertions **moved** out of `values_test.dart` into
+`instant_test.dart` so all four have one home rather than two copies.
 
-Toy: `lib/src/period.dart` — the calendar month a report covers.
+Two things the writing found that this entry did not predict.
 
-The mechanism to name: **a `DateTime` is an instant; a calendar day is not.** All four
-of these were measured and every one is a trap the reader will otherwise meet in
-production:
+**`DateTime.parse` does not validate.** `2026-02-31` parses to the 3rd of March, and
+`T25:00` rolls into the next day. That is the trap that reaches a file, because study 29 stores
+a day as text and reads it with `Day.parse`, which answers `null`. It became the Drill.
 
-- `local.microsecondsSinceEpoch == utc.microsecondsSinceEpoch` is `true`, and yet
-  `local == utc` is `false`. `DateTime.==` is not instant equality;
-  `isAtSameMomentAs` is.
-- `local.hashCode == utc.hashCode` is `true` while `==` is `false`. Study 25 already
-  used this; here is where it is explained.
-- `toIso8601String()` on a local `DateTime` emits no offset at all.
-- `DateTime(2026, 2, 31)` is the 3rd of March. Month arithmetic overflows silently and
-  never throws, so there is no error to catch.
+**Study 29 shipped a machine-dependent test.** It asserted that `local.toUtc()` lands on a
+different *date*, which is true in Tashkent and false at UTC and everywhere west of it.
+Measured across seven zones: exactly one test in the whole book was timezone-dependent. Fixed
+to assert the dependence rather than the answer, and the book now passes from UTC−11 to UTC+14.
 
-Which is the argument for `Day`: the 9th of September is the same day everywhere, an
-expense happens on a day, and a type that cannot represent a timezone cannot get one
-wrong. Instants live at the edges — `bin/expenses.dart` reads one and `Day.on` converts
-it, and study 27 is where that stopped happening in the middle of the work. There is no
-`Clock` interface to name; the seam is a `Day today` parameter.
+Departure from the plan, argued: `Period` needed a caller or it was speculative code, so `list`
+gained an optional `YYYY-MM`. That forced `totals` off `Store` and onto `Iterable<Expense>` —
+the move study 27 said it was waiting for — and the `Future` came off with it, which is the
+precise shape of async contagion: it travels along calls, so removing the call removes the
+future. `Day._lastDayOf` lost its underscore because `Period` is another library.
 
-Seeds: `Period` is what study 32's budget is scoped to.
+Practice: **no attribution.** Confirmed by opening the pages: Effective Dart — Design has no
+guideline about dates, times or narrow types, and the `DateTime` API page carries no warning
+about equality or overflow. The nearest published caution is dart.dev's `dart:core` tour —
+*"Using a `Duration` to shift a `DateTime` by days can be problematic…"* — which is one
+consequence of the rule rather than the rule, so it is quoted inside the Practice as such and
+the props stay off.
 
-Practice: candidate is *dart.dev — Date and time* or *Effective Dart — Design* on
-narrow types. **Unverified, and likely neither says what this study needs.** If no
-published guideline covers "do not put an instant where a date belongs", the
-`<Practice>` states it as this book's own convention and carries no props.
+Gloss: DST named, not demonstrated, with `package:timezone` 0.11.1 (`labs.dart.dev`) cited as
+where the answer lives.
 
-Gloss: DST is deliberately not demonstrated. A transcript of it would depend on the
-machine's timezone, and this book's transcripts must reproduce on the reader's. Name the
-hazard, cite `package:timezone` as where the answer lives, and do not fake a run.
+### 31 — Reports · `reports` · `ch31_expenses` — **WRITTEN**
 
-### 31 — Reports · `reports` · `ch31_expenses`
+Shipped: 116 green, 3 challenges at 12 failing, 5 transcripts. `Report` arrives and `totals`
+stops being an extension, which pays study 27 in full: deleting it named **8 call sites and no
+implementations**, and that analyzer run is on the page.
 
-Teaches grouping with `fold` into a `Map`, `Comparable` and `compareTo`, `sort` with and
-without a comparator, and `operator +` and `operator -` on `Money`.
+The study's own fact, found by measuring rather than planning: **`List.sort` is not stable, and
+it does not degrade gently.** 33 equal elements keep their order; 34 do not, and the first
+becomes the twelfth. Deterministic. Every list a person writes by hand in a test is on the safe
+side of the threshold, so a missing tie-break holds in testing and fails for a user — which is
+what makes `Comparable`'s promise of a *total* order mechanical rather than pedantic.
 
-Toy: `lib/src/report.dart` — total by category for a period.
+Two departures, both because reality got there first.
 
-The mechanism to name: this is study 12's `fold` with a `Category` key, and it only
-works because study 25 gave `Category` an `==` and a `hashCode` that agree. Show the
-same report against a `Category` with a broken `hashCode` and watch one category become
-two rows. That is the payoff for study 25, made visible.
+**The broken-`hashCode` demo is not here.** This entry wanted one category becoming two rows;
+study 25 already spends that in full, with its own `Sloppy` class and a `hash_and_equals`
+transcript. Study 31 pays study 25 the other way instead — four spellings of *food* land on one
+line and nothing in `Report` mentions why.
 
-Then operators, which the book has been using without admitting to: study 25 already
-overrode `operator ==`. `Money + Money` is the same machinery with a different symbol,
-and it is what totalling wants. `Money - Money` is the interesting one — it can take an
-amount below zero, which `Money` forbids, so subtraction is a **partial operation** and
-has to say so. That is a real design lesson, not a syntax tour.
+**`operator -` is not here either.** Subtraction on a non-negative type is partial and needs
+somewhere for the failure to go, and a report never subtracts. Shipping `Money?` with a `null`
+that means nothing would have taught the syntax and not the lesson, so it went to study 32,
+where `null` means *overspent*. `Money` gained `+`, `zero` and `Comparable`; `Day` gained
+`compareTo`.
 
-Amends `OUTLINE.md`: operator overloading was listed as Book IV. It is here.
+Practice: `prefer_for_elements_to_map_fromIterable`, **verified** on the live page. The rule's
+own words are *"Prefer `for` elements when building maps from iterables"*; the analyzer's
+message is *"Use 'for' elements…"*; and the page lists five benefits, of which inference and
+null safety are the ones that bite. Present in `package:lints/recommended.yaml` 6.1.0.
 
-Practice: `prefer_for_elements_to_map_fromIterable` — building a `Map` from an
-iterable with a collection-`for` rather than `Map.fromIterable`. Verified present in
-`package:lints/recommended.yaml` 6.1.0, and it is exactly the grouping this study
-writes.
+### 32 — Budgets · `budgets` · `ch32_expenses` — **WRITTEN**
 
-Gloss: `Comparable<T>` is what `sort` uses when you give it no comparator, and
-implementing it is a promise about a *total* order. Two expenses on the same day are not
-equal just because `compareTo` returns 0.
+Shipped: 156 green, 3 challenges at 14 failing, 5 transcripts. The tracker's only aggregate:
+`Budget` holds a `Limit`, a `Period` and the expenses that fall in both, because no object in
+the program can answer the rule alone. The vocabulary — *consistency boundary* — gets one
+sentence and the rest of the study is mechanism, as planned.
 
-### 32 — Budgets · `budgets` · `ch32_expenses`
+The honest complication is kept: an acknowledged overspend is representable
+(`acknowledged: true`, printed `(over budget)`, stored), and only the unacknowledged breach is
+refused. `--anyway` is the escape.
 
-Teaches an invariant that no single object can check: a `Budget` holding a limit and the
-expenses counted against it, and the difference between a rule and a warning.
+Two things the writing found.
 
-Toy: `lib/src/budget.dart` — `expenses budget food 200.00`, and an `add` that is refused.
+**Study 29's forward compatibility paid off exactly as designed.** `toJson` writes the fifth key
+only when true, so an ordinary expense is byte-identical to the line study 29 wrote — and an
+optional key *cannot* be expressed as a map pattern, so it is read off the matched map. A bound
+`'acknowledged': final bool` would refuse every file the program has ever written.
 
-The mechanism to name: every invariant so far belonged to one object. `Money` checks
-itself; `Category` normalises itself. **A budget's limit cannot be checked by an
-expense, by a category, or by a limit** — it needs all the expenses in one category and
-one period at once. That cluster is the unit the rule lives on, and holding it together
-is the only reason the type exists. Name the idea (a consistency boundary) once, in one
-sentence, and then spend the study on the mechanism rather than the vocabulary.
+**Study 27's warning arrived twice, unprompted.** Growing `Store` by two members broke four
+implementations, two of them doubles with no opinion about limits. And `SpyStore`'s
+`calls == ['record']` failed because `add` now asks for the limits first — *the program does
+exactly what it did before*, every fake-based test passed untouched, and that assertion has now
+been rewritten for two changes that broke nothing. Study 27 could only describe this
+hypothetically; it happened by itself.
 
-The honest complication, which the study must not dodge: software that refuses to record
-what a person actually spent is lying about their money. So an acknowledged overspend is
-a different thing from an ordinary expense and is representable; only the
-*unacknowledged* breach is refused. The invariant survives and the program stays true.
+Departure from the plan, argued: this entry said `Store.record` becomes fallible. It does not.
+The rule is asked before the store is called, because putting a domain rule behind the
+persistence interface is precisely what study 27's separation forbids — every fake would have to
+grow the rule or lie about it. What became fallible is *adding an expense*, which is `run`'s
+job, via the aggregate.
 
-Pays: study 26's rule, spent on a business failure rather than a parse failure — a
-refusal is expected, so it is returned as data.
+Practice: **no attribution**, as planned — *put the rule on the smallest thing that can see all
+of it.*
 
-Seeds: `Store.record` becomes fallible here, after eight studies of being infallible.
-The `SLICE` manifest makes that change visible rather than silent.
-
-Practice: **no attribution.** No published guideline covers where an invariant that
-spans several objects should live, so this states the book's own convention — *the rule
-goes on the smallest thing that can see all of it* — and omits both props, as study 2
-does. Do not attribute it to Effective Dart.
-
-Gloss: what Book II does **not** take from this — commands and queries as separate
-handlers, transaction boundaries, units of work. They answer concurrency, and a
-single-user CLI writing one file has none. Book III is where that argument gets made,
-with a real concurrent writer on the page.
+Gloss: CQRS, units of work and transaction boundaries named and refused, with the reason stated
+as concurrency this program does not have.
 
 ### 33 — Taking a dependency · `taking-a-dependency` · `ch33_expenses`
 
@@ -947,18 +962,25 @@ told will be explained or fixed.
 
 | Owed by | Made in | The reader is promised |
 | --- | --- | --- |
-| 31 | 27 | `totals` is a holding position and becomes a `Report` |
-| 30 | 29 | the other three ways a `DateTime` catches people out |
 | 33 | 28 | which file the tracker keeps becomes something you can say |
-| 30 | 25 | why `Expense` carries a `Day` and not a `DateTime` |
 | 33 | 24 | a parser with `--help`, abbreviations and `--flag=value` |
+| 33 | 32 | the hand-rolled flag handling `--anyway` needed gets deleted |
 
 Paid: 26←24 (`null` could not say which part was wrong; a sealed `Reading` can),
 26←24 again (`dart compile exe` named in a Gloss, measured in 26.4), 27←24 (the seam
 behind `Outcome` is named and two more are cut), 27←25 (`Store` is an interface now that
 a second implementation exists), 27←26 (both lines study 26 left alone became
 parameters), 28←25 (the store stops forgetting when the program stops), 29←28 (both
-characters study 28's format could not carry now survive a round trip).
+characters study 28's format could not carry now survive a round trip), 30←25 (`Day`
+against `DateTime`, argued with four measurements instead of one line), 30←29 (the other
+three ways, and study 30 is careful that its count and study 29's agree), 31←27 (`totals`
+stopped being an extension and became `Report`), 31←30 (`list <month>`
+became a report with an order and a total), 32←31 (`Money` got the `operator -` study 31
+argued for and withheld).
+
+Study 33 now owes three things, which ties study 27 for the most any study in this book
+has carried. Two of them are the same deletion seen from different studies, and the third
+is `--anyway`, which study 32 added knowing study 33 would take it away.
 
 Removed as fiction, found by checking the prose rather than the plan: **31←25** — the
 outline meant study 25 to promise study 31 that `Category`'s equality is what makes
@@ -1098,6 +1120,18 @@ existing transcripts and verified to reproduce.
   them. Study 20's prose quoted `value == null || value < 0 ? noAmount(typed)
   : value` for two commits after that line was rewritten. Either transclude the
   line or quote it in a form too small to go stale.
+- **A test must pass on the reader's machine, not only on this one.** The transcript rule
+  has always said output must reproduce; assertions are held to the same standard and were
+  not. Study 29 shipped `expect(local.toUtc()…, isNot(local…))` — that `local.toUtc()`
+  lands on a different *date* — which is true in Tashkent, false at UTC and false
+  everywhere west of it, so the book's suite failed for roughly half its readers from the
+  day it was published. Sweep with
+  `TZ=UTC dart test` and `TZ=Pacific/Kiritimati dart test`; exactly one test in 915 was
+  machine-dependent when this was first run. Where a fact genuinely depends on where you
+  stand, assert **the dependence** — the local form lacks the `Z` the UTC form carries,
+  which is true everywhere — rather than the answer. The same applies to anything read off
+  the host: a locale, a path separator, a clock.
+
 - **`dart format` must be clean across `code/`**, because study 1 tells the
   reader to format on save and two included files had drifted.
   `dart format --output=none --set-exit-if-changed .` is the check.

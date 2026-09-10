@@ -1,0 +1,48 @@
+# Study 32 — what changed since study 31.
+#
+# Added — the first rule in this program that no single object can check
+lib/src/budget.dart
+test/budget_test.dart
+# Changed — `Money` gained the subtraction study 31 argued for and left out;
+# an expense can be an acknowledged overspend; the file holds two shapes of
+# line; and `Store` grew by two members, which broke every double in the book
+lib/src/money.dart
+lib/src/expense.dart
+lib/src/store.dart
+lib/src/file_store.dart
+lib/src/command.dart
+lib/expenses.dart
+test/command_test.dart
+test/store_test.dart
+test/file_store_test.dart
+pubspec.yaml
+#
+# unshown: lib/expenses.dart#barrel — one export added, and 32.1 names it.
+# unshown: lib/src/file_store.dart#filestore — shown in study 29 and grown by
+#   two members here. 32.3 shows the two on their own; re-showing the class
+#   would put the JSON study back on this page to make one point about append.
+# unshown: test/command_test.dart#setup — unchanged since study 27.
+# unshown: test/command_test.dart#month — unchanged since study 30, and it
+#   still passes, which is the claim 32.2 makes about growing an interface:
+#   the tests that broke were the ones asserting how, not what.
+# unshown: test/command_test.dart#reported — unchanged since study 31, same
+#   reason.
+# unshown: test/file_store_test.dart#roundtrip — unchanged since study 28.
+# unshown: test/store_test.dart#fake — unchanged since study 27, and it is the
+#   half of that study which survived this one untouched. 32.4 says why.
+# unshown: lib/src/command.dart#usage — three lines of help text, and the Drill
+#   shows every one of those commands actually running.
+# unshown: lib/src/command.dart#budgeting — `_setLimit` and `_showBudgets` are
+#   plumbing: they read an amount with study 24's reader and print what the
+#   Drill already showed. Their behaviour is on the page as assertions, in
+#   test/command_test.dart#budgeting.
+# unshown: test/command_test.dart#budgeting — as above; the commands it covers
+#   are in the Drill, and 32.1 spends its space on the rule rather than on
+#   setting a limit.
+# unshown: lib/src/store.dart#memory — gained a map and the two members the
+#   interface now demands. 32.4 shows the interface that demanded them and the
+#   transcript shows what demanding them cost.
+# unshown: lib/src/command.dart#run — the switch gained three arms for `budget`
+#   and one line calling `_flagged`. Study 30 showed it whole; 32.3 shows the
+#   flag handling, which is the part that is new, and the Drill shows the arms
+#   doing their job.
