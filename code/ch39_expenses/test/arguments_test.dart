@@ -98,15 +98,15 @@ void main() {
       expect(fileFrom(['-fd.txt', 'list']), 'd.txt');
     });
 
-    test('and falls back to the one study 28 hard-coded', () {
-      expect(fileFrom(['list']), 'expenses.txt');
-      expect(fileFrom([]), 'expenses.txt');
+    test('and falls back to the database, not to the file it replaced', () {
+      expect(fileFrom(['list']), 'expenses.db');
+      expect(fileFrom([]), 'expenses.db');
     });
 
     test('and says nothing about arguments it cannot read', () {
       expect(
         fileFrom(['--nonsense']),
-        'expenses.txt',
+        'expenses.db',
         reason:
             'run reports the bad argument; reporting it twice would be '
             'worse than not reporting it here',

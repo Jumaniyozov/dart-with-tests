@@ -67,7 +67,12 @@ final _parser = ArgParser()
   ..addCommand('budget', ArgParser());
 
 /// The file the tracker uses when nobody says otherwise.
-const _defaultPath = 'expenses.txt';
+///
+/// **A database since study 39.** `bin/migrate.dart` writes `expenses.db`, so a
+/// default of `expenses.txt` would send the next command back to the file the
+/// move exists to end — where `sqlite3.open` finds JSON and answers *file is
+/// not a database*.
+const _defaultPath = 'expenses.db';
 // #endregion parser
 
 // #region file

@@ -2489,6 +2489,45 @@ existing transcripts and verified to reproduce.
   would have done with it**, because the difference only shows up on the first
   command that exercises it.
 
+- **A constant is a claim wherever it is quoted, and study 39 quoted one it never
+  changed.** Its CHANGELOG says *`--file` names a database, and its default is
+  `expenses.db`*; `bin/expenses.dart`'s doc comment says the default *moved from
+  `expenses.txt` to `expenses.db`*; the README says expenses live in `expenses.db`
+  unless `--file` says otherwise; the published page says *its default moved to
+  `expenses.db`*. `_defaultPath` was still `'expenses.txt'`, and
+  `test/arguments_test.dart` asserted `'expenses.txt'` three times — so the suite was
+  green **over the opposite of what four sentences said**, one of them on a page.
+
+  The consequence was not cosmetic and is the reason this gets a requirement rather
+  than a correction. Measured by following the study's own README: `migrate` writes
+  `expenses.db`, the next command opens the default, `sqlite3.open('expenses.txt')`
+  finds JSON lines and throws `SqliteException(26): file is not a database` out of
+  `SqliteStore`'s constructor. **The reader who follows the study is the one the
+  program breaks.**
+
+  Nothing could have caught it. `check_slices` reads a manifest of paths,
+  `check_regions` asks only whether a changed region is on a page, `check_also_met`
+  reads one line, and the count sweep looks for `two lines` and `three exports` — a
+  file name is not a count. So: **when prose names a literal, grep the code for that
+  literal before the study ships.** Every `` `something.ext` ``, every quoted option
+  default, every fixed string the prose attributes to the program is a two-second
+  grep, and this is the first of them anybody ran.
+
+- **A SLICE exemption's reason is prose, and prose in this book has been wrong before.**
+  The same study exempted `test/arguments_test.dart#flags` with *the default path,
+  `expenses.txt` to `expenses.db`* — describing an edit to a **different region** that
+  had not happened at all. The region really had changed, for an unrelated reason, so
+  `check_regions` was satisfied and the sentence explaining why it need not be shown
+  was fiction.
+
+  Worse is available: sweeping every SLICE for exemptions naming a region that does
+  not exist found one — `ch30_expenses/SLICE` exempts `test/json_test.dart#instant`
+  and that file has no such region. An exemption nothing matches is a comment, and
+  `check_regions` reports it as coverage. That is *a checker that can be pointed at
+  nothing* for the **fourth** time, in the one input that is supposed to be a person
+  writing a sentence. Sweep with: for every `# unshown: <path>#<region>`, assert the
+  file exists and contains `// #region <region>`.
+
 - Deliberately-broken code that fails to **compile** cannot live in `lib/`: it
   would put the workspace analyze above zero and contradict study 1's Practice.
   Capture its transcript from a temporary state and inline the code in the MDX

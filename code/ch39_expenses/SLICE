@@ -46,6 +46,11 @@ README.md
 #   one-line delegation. The decision is in `store.dart#store`, which 39.5
 #   shows; this is what the decision cost the layer above it, which is one
 #   named argument per line.
+# unshown: lib/src/command.dart#parser — the default `--file` value, moved
+#   from `expenses.txt` to `expenses.db`, and a sentence on the constant saying
+#   what the old default did to the command after a migration. The parser is
+#   study 33's and is shown whole on study 33's page; 39.3 shows
+#   `bin/expenses.dart`, which is where the file became a database.
 # unshown: lib/src/command.dart#listing — one line. `tracker.expenses(period)`
 #   gained a name for its argument. 39.3 says why `command.dart` was otherwise
 #   untouched by a study that replaced the store underneath it.
@@ -90,5 +95,10 @@ README.md
 #   name study 39's version of the near-miss it already described: a
 #   `SqliteStore` that opened its own path would have made `file_store.dart`'s
 #   doc comment false without either test above it noticing.
-# unshown: test/arguments_test.dart#flags — the default path, `expenses.txt` to
-#   `expenses.db`. 39.3 shows `bin/expenses.dart`, which is why it moved.
+# unshown: test/arguments_test.dart#flags — `store.all` became
+#   `store.expenses()` twice, inside assertions about what `run` did with the
+#   arguments. Nothing this group asserts changed.
+# unshown: test/arguments_test.dart#file — the default `--file` answers, moved
+#   from `expenses.txt` to `expenses.db`. 39.3 shows `bin/expenses.dart` and
+#   says why the file became a database; this is the constant that says so,
+#   and the group reads the same as it did in study 28.

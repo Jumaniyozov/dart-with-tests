@@ -103,6 +103,20 @@ The guard was measured rather than assumed: reverting the doc-comment fix in
 but not in SLICE — lib/src/command.dart`. A half-applied retroactive fix is exactly the
 shape this check was built for, and it holds.
 
+**A fourth, paid one commit later, and it is the cheapest one this layout can have.**
+Study 39's prose said in four places that `--file`'s default had moved from
+`expenses.txt` to `expenses.db` — CHANGELOG, a doc comment in `bin/expenses.dart`, the
+README, and the published page. `_defaultPath` was never edited, and
+`test/arguments_test.dart` asserted the old value three times, so the suite was green
+over the opposite of what the page said. A reader following study 39's own README got
+`SqliteException(26): file is not a database` on their next command.
+
+It spans **one** snapshot, because it was found while copying study 39 into study 40 and
+study 40 had not shipped. That is the whole of this record's arithmetic in one instance:
+the same mistake found at study 33 would have cost seven edits. And `check_slices` could
+not have found it for the reason the next paragraph gives — `lib/src/command.dart` is
+named in study 39's `SLICE`, so any difference in it was expected.
+
 **And the check is narrower than this record first claimed.** `check_slices` compares a
 file only when the study's `SLICE` does *not* name it. For a file the study does change,
 any difference is expected, so a fix applied to one snapshot and not the next is
