@@ -255,10 +255,22 @@ Future<void> main(List<String> args) async {
     done += scenario.commands.length;
   }
 
+  // Every scenario has been re-run. Now the other direction: a transcript on
+  // disk with a `curl` in it that no scenario above names.
+  //
+  // `check_transcripts` skips such a file **entirely** and counts it as covered
+  // here, because there is no single command it could repeat. So a transcript
+  // nobody owns is re-run by nothing while both tools report green — which is
+  // the shape those tools' own comments call a check switching itself off, and
+  // it arrived by the one route they did not anticipate. Proved both ways: a
+  // file with `$ curl` in it and no scenario fails here, and removing it passes.
+  problems.addAll(_unowned(root));
+
   if (problems.isEmpty) {
     stdout.writeln(
       'capture_server: $done server command(s) '
-      '${checking ? 'still true' : 'captured'}.',
+      '${checking ? 'still true' : 'captured'}, '
+      'and no server transcript without a scenario.',
     );
     return;
   }
@@ -267,6 +279,39 @@ Future<void> main(List<String> args) async {
     stdout.writeln('  $problem');
   }
   exitCode = 1;
+}
+
+/// Every transcript holding a `curl` command that no scenario above accounts for.
+///
+/// The registry is what this tool checks; the filesystem is what the book
+/// ships. Where they disagree, the file is the one with a reader looking at it.
+List<String> _unowned(String root) {
+  final owned = {for (final scenario in _scenarios) scenario.transcript};
+  final problems = <String>[];
+
+  final code = Directory('$root/code');
+  if (!code.existsSync()) return ['code/ is not where this expected it'];
+
+  for (final package in code.listSync().whereType<Directory>()) {
+    final name = package.path.split(Platform.pathSeparator).last;
+    final transcripts = Directory('${package.path}/transcripts');
+    if (!transcripts.existsSync()) continue;
+
+    for (final file in transcripts.listSync().whereType<File>()) {
+      if (!file.path.endsWith('.txt')) continue;
+      final leaf = file.path.split(Platform.pathSeparator).last;
+      final path = 'code/$name/transcripts/$leaf';
+      if (owned.contains(path)) continue;
+      if (!file.readAsLinesSync().any((line) => line.startsWith(r'$ curl'))) {
+        continue;
+      }
+      problems.add(
+        '$path: has a curl command and no scenario here owns it, so '
+        'check_transcripts skips it and nothing re-runs it',
+      );
+    }
+  }
+  return problems;
 }
 
 /// One scenario, start to finish: seed a store, start the server, wait for it

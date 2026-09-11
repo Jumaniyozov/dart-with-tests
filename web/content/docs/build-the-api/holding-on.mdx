@@ -1,7 +1,7 @@
 ---
 title: The server holds on
 study: 38
-direction: A value read once is a bet that nothing else can change it. A command wins that bet by finishing; a server has to keep making it, and this study loses it twice.
+direction: A value read once is a bet that nothing else can change it. A command wins that bet by finishing; a server keeps making it, and this is the study where both of the ones it was making come due.
 description: A Store that reads once and holds on, a second process that falsifies it, a byte count as the reason to believe it again, and a day that turns out to have been read once too.
 ---
 
@@ -148,7 +148,7 @@ Study 39 puts the expenses in a database, where a read asks for what it wants â€
 the cache is deleted rather than improved, which is the best ending a caching study
 can have.
 
-<Practice source="Dart linter rules" href="https://dart.dev/tools/linter-rules/avoid_slow_async_io">
+<Practice source="Dart lints â€” avoid_slow_async_io" href="https://dart.dev/tools/linter-rules/avoid_slow_async_io">
 **"Avoid slow asynchronous `dart:io` methods."** The rule names `File.exists`,
 `File.stat` and `File.lastModified` among others, on the grounds that they *"are
 much slower than their synchronous counterparts."*

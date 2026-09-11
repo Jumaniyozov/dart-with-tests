@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:ch38_expenses/expenses.dart';
@@ -43,6 +44,31 @@ class CountedStore(final List<Expense> expenses) implements Store {
 Expense spent(int pence) =>
     Expense(Money.fromPence(pence), Category('food'), Day(2026, 9, 11), 'tea');
 // #endregion double
+
+/// A [Store] whose `all` does not finish until it is let go.
+///
+/// The only way to ask what happens when the answer changes **during** a read,
+/// which is the one ordering a test cannot reach by being quick.
+class _Slow(final Future<void> gate, final List<Expense> expenses)
+    implements Store {
+  int reads = 0;
+
+  @override
+  Future<List<Expense>> get all async {
+    reads++;
+    await gate;
+    return List.unmodifiable(expenses);
+  }
+
+  @override
+  Future<void> record(Expense expense) async => expenses.add(expense);
+
+  @override
+  Future<List<Limit>> get limits async => const [];
+
+  @override
+  Future<void> setLimit(Limit limit) async {}
+}
 
 void main() {
   // #region reads
@@ -131,6 +157,32 @@ void main() {
     });
   });
   // #endregion bet
+
+  group('a write that lands while a read is in flight', () {
+    test('is never held as though it had been seen', () async {
+      var version = 0;
+      final gate = Completer<void>();
+      final slow = _Slow(gate.future, [spent(450)]);
+      final held = HoldingStore(slow, () => version);
+
+      final reading = held.all;
+      // The read has started and has not finished. Somebody appends.
+      slow.expenses.add(spent(460));
+      version = 1;
+      gate.complete();
+      await reading;
+
+      expect(
+        await held.all,
+        hasLength(2),
+        reason:
+            'the version is taken before the read, not after, so a write that '
+            'lands in the middle of one is stamped as unseen and the next ask '
+            'goes back for it — an extra read, and never a stale answer',
+      );
+      expect(slow.reads, 2);
+    });
+  });
 
   // #region twinned
   group('the two servers, and exactly what is different about them', () {

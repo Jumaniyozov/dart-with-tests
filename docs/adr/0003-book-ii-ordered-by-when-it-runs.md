@@ -97,6 +97,18 @@ Four studies in this book carry a `<Practice>` with no attribution — 2, 24, 30
 is the form this record should have predicted: a guideline *this record* could not find is
 not a guideline *the study* could not find.
 
+**And the lint is spent now, by study 38, for the argument's other side.** This paragraph
+read as *nothing will ever cite `avoid_slow_async_io`*, and ten studies later something did.
+Study 38's server asks a file for its length **synchronously** on the way into every read —
+a `stat`, not a read, and the read is the thing the cache exists to skip — so the rule that
+argues against `await file.exists()` is the rule that study's `<Practice>` quotes. Both
+premises above were re-measured while writing it and both still hold: `await file.exists()`
+in `lib/` analyzes clean, so the rule is still absent from `package:lints/recommended.yaml`.
+What changed is that a study finally had code the rule was about. The transferable form,
+which is this record's third instance of the same mistake: **a guideline nothing can cite
+*yet* is not a guideline nothing can cite**, and the `<Practice>` exclusion sweep is where
+that distinction has to live rather than in an ADR's prose.
+
 **Operator overloading moves from Book IV to Book II.** Study 25 overrides
 `operator ==`, so the book teaches operator overloading whether or not it admits to it.
 Study 31 owns it properly, where totalling makes `Money + Money` the obvious thing to

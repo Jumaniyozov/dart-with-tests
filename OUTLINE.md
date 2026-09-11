@@ -1582,7 +1582,7 @@ a framework is entitled to decide that either way.
 
 ### 38 — The server holds on · `holding-on` · `ch38_expenses` — **WRITTEN**
 
-Shipped: 239 green, 3 challenges at 12 failing, 4 transcripts.
+Shipped: 240 green, 3 challenges at 12 failing, 4 transcripts.
 
 `FileStore.all` opens the file every time it is asked, and study 28's own Gloss already
 admitted this would not do for a server. Hold the expenses instead, and measure the
@@ -2295,6 +2295,31 @@ existing transcripts and verified to reproduce.
   `packages?`, `headers?`, `routes?` and `keys?` to the sweep — and prefer the fix that was
   taken here, which was to delete the number: *the literal text* is true for ever and the
   count was never the point.
+- **A checker that defers is a checker that can be pointed at nothing.** `check_transcripts`
+  skips any transcript containing a `$ curl` line **entirely** — there is no single command
+  it could repeat — and hands it to `capture_server`, counting it as checked rather than
+  skipped. `capture_server` iterates its **scenario registry**, not the filesystem. So a
+  server transcript that no scenario names was re-run by nothing while both tools reported
+  green, `check_slices` never looks inside `transcripts/`, and the totals did not move:
+  planting one in `ch38_expenses` left all three at 88 / 22 / 199 and 16 packages agreeing.
+
+  This is the failure those tools' own comments describe — a check quietly switching itself
+  off — arriving by the one route they did not anticipate, for the second time. The first
+  was `check_promises` printing *no promise table found* and exiting 0. The general question
+  is now three for three and belongs on every tool: **ask a checker what it prints when its
+  corpus is empty, when its corpus has gone missing, and when something in the corpus belongs
+  to nobody.** The third is the one deferral creates, and only a tool that defers can have it.
+
+  Fixed: `capture_server --check` now scans `code/ch*/transcripts/*.txt` for `$ curl` and
+  fails on any file no scenario owns, naming it and saying why nothing re-runs it. Proved
+  both ways — an orphan exits 1, removing it exits 0 with *no server transcript without a
+  scenario* on the summary line, so the two cases read differently.
+
+  It also closes a door this session nearly walked through: study 38 considered capturing the
+  stale-cache transcript from a temporarily broken state, the way `undefined.txt` is
+  captured. That would have produced exactly this orphan. Shipping `bin/holding.dart` as a
+  real program was the better answer for its own reasons, and it is now also the only answer
+  the tooling permits.
 - **A transcript is evidence only if the harness ran what the reader would run.**
   `capture_server` handed study 38's server `--file ../code/ch38_expenses/expenses.txt`
   while setting that same directory as its working directory, so the path resolved to

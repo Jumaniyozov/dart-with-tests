@@ -188,7 +188,8 @@ a new field is a new required argument everywhere one is built.
 barrel offers the same twelve libraries and `bin/` the same two programs. Study 34 held the barrel to
 a list, study 36 held `bin/` to one, and the thing that broke this time was the
 shape of a type. **A contract test protects exactly the surface it was written
-about**, for the third time in three studies.
+about** — three instances now, in three different places, and no intention of
+writing a third list.
 
 **Two callers can both get past that check.** `Tracker.record` reads the store,
 decides, and then writes, and `FileStore` touches a disk in between — so two

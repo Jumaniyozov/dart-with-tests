@@ -19,17 +19,22 @@ pubspec.yaml
 CHANGELOG.md
 README.md
 #
-# unshown: lib/src/command.dart#run — one line, `Tracker(store, () => today)`,
-#   and 38.5 pins that exact line with a test rather than quoting it. The rest
-#   of the region is the switch study 33 left and study 36 already declined to
-#   re-show.
+# unshown: lib/src/command.dart#run — one line of code,
+#   `Tracker(store, () => today)`, and a six-line comment above it saying why a
+#   command may keep reading its clock once. 38.5 pins the line itself with a
+#   test rather than quoting it, and states the reason in its own words. The
+#   rest of the region is the switch study 33 left and study 36 already declined
+#   to re-show.
 # unshown: lib/src/command.dart#record — one pair of parentheses on
 #   `tracker.today`. 38.5 shows the signature that put them there.
 # unshown: lib/src/command.dart#budgeting — the same pair, on the line that
 #   builds the period a `budget` command reports over.
 # unshown: lib/src/server.dart#writes — the same pair again, where the edge
-#   decides what day a POSTed expense is filed under. `test/server_test.dart`
-#   asserts that one across two days, and 38.5 shows the test.
+#   decides what day a POSTed expense is filed under, plus two lines of the doc
+#   comment above it: study 37 wrote that the day would be `Tracker.today` until
+#   study 38 noticed, and study 38 is where that sentence stops being a
+#   prediction. `test/server_test.dart` asserts the behaviour across two days,
+#   and 38.5 shows that test.
 # unshown: test/tracker_test.dart#setup — `Tracker(store, today)` became
 #   `Tracker(store, () => today)`. Every test in the file kept passing, which
 #   is the least interesting way for a signature change to go.

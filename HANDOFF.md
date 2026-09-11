@@ -94,6 +94,14 @@ claim; give them a minute or two each.
 of a program that does not exit, and `check_transcripts` delegates to it. Listed separately
 above only because running it alone is much faster while you are capturing.
 
+**That delegation had a hole and now does not.** `check_transcripts` skips any transcript
+holding a `$ curl` line entirely and counts it as covered here; this tool used to iterate
+only its own scenario registry. A server transcript no scenario named was therefore re-run
+by nothing while both printed green — planting one moved no number in either. It now also
+scans `code/ch*/transcripts/` and fails on any `curl` transcript it does not own, so the
+summary line ends *and no server transcript without a scenario*. If you capture a server
+transcript by hand, this is what will stop you.
+
 **`check_shipped` is the newest, and it exists because `OUTLINE.md` was the one corpus no
 checker read.** Nine `Shipped:` lines, six carrying a wrong number when first swept by
 hand. It counts the files in each study's `transcripts/` and runs that package's own suite,

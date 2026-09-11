@@ -42,6 +42,14 @@ class HoldingStore(final Store inner, final int Function() version)
 
   /// Throw away what is held if the answer can have changed.
   ///
+  /// **The version is taken before the read, and the order is load-bearing.**
+  /// `inner.all` suspends, and a write can land while it is suspended. Stamping
+  /// first means that write is recorded as unseen and the next ask goes back
+  /// for it — one extra read. Stamping *after* the read would record it as
+  /// seen, and the held copy would be wrong until something else moved the
+  /// file. Asserted in `test/holding_store_test.dart`, because swapping two
+  /// adjacent lines is the easiest edit in this file to make by accident.
+  ///
   /// Two concurrent reads can both find nothing held and both go to [inner].
   /// Both get the right answer and one of them writes it down twice, which is
   /// wasteful and not wrong. Study 40 is where a suspension in the middle of a
