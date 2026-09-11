@@ -1,0 +1,4 @@
+$ curl -s http://localhost:8080/
+[{"day":"2026-09-11","pence":450,"category":"food","note":"tea"},{"day":"2026-09-11","pence":460,"category":"food","note":"tea"}]
+$ curl -s http://localhost:8080/budgets
+[{"day":"2026-09-11","pence":450,"category":"food","note":"tea"},{"day":"2026-09-11","pence":460,"category":"food","note":"tea"}]

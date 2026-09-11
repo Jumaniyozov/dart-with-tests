@@ -1,0 +1,226 @@
+---
+title: A second edge finds what the first one hid
+study: 36
+direction: The seams study 27 cut so the tests would need no mocks turn out to be the boundary of a layer. A second caller is what makes that visible, and nothing else would have.
+description: Tracker, the use cases in the domain's own words; why an Outcome is one caller's answer and not the program's; and a bin directory that turned out to be a contract nobody was checking.
+---
+
+Study 35's server could say how many rows were in a store and nothing else. That was not a
+limitation of `shelf`, and it was not laziness. It is what the program actually offered a
+second caller.
+
+Everything the tracker *does* — record an expense, set a limit, list a month, show the
+budgets — is a private function in `command.dart`. The one public way in is `run`, and `run`
+answers an `Outcome`: `({int code, String out, String err})`. An exit code and two pieces of
+English. A CLI never noticed, because it was the only edge and that record was exactly what
+it wanted.
+
+<Drill n={1}>
+
+<Direction>The same four use cases, answering something a second caller can use.</Direction>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch36_expenses/transcripts/answers.txt</include>
+</Console>
+
+</Drill>
+
+## 36.1 The record that made the CLI testable is the one thing it cannot share
+
+`Outcome` was study 24's good idea and it still is. Returning a value instead of printing is
+what let every command be tested without a terminal, and `command.dart` has never imported
+`dart:io`.
+
+But read what is in it. `code` is a number a **shell** branches on — `0`, `1`, `2`, and the
+whole of what a script can know. `out` and `err` are sentences, written for a person, split
+by which stream they belong on. Every field is an answer to *how does a terminal say this?*
+
+An HTTP caller needs a status and a document. It cannot use `1` and it cannot use
+*"food is budgeted at £20.00 and this would put it £5.00 over. Record it anyway with
+--anyway."* — that sentence names a command-line flag.
+
+So the extraction is not "make the private functions public". It is: **say what each use case
+answers, in words the domain already has.**
+
+<include cwd lang="dart" meta='title="lib/src/tracker.dart"'>../code/ch36_expenses/lib/src/tracker.dart#tracker</include>
+
+`Verdict` is study 32's, `Expense` is study 25's, `Budget` and `Limit` are study 32's, and
+`Period` is study 30's. Not one word in those signatures was invented here. That is the test
+of whether an application layer is really the application's, or just the first caller's spread
+out with a new name on it.
+
+`record` answers `null` when nobody set a limit, which is `limitOn`'s own way of saying it,
+and a `Breach` the expense does not acknowledge means **nothing was kept**:
+
+<include cwd lang="dart" meta='title="test/tracker_test.dart"'>../code/ch36_expenses/test/tracker_test.dart#setup</include>
+
+<include cwd lang="dart" meta='title="test/tracker_test.dart"'>../code/ch36_expenses/test/tracker_test.dart#verdicts</include>
+
+Notice the acknowledgement is read off the `Expense` rather than passed as a second argument.
+Study 32 put it there and said why: an acknowledged overspend is a **different kind of
+expense**, not a different way of calling this.
+
+## 36.2 The seams were the layer
+
+Here is the part worth stopping on. `Tracker` takes a `Store` and a `Day`. Those are exactly
+the two things study 27 threaded through every private function in `command.dart` so that its
+tests would need no mocks and no clock.
+
+<include cwd lang="dart" meta='title="test/tracker_test.dart"'>../code/ch36_expenses/test/tracker_test.dart#moved</include>
+
+Every one of those functions took a `Store` and a `Day`. Every one now takes a `Tracker`, and
+the only place left in the whole file that names either is `run`, where the edge assembles
+the layer out of the two facts it read from the world.
+
+That is not a coincidence and it is not good taste. A seam is cut where a function's
+dependencies on the world can be handed to it instead of fetched. A layer boundary is the
+place where the world stops. They are the same line, and the difference between noticing it
+and not is whether a second caller ever turns up.
+
+The edge that is left is thinner, and one place got slightly worse:
+
+<include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch36_expenses/lib/src/command.dart#record</include>
+
+Four steps became one call. But the refusal message needs the limit's **amount** — *budgeted
+at £20.00* — and `Breach` carries only how far over it went, because *money over* is a thing
+the domain can say and *budgeted at* is a sentence. So the edge goes back for it, on the
+refusal path only.
+
+Worth naming rather than hiding: that second read is the first friction the second edge
+caused, and study 37 is where it stops being friction, because an API answers the limit as
+**data** and does not have to write a sentence around it.
+
+And the thing that did not move at all:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch36_expenses/transcripts/untouched.txt</include>
+</Console>
+
+One line differs between study 35's command tests and study 36's, and it is the package name
+— ADR 0004's one permitted difference. Thirty-four tests of the command line, not edited, all
+green. The behaviour of the CLI is not a claim this study makes; it is a file nobody touched.
+
+## 36.3 The server, now that there is something to serve
+
+<include cwd lang="dart" meta='title="lib/src/server.dart"'>../code/ch36_expenses/lib/src/server.dart#handler</include>
+
+One word changed in that signature and the whole study is in it.
+
+<include cwd lang="dart" meta='title="test/server_test.dart"'>../code/ch36_expenses/test/server_test.dart#calling</include>
+
+On the wire, which is where a `content-type` is a fact rather than a map entry:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch36_expenses/transcripts/wire.txt</include>
+</Console>
+
+`shelf` still adds its `date` and its `x-powered-by`, `dart:io` still adds the same three
+`x-` headers study 35 measured, and the one line this study changed is `content-type`.
+
+`toJson` is study 29's, written so the tracker could keep expenses in a file. Nothing invented
+a second representation for the wire — the program was already storing JSON documents, so the
+wire asked for nothing new. Study 39 will move that file into a database and this shape will
+not move with it, which is the reason it lives on `Expense` as an extension rather than inside
+`FileStore`.
+
+Still one answer at every path. Routing is study 37, and so is the question of what an HTTP
+status *means*, which is study 26's taxonomy arriving with a wire under it.
+
+The direction of the dependencies is a rule ADR 0005 wrote down, so it is a test:
+
+<include cwd lang="dart" meta='title="test/server_test.dart"'>../code/ch36_expenses/test/server_test.dart#borrowed</include>
+
+<include cwd lang="dart" meta='title="bin/serve.dart"'>../code/ch36_expenses/bin/serve.dart#serve</include>
+
+**Read the last line of that file and then read the doc comment above it.** `Day.on(DateTime
+.now())` runs once, at startup, in a program that does not exit. A server started on Tuesday
+will file Friday's expenses under Tuesday. It is shipped on purpose: study 38 is where a value
+read once turns out to be a bet that nothing else can change it, and this is one of the two
+halves of that.
+
+## 36.4 The barrel gains one line, and `bin/` turns out to be a contract
+
+<include cwd lang="dart" meta='title="lib/expenses.dart"'>../code/ch36_expenses/lib/expenses.dart#barrel</include>
+
+`Tracker` is offered. The server is not, and study 35 said why: `expensesHandler` answers a
+`shelf` `Handler`, and a dependency's type in your public API makes that dependency's promises
+part of yours. `Tracker` names nothing but this package's own types, so it is safe to promise.
+
+This study also **deleted** a file — `bin/by_hand.dart`, study 35's hand-rolled server, which
+had done its job. Study 34's `surface_test` did not notice, and should have:
+
+<include cwd lang="dart" meta='title="test/surface_test.dart"'>../code/ch36_expenses/test/surface_test.dart#runnable</include>
+
+`dart run ch35_expenses:by_hand` was something a caller could do. Removing it is removing
+something somebody could have been using, which is the definition study 34 gave for a **major
+version** — so this package is `2.0.0`, and the reason is a deletion rather than a rename.
+
+The lesson is not about `bin/`. It is that a contract test protects exactly the surface it was
+written about, and the surface it was written about was the one that was interesting on the
+day. `test/surface_test.dart` asserted the barrel because study 34 was about the barrel. The
+first thing outside it that changed went unremarked.
+
+<Practice source="Effective Dart — Design" href="https://dart.dev/effective-dart/design#do-use-terms-consistently">
+**"DO use terms consistently."** Use the same name for the same thing throughout your code,
+and where a precedent already exists that your readers know, follow it.
+
+This is the guideline `CONTEXT.md` has been enforcing since study 23, and this study is where
+it did visible work. Book III is allowed to add exactly **one** word to that glossary, and the
+word is `Tracker`. Not `ExpenseService`, `TrackerManager`, `ExpenseFacade`, `TrackerController`
+or `RecordExpenseUseCase` — every one of which is a term from somebody's architecture
+diagram rather than from this program's subject.
+
+The rule underneath the rule is the useful part: **if a new type needs a word the domain does
+not have, ask whether the type is really the domain's.** `Tracker` did not need one. A
+`RequestValidator` would have, which would have been the signal that it belongs at the edge.
+</Practice>
+
+<Gloss title="The layer is a class, and it has no interface">
+`Tracker` is a plain class. There is no `abstract interface class Tracker` above it and no
+second implementation below it, and neither is coming.
+
+Study 27 is why: a seam is a parameter, and only one of the two ends wants an interface. The
+end that wants one is the end with real alternatives — `Store` has `InMemoryStore`, `FileStore`
+and, in study 39, a database. There is exactly one `Tracker` and there is no second way to
+record an expense.
+
+An interface here would be a file with the same member names in it, added so that a test could
+supply a fake — and the test does not need one, because `Tracker` takes a `Store` and the
+tests hand it an `InMemoryStore`. The seam is already below it.
+
+The header constructor form is ADR 0002's rule rather than a preference: `Tracker` checks
+nothing, because a `Store` and a `Day` are already-valid values by the time they reach it.
+Where a type must check something, the check goes on a constructor with a body to put it in.
+</Gloss>
+
+## Wrapping up
+
+`Outcome` is the CLI's answer, not the program's. An exit code and two streams of English are
+what a terminal needs; the record that made every command testable is precisely the thing a
+second caller cannot use, and noticing that is the whole of why this study exists.
+
+`Tracker` holds the use cases and answers in the domain's own words — `Expense`, `Budget`,
+`Verdict`, `Period`. Not one term in its signatures was invented for it, which is the test of
+whether a layer belongs to the application or to its first caller.
+
+The parameters `Tracker` is built from are the seams study 27 cut for testability. A seam is
+where a function's dependency on the world can be handed in instead of fetched; a layer
+boundary is where the world stops. They are the same line, and a second edge is what makes it
+visible.
+
+The command line's tests were not edited and are green. `bin/by_hand.dart` was deleted, which
+is a major version, and `surface_test` now holds `bin/` to a list the way it already held the
+barrel.
+
+Also met: `Tracker`, `Verdict` at an edge, `jsonEncode` over a list, `application/json`, and a
+test that reads its own package's source to check what moved.
+
+## Challenges
+
+Three challenges, eleven failing tests. Make them pass one at a time. Do not edit the tests.
+Two of them live on the domain side of the line this study drew and one lives on the edge
+side; working out which is which without being told is the exercise.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch36_expenses/transcripts/challenges.txt</include>
+</Console>

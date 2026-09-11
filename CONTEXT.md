@@ -43,6 +43,12 @@ A view computed from expenses — totals, groupings, comparisons against budgets
 computed, never stored.
 _Avoid_: Summary, Statement, Overview
 
+**Tracker**:
+Everything the program can be asked to do, said in the words above. It holds a Store and
+the day it thinks it is, and it answers in Expenses, Budgets and Verdicts — never in exit
+codes, status codes or text meant for a person. Both edges call it; neither is named in it.
+_Avoid_: Service, Manager, Facade, Controller, UseCase, Interactor
+
 ## Deliberately absent
 
 - **Income**, and therefore **Balance**. The tracker records money out only.

@@ -78,6 +78,23 @@ const _scenarios = [
     seeded: 3,
     commands: ['curl -sD - -o /dev/null http://localhost:8080/ | $_elideDate'],
   ),
+  _Scenario(
+    'answers',
+    package: 'ch36_expenses',
+    entrypoint: 'bin/serve.dart',
+    seeded: 2,
+    commands: [
+      'curl -s http://localhost:8080/',
+      'curl -s http://localhost:8080/budgets',
+    ],
+  ),
+  _Scenario(
+    'wire',
+    package: 'ch36_expenses',
+    entrypoint: 'bin/serve.dart',
+    seeded: 2,
+    commands: ['curl -sD - -o /dev/null http://localhost:8080/ | $_elideDate'],
+  ),
 ];
 
 /// What both entrypoints print once they are listening. Fixed, because a port
@@ -178,6 +195,11 @@ Future<String> _capture(String root, _Scenario scenario) async {
         ..write(result.stderr);
       if (command != scenario.commands.last) buffer.writeln();
     }
+    // `curl -s` prints a body with no trailing newline when the body has none,
+    // which leaves a file that does not end in one. Every other transcript in
+    // this book does, and a text file that does not is a thing people's tools
+    // quietly fix for them — which would then read as a failing re-run.
+    if (!buffer.toString().endsWith('\n')) buffer.writeln();
   } finally {
     server.kill(ProcessSignal.sigkill);
     await server.exitCode;

@@ -1434,7 +1434,9 @@ transcript and it says so; an empty scenario list exits 1 rather than reporting 
 `check_transcripts` defers any transcript containing a `curl` command to it and counts those
 as checked rather than skipped.
 
-### 36 — A second edge finds what the first one hid · `a-second-edge` · `ch36_expenses`
+### 36 — A second edge finds what the first one hid · `a-second-edge` · `ch36_expenses` — **WRITTEN**
+
+Shipped: 193 green, 3 challenges at 11 failing, 5 transcripts.
 
 The server cannot reach `_add`. It is private to `command.dart`, and so are `_setLimit`,
 `_list` and `_record` — every use case the tracker has. The CLI never needed them public
@@ -1471,6 +1473,32 @@ is what catches it if that slips.
 lives for milliseconds and wrong for one that runs for days. Study 38 breaks it.
 
 The CLI passes untouched, and that is an assertion, not a claim.
+
+**The prediction about the signatures held, and construction found a sharper way to say it.**
+Every private use case took a `Store` and a `Day`; every one now takes a `Tracker`, and the
+only line left in `command.dart` naming either is `run`'s own — asserted in
+`test/tracker_test.dart#moved`, by reading the file with its comments stripped. A second
+assertion says no `store.record`, `store.all`, `store.limits` or `store.setLimit` survives at
+the edge, because a layer the caller can go around is decoration. `untouched.txt` is
+`diff ch35/test/command_test.dart ch36/…` printing **one** line, and it is the package name.
+
+**One place got worse, and it is the study's most useful sentence.** The refusal message says
+*budgeted at £20.00*, and `Breach` carries only how far over. `Breach` is right — *money over*
+is a thing the domain can say and *budgeted at* is a sentence — so the edge goes back for the
+limit on the refusal path only. Named on the page rather than hidden, and study 37 is where it
+stops being friction, because an API answers the limit as data.
+
+**`bin/` is a contract and nothing was checking it.** Study 35's `bin/by_hand.dart` had done
+its job, so this study deletes it — the same move study 27 made with `asserting.dart`. But
+`dart run ch35_expenses:by_hand` was something a caller could do, so the removal is a
+**breaking change**: `2.0.0`, and a new `#runnable` group in `surface_test` holding `bin/` to a
+list the way study 34 held the barrel. Study 34's contract test protected exactly the surface
+study 34 was about, which is the general lesson and was not predicted anywhere.
+
+**No write route yet, so the declared debt does not begin here.** ADR 0005 says the lost-update
+sentence belongs in the first study with a write route; study 36's server still answers `GET`
+at every path. Study 37 is where routing, status codes and a `POST` arrive together, and where
+that sentence is owed.
 
 ### 37 — The caller is a stranger · `the-caller-is-a-stranger` · `ch37_expenses`
 
@@ -1621,10 +1649,15 @@ checked by `check_promises`, and Book II's had three rows that were fiction.
 
 | Owed by | Made in | The reader is promised |
 | --- | --- | --- |
-| 36 | 35 | The server can only say `recorded: N` because every use case is private to `command.dart` and `run` answers an `Outcome`; study 36 is where the second edge can reach them |
+| 37 | 36 | Routing, what an HTTP status *means* (study 26's taxonomy over a wire), and the refusal answering the limit as **data** so the edge stops going back for it |
+| 38 | 36 | `bin/serve.dart` reads `Day.on(DateTime.now())` once in a program that does not exit, and a value read once is a bet that nothing else can change it |
+| 39 | 36 | `Expense.toJson` survives the move into a database, which is why it is an extension on `Expense` rather than something `FileStore` owns |
 
-**One row, made by the first written study.** `check_promises` distinguishes an empty table
-from a missing one and fails on the second.
+`check_promises` distinguishes an empty table from a missing one and fails on the second.
+
+Paid: 36←35 (the server could say only `recorded: N`, because every use case was private to
+`command.dart` and `run` answered an `Outcome`; study 36 extracted `Tracker` and the server
+answers the expenses).
 
 **But nothing checks this table, and that must be fixed before study 35 ships.**
 Measured while writing this section: `tool/check_promises.dart` hardcodes the heading

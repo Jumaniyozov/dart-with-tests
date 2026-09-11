@@ -1,6 +1,7 @@
 {
   "title": "Book III: Build the API",
   "pages": [
-    "a-server-that-answers"
+    "a-server-that-answers",
+    "a-second-edge"
   ]
 }

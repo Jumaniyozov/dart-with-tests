@@ -1,0 +1,8 @@
+$ diff ../ch35_expenses/test/command_test.dart test/command_test.dart
+1c1
+< import 'package:ch35_expenses/expenses.dart';
+---
+> import 'package:ch36_expenses/expenses.dart';
+
+$ dart test test/command_test.dart
+00:00 +34: All tests passed!

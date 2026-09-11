@@ -1,0 +1,6 @@
+$ dart test exercises/
+00:00 +0: loading exercises/challenges_test.dart
+00:00 +0: exercises/challenges_test.dart: challenge 1 — what was spent over a period nothing recorded is nothing spent
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — what was spent over a period nothing recorded is nothing spent [E]
+  UnimplementedError: 1
+…

@@ -21,14 +21,15 @@ Last checked: 2026-09-11.
 
 Book I (studies 1-22) is written, audited and pushed. **Book II (23-34) is complete** —
 all twelve snapshots exist, and its promise table is empty because every promise the prose
-made has been paid. **Book III (35-40) is outlined and open: study 35 is written**, and
-36-40 have provisional titles and no code. ADR 0005 records the order and why it costs a
+made has been paid. **Book III (35-40) is open: studies 35 and 36 are written**, and
+37-40 have provisional titles and no code. ADR 0005 records the order and why it costs a
 sixth study. Book IV (41-45) has no outline.
 
-The next piece of work is study 36, `ch36_expenses` — `OUTLINE.md`'s entry for it, and
-ADR 0005's ruling that `Tracker` takes the header constructor form. Book III's promise
-table now has a row in it: study 35 tells the reader why the server can only answer
-`recorded: N`, and study 36 is what it was promised to.
+The next piece of work is study 37, `ch37_expenses`. Book III's promise table has **three**
+rows, all made by study 36, and two of them are study 37's: routing with study 26's taxonomy
+as status codes, and the refusal answering the limit as **data** so the edge stops going back
+for it. ADR 0005 also puts the declared lost-update debt in the first study with a **write**
+route, which study 37 is — a sentence on the page, never a silent handover.
 
 Counts are not restated here. `OUTLINE.md` and the git log carry them, and a number
 copied into this file is a number that will be wrong within a week. That is exactly how
@@ -77,8 +78,8 @@ has no `test/` at all — the standing requirements say so, because the reader h
 nothing. It printed a failure and stopped, which reads like a broken book rather than a
 broken command. Corrected while outlining Book III: 33 packages have a `test/`, and they
 held **1248 tests**, which is the number this file's predecessors quoted without a working
-loop to produce it. Study 35 makes it 34 packages and **1426 tests**; re-run the loop
-rather than trusting either number.
+loop to produce it. Studies 35 and 36 make it 35 packages and **1622 tests**; re-run the loop
+rather than trusting any of these numbers.
 
 The seven `check_*` tools cover different halves and none subsumes another —
 `OUTLINE.md`'s standing requirements say what each one can and cannot see.
