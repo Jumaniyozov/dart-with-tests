@@ -1638,39 +1638,84 @@ day to turn while the server is running. The evidence is three tests instead —
 the demonstration: a server started in September answers October's budget questions with
 September's spending, and every number it prints is plausible.
 
-### 39 — The transaction that does not roll back · `transactions` · `ch39_expenses`
+### 39 — The transaction that does not roll back · `transactions` · `ch39_expenses` — **WRITTEN**
 
-**Titled by the spike, which is what it was for.** `sqlite3` 3.5.2 brings durability, a
-schema and a store that can keep a bound — and one measured trap that is better than all
-three as a thesis.
+Shipped: 261 green, 3 challenges at 13 failing, 3 transcripts.
 
-`BEGIN`, `COMMIT` and `ROLLBACK` are plain `db.execute`; there is no transaction helper to
-hide behind. A failing statement throws `SqliteException` carrying `message`,
-`extendedResultCode` — 275 for a `CHECK` violation — and `causingStatement`, and it
-**leaves the transaction open**: `db.autocommit` is `false` afterwards. It does not roll
-back for you. Measured: catch the exception, commit anyway, and the partial write is
-committed. That is a program that looks like it handled an error and did the opposite,
-which is study 26's argument arriving with a database behind it.
+**Titled by the spike, and the spike held.** Everything it measured reproduced:
+`BEGIN`, `COMMIT` and `ROLLBACK` are plain `db.execute` with no helper to hide
+behind; a failing statement throws `SqliteException` carrying `message`,
+`extendedResultCode` 275 for a `CHECK`, `causingStatement` and
+`parametersToStatement`; and it **leaves the transaction open**, so catching it and
+committing anyway commits the partial write. Construction added one thing the spike
+did not reach: that is true of **every** kind of failure, not only a constraint —
+`autocommit` is `false` after a `CHECK`, a `STRICT` type violation, a missing table
+and a syntax error alike.
 
-It also sets up study 40 exactly: a transaction is the fix for the lost update, and a
-reader who has just watched one fail to roll back will not take that fix on trust.
+**The best line in the study was not predicted anywhere and cost one test to find.**
+A `Row` implements `Map<String, Object?>`, so `expenseFromJson(row)` **compiles**,
+matches study 29's map pattern, and answers a real `Expense` — with `acknowledged`
+always `false`, because SQLite has no boolean and the column holds `1` where JSON
+holds `true`. Right money, right category, right day, and study 32's distinction
+between an overspend somebody was warned about and one nobody was silently gone.
+That is the promise 39←36 paid by measurement rather than by assertion: `toJson`
+survives the move into a database by **not being used** there.
 
-The parts that are already known: the build hook **downloads a prebuilt 3.53.4**, so it is
-the same on every reader's machine and the prerequisite is **network on first build, not a
-C compiler** — Book III prints that rather than letting study 39 discover it, and the
-outline's earlier guess at a toolchain requirement is what the spike corrected.
-`SqliteStore implements Store`. The
-reader's existing `.jsonl` moves into a table, once; a schema that evolves twice is not in
-this book. Study 38's cache is **deleted**, and why is the lesson — it existed because
-reading a file meant reading all of it, and a database reads what you ask for. A cache you
-can delete is the best ending a caching study can have.
+**And the lint that exists for it cannot see it.** `unrelated_type_equality_checks`
+is on in this book and marks `1 == true` written with two literals. The real
+expression is `json['acknowledged'] == true`, where the left side is an `Object?`
+out of a map — a supertype of `bool` — so the types are related as far as the
+analyzer is concerned. It is the study's `<Practice>`, and the transferable form is
+that a lint is a claim about types the analyzer can see, which stops applying at
+exactly the values most likely to be wrong.
 
-And the bound becomes real. `Store` grows a bounded read, five implementations pay study
-32's bill in public, and study 37's counting double now measures a difference.
+**`Store.all` became `Store.expenses({Period? period, int? count})`, and the outline
+guessed the bill wrong.** It said five implementations; there are **six**, listed by
+name in `test/store_test.dart#bill` rather than counted. Both narrowings had to
+arrive together: `?month=2026-09&limit=2` means *the first two of September*, and
+there is no way to bound that without knowing the month. The three real
+implementations then give three different amounts of *less* — `InMemoryStore` saves
+nothing, `FileStore` stops decoding once it has enough and saves nothing of the
+reading because the file is already in memory, and `SqliteStore` never looks at the
+rows. `test/command_test.dart`'s run of three studies without an edit ends here,
+mechanically, and that is what renaming a member of an interface the tests name
+costs.
 
-**This entry is over budget on purpose.** Six subjects against a five-section envelope.
-The spike decides what moves — `Store`'s growth into study 40 is the likeliest candidate,
-since 40 is already arguing about what shape reads want.
+**The schema restates the domain's rules and this is the one place in the book where
+that is right.** `STRICT` is load-bearing and measured: without it an `INTEGER`
+column takes `'lots'` and hands it back as a Dart `String`. The `CHECK`s repeat what
+`Money`, `Category` and `Limit` refuse, and the standing requirement about a rule
+enforced at two edges does not apply, because the two guards defend against
+different people — a type defends against *this* program and a schema against the
+next one.
+
+**`moveInto` has a `finally` and no `catch`**, which is study 20's clause doing the
+one job it is uniquely for. The `if (!db.autocommit)` in it is not defensive: a bare
+`ROLLBACK` after a successful `COMMIT` throws `cannot rollback - no transaction is
+active` and would arrive at the caller in place of the real failure. Measured.
+
+Smaller things worth not rediscovering. `LIMIT -1` is SQLite's *no bound* and
+`LIMIT NULL` is a `datatype mismatch`, so `null` does not survive that boundary.
+`Database.dispose` is **deprecated** in `sqlite3` 3.5.2 in favour of `close`, which
+only the analyzer says. `sqlite3.open` creates the file and throws `unable to open
+database file` when the parent directory does not exist. And `SqliteStore` pays
+nothing for `Store`'s `Future`: `dart:ffi` is a function call, so the body runs to
+completion and the future is complete before it is returned — asserted by recording
+without awaiting and then reading the row synchronously.
+
+**ADR 0005 predicted `Store`'s growth might move to study 40. It could not.** The
+promise table owes it at 39, and a table written from the prose outranks a
+prediction written before it. The six subjects fitted five sections because two of
+them are paragraphs rather than sections: the build hook is four sentences and
+deleting the cache is a deletion.
+
+**The overload shows in the includes rather than in the sections, and that is the
+measurement worth keeping.** Counted the same way across Book III — prose words
+excluding `<include>` lines, numbered sections, includes — the five pages run
+1931/14, 2447/17, 2604/20, 2184/17, and this one at **2793/27**. Seven per cent more
+prose than the largest and a third more code. So a study that is over budget does not
+show up as a sixth heading; it shows up as sections carrying five and six includes,
+which is the number to watch when planning Book IV.
 
 ### 40 — A second writer · `a-second-writer` · `ch40_expenses`
 
@@ -1749,9 +1794,6 @@ checked by `check_promises`, and Book II's had three rows that were fiction.
 
 | Owed by | Made in | The reader is promised |
 | --- | --- | --- |
-| 39 | 36 | `Expense.toJson` survives the move into a database, which is why it is an extension on `Expense` rather than something `FileStore` owns |
-| 39 | 37 | A bound a store can actually keep, because `?limit=N` slices after the read and a counting double measures that the work does not move |
-| 39 | 38 | The cache is **deleted** rather than improved, because a database reads what you ask for rather than all of it and then throws most of it away |
 | 40 | 37 | Two callers can both pass the budget check, so the program can record a breach nothing refused — and the suspension between the decision and the write is what closes it |
 
 `check_promises` distinguishes an empty table from a missing one and fails on the second.
@@ -1762,7 +1804,15 @@ answers the expenses). 37←36 (routing, study 26's taxonomy as status codes, an
 answering the limit as data — paid by putting the `Limit` on the `Breach`, which removed the
 edge's second read and cost a major version). 38←36 (`bin/serve.dart` read
 `Day.on(DateTime.now())` once in a program that does not exit; `Tracker` takes a
-`Day Function()` and only the server's call sites moved).
+`Day Function()` and only the server's call sites moved). 39←36 (`Expense.toJson`
+survives the move into a database by **not being used** there, which is sharper than
+the promise: a `Row` implements `Map<String, Object?>`, so `expenseFromJson(row)`
+compiles, matches, and silently answers `acknowledged: false` for every row —
+because SQLite has no boolean and `1 == true` is `false`). 39←37 (`Store.all` became
+`Store.expenses({period, count})`; six implementations paid, and study 37's counting
+double now measures one expense costing the store one). 39←38 (`HoldingStore` and
+`bin/holding.dart` are deleted and nothing replaced them — a database reads what you
+ask for, so there is no invalidation problem left to be wrong about).
 
 **But nothing checks this table, and that must be fixed before study 35 ships.**
 Measured while writing this section: `tool/check_promises.dart` hardcodes the heading
@@ -2355,6 +2405,90 @@ existing transcripts and verified to reproduce.
   the one that is an integer nobody rounds. A byte count is exact for a store that only
   appends, and what it misses — a rewrite of the same length — is a different sentence
   entirely, and one a test can state on any machine.
+- **A transcript of a program that reads a clock is dated, and three of this book's
+  are.** ADR 0005's rule — *the server logs nothing time-varying* — governs what the
+  server **prints**, and study 35 amended it once already for HTTP's `date:` header,
+  which is on the wire rather than in the log. There is a third kind and it is worse
+  than either, because it changes what the program **decides** rather than what it
+  writes down.
+
+  `tool/capture_server.dart` seeds every store on `2026-09-11`. `GET /budgets`
+  answers over `Period.of(today())` and `POST /expenses` files an expense under
+  today, so any scenario touching either is asking a question whose answer depends
+  on which month it was captured in. Proved by moving the seed out of the current
+  month and re-running: `ch37_expenses/transcripts/statuses.txt` line 14 stops being
+  `{"problem":"over budget",…}` with a `409` and becomes a recorded expense with a
+  `200` — **the status-code demonstration inverts** — and
+  `ch38_expenses/transcripts/fresh.txt` goes from `spent: 910` to `spent: 0`.
+  `ch37_expenses/transcripts/answers.txt` loses two budget lines the same way and its
+  `POST` echoes a different day.
+
+  So **three committed transcripts stop reproducing on 2026-10-01**: `ch37`'s
+  `answers.txt` and `statuses.txt`, and `ch38`'s `fresh.txt`. `ch36`'s `answers.txt`
+  and `ch38`'s `stale.txt` survive, both by luck — neither has a limit the server can
+  see. Nothing catches this, because `check_transcripts` defers every `curl`
+  transcript to `capture_server` and `capture_server` compares bytes: it will simply
+  go red one morning with no commit having touched anything.
+
+  Study 39's own scenario is built around it — `moved.txt` asks `/expenses` and never
+  `/budgets`, and never `POST`s, so the only date in it is the committed seed. The
+  three are **not** fixed here, because fixing them means recapturing evidence on two
+  published pages and that is its own commit and its own audit. The general form is
+  the part to keep: **a transcript is dated whenever any answer in it is a function
+  of when it was captured**, and a seed with a date in it is not the same thing as a
+  program with a clock in it. Ask of every scenario: *would this answer differently
+  next month?*
+
+- **A block quote is a claim about who said it, and both of study 39's were wrong the
+  first time.** This book opens studies by quoting the earlier study that promised
+  them, which is the promise table made visible — and a quote written from memory is
+  the same defect as a count written from impression, one corpus over. Study 39's page
+  first attributed *a store that kept expenses in a database would want none of it* to
+  study 36. It is a **doc comment** in `expense.dart`, unchanged since study 29, and
+  study 36's page makes the promise in different words entirely; the same
+  misattribution had been copied into `sqlite_store.dart`'s doc.
+
+  Grepping the quote verbatim does not find it, which is why this needs saying: prose
+  in this repository is hard-wrapped and a `>` block carries the wrap and the markers.
+  Normalise whitespace on both sides and search the pages **and** `code/ch*/lib/src/`,
+  because half of what this book quotes is a doc comment:
+
+  ```bash
+  python3 - <<'EOF'
+  import pathlib, re, glob
+  flat = lambda t: re.sub(r'\s+', ' ', t)
+  page = pathlib.Path('web/content/docs/<book>/<slug>.mdx').read_text()
+  quotes = [flat(' '.join(l.lstrip('> ') for l in b.split('\n')))
+            for b in re.findall(r'(?:^> .*\n)+', page, re.M)]
+  corpus = {p: flat(pathlib.Path(p).read_text())
+            for p in glob.glob('web/content/docs/**/*.mdx', recursive=True)
+            + glob.glob('code/ch*/lib/src/*.dart')}
+  for q in quotes:
+      print([p for p, t in corpus.items() if q in t] or 'NOT FOUND', q[:60])
+  EOF
+  ```
+
+  The general form belongs with *a sweep is only as wide as the syntax it greps for*:
+  **the thing you are checking has been reformatted since it was written**, so a check
+  that compares raw bytes is checking the formatter.
+
+- **A capture that separates stdout from stderr is not a transcript of a terminal.**
+  `capture_server` wrote all of a command's stdout and then all of its stderr, which
+  is not what a terminal shows and nobody had noticed, because no scenario before
+  study 39 put anything on stderr. Study 39's does: `dart run` announces
+  `Running build hooks...` there, twice, on every run, for a package with a native
+  dependency — so the first captured transcript showed the program's answer *above*
+  the line that really came first.
+
+  Fixed by letting the shell merge them (`bash -c '{ … ; } 2>&1'`) rather than by
+  eliding anything: a terminal merges the two streams, so merging them is
+  reproducing the reader's terminal rather than normalising away from it, and line 1
+  is still exactly what they type. Re-running the other 22 commands changed nothing,
+  which is what proves the change was invisible everywhere it did not matter. The
+  general form: **when a tool reassembles a program's output, ask what a terminal
+  would have done with it**, because the difference only shows up on the first
+  command that exercises it.
+
 - Deliberately-broken code that fails to **compile** cannot live in `lib/`: it
   would put the workspace analyze above zero and contradict study 1's Practice.
   Capture its transcript from a temporary state and inline the code in the MDX

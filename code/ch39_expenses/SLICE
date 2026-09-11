@@ -1,0 +1,94 @@
+# Study 39 — what changed since study 38.
+#
+# Added — a Store that keeps expenses in SQLite, the one-time move of the
+# reader's file into it, and the demonstration of what a failed statement does
+# to the transaction around it.
+lib/src/sqlite_store.dart
+lib/src/migration.dart
+lib/src/rolling_back.dart
+bin/migrate.dart
+test/sqlite_store_test.dart
+test/transaction_test.dart
+# Removed — study 38's cache and the entrypoint that existed to break it. A
+# database reads what you ask for, so there is nothing left worth holding.
+lib/src/holding_store.dart
+bin/holding.dart
+test/holding_store_test.dart
+# Changed — `Store.all` became `Store.expenses({period, count})`, and every
+# implementation and every caller in the package moved with it.
+lib/expenses.dart
+lib/src/store.dart
+lib/src/file_store.dart
+lib/src/tracker.dart
+lib/src/command.dart
+lib/src/server.dart
+bin/expenses.dart
+bin/serve.dart
+test/store_test.dart
+test/server_test.dart
+test/tracker_test.dart
+test/command_test.dart
+test/arguments_test.dart
+test/file_store_test.dart
+test/values_test.dart
+test/surface_test.dart
+pubspec.yaml
+CHANGELOG.md
+README.md
+#
+# unshown: lib/src/file_store.dart#filestore — study 28's class, shown whole on
+#   study 28's page. `all` became `expenses` and gained a loop with a `break`;
+#   39.5 says exactly what that `break` saves and what it does not, and shows
+#   `store.dart#memory` beside it, which is the same narrowing with nothing to
+#   stop reading early.
+# unshown: lib/src/tracker.dart#tracker — three call sites, each handing a
+#   question on rather than answering it, and `Tracker.expenses` is now a
+#   one-line delegation. The decision is in `store.dart#store`, which 39.5
+#   shows; this is what the decision cost the layer above it, which is one
+#   named argument per line.
+# unshown: lib/src/command.dart#listing — one line. `tracker.expenses(period)`
+#   gained a name for its argument. 39.3 says why `command.dart` was otherwise
+#   untouched by a study that replaced the store underneath it.
+# unshown: test/store_test.dart#spy — study 27's mock, one member renamed and
+#   one sentence added to its doc comment. 39.1 shows `#bill`, which is the
+#   list of everything that had to be renamed with it.
+# unshown: test/store_test.dart#blind — one word inside an assertion list,
+#   `'all'` to `'expenses'`, and a reason string that now counts three edits
+#   for changes that broke nothing. That count is the group's own point and it
+#   is study 27's page that makes it.
+# unshown: test/surface_test.dart#surface — the barrel's contract rather than
+#   this study's argument, and study 34's page is where the contract is
+#   explained. What study 39 decided about it — one export gone, three files
+#   withheld for `package:sqlite3`'s sake — is legible in the barrel itself,
+#   which 39.5 shows. The check reading `pubspec.yaml` instead of naming
+#   `shelf` is tooling, and *a contract test protects exactly the surface it
+#   was written about* is already a standing requirement rather than something
+#   this study found.
+# unshown: test/surface_test.dart#runnable — one name out, one name in, and the
+#   count stayed three. The list is the assertion and the reason it holds names
+#   rather than a number is written in the region.
+# unshown: test/tracker_test.dart#cases — `store.all` became
+#   `store.expenses()`. Nothing asserted changed.
+# unshown: test/tracker_test.dart#verdicts — the same rename.
+# unshown: test/tracker_test.dart#clock — the same rename, plus
+#   `tracker.expenses(period)` gaining a name for its argument.
+# unshown: test/command_test.dart#day — `store.all` became `store.expenses()`
+#   inside an `expect`. This file has now gone three studies without a change
+#   of substance and this is not the fourth.
+# unshown: test/command_test.dart#refusing — the same rename.
+# unshown: test/command_test.dart#anyway — the same rename.
+# unshown: test/command_test.dart#dash — the same rename.
+# unshown: test/file_store_test.dart#roundtrip — the same rename, on the store
+#   study 28 wrote and study 39 keeps as the migration's source.
+# unshown: test/file_store_test.dart#repaired — the same rename.
+# unshown: test/file_store_test.dart#limits — the same rename.
+# unshown: test/file_store_test.dart#unreadable — the same rename.
+# unshown: test/server_test.dart#statuses — the same rename, in the setup of
+#   two groups whose assertions are study 37's and are unchanged.
+# unshown: test/server_test.dart#clock — the same rename.
+# unshown: test/server_test.dart#borrowed — one `reason` string, rewritten to
+#   name study 39's version of the near-miss it already described: a
+#   `SqliteStore` that opened its own path would have made `file_store.dart`'s
+#   doc comment false without either test above it noticing.
+# unshown: test/arguments_test.dart#flags — the default path, `expenses.txt` to
+#   `expenses.db`. 39.3 shows `bin/expenses.dart`, which is why it moved.

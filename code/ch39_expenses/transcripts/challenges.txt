@@ -1,0 +1,6 @@
+$ dart test exercises/
+Running build hooks...Running build hooks...00:00 +0: loading exercises/challenges_test.dart
+00:00 +0: exercises/challenges_test.dart: challenge 1 — all of it or none of it it answers what the body answered
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — all of it or none of it it answers what the body answered [E]
+  UnimplementedError: 1
+…

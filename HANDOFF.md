@@ -21,19 +21,20 @@ Last checked: 2026-09-11.
 
 Book I (studies 1-22) is written, audited and pushed. **Book II (23-34) is complete** —
 all twelve snapshots exist, and its promise table is empty because every promise the prose
-made has been paid. **Book III (35-40) is open: studies 35 to 38 are written**, and 39-40
-have provisional titles and no code. ADR 0005 records the order and why it costs a sixth
+made has been paid. **Book III (35-40) is open: studies 35 to 39 are written**, and 40 has
+a provisional title and no code. ADR 0005 records the order and why it costs a sixth
 study. Book IV (41-45) has no outline.
 
-The next piece of work is study 39, `ch39_expenses`. Book III's promise table has **four**
-rows and **three of them are study 39's**: `Expense.toJson` surviving the move into a
-database, a bound a store can actually keep, and study 38's cache being **deleted** rather
-than improved. Its entry in `OUTLINE.md` says it is over budget on purpose — six subjects
-against a five-section envelope — and names `Store`'s growth as the likeliest thing to move
-into study 40.
+The next piece of work is study 40, `ch40_expenses`, which closes Book III. Its promise
+table now has **one** row and it is study 40's: two callers can both pass the budget check,
+and the suspension between the decision and the write is what closes it. The lost-update
+debt ADR 0005 declares was **paid into print at 37**, in 37.3, beside the first route that
+writes, and the table is what holds study 40 to it.
 
-The lost-update debt ADR 0005 declares was **paid into print at 37**, in 37.3, beside the
-first route that writes. Study 40 is now held to it by the table.
+**Read the spike's findings in `OUTLINE.md` before writing a line of it.** A lost update
+against `FileStore` is a coin — 11/40, then 10/40, then 4/40 at two callers — and the
+deterministic version is a store that suspends in `record` rather than in `all`, 30/30
+across 90 trials. A flaky test in a book about testing is not a trade this book makes.
 
 Counts are not restated here. `OUTLINE.md` and the git log carry them, and a number
 copied into this file is a number that will be wrong within a week. That is exactly how
@@ -49,6 +50,14 @@ cd code && dart pub get && cd ../web && npm install
 
 Skipping the first makes `dart analyze` report about sixty phantom errors about
 unresolved `package:` imports. It looks like the book is broken. It is not.
+
+**Study 39 adds `package:sqlite3`, so the first build of `ch39_expenses` needs a
+network connection and not a C toolchain.** Its build hook downloads a prebuilt
+SQLite 3.53.4 from the package's releases rather than compiling one — verified by
+shadowing `clang`, `cc`, `gcc` and `xcrun` with failing stubs, which changed nothing.
+Every `dart run` and `dart test` in that package then prints `Running build hooks...`
+twice, on **stderr**, warm or cold. It is in `ch39_expenses/transcripts/challenges.txt`
+and `moved.txt` on purpose: it is what the reader's terminal shows.
 
 ## The checks
 
@@ -120,7 +129,26 @@ a constructor"* — now recorded as `19→23` so the tool can see it.
 
 ## Open, on the book
 
-- Nothing. `tool/capture_server.dart` was the one item here and it landed with study 35,
+- **Three server transcripts stop reproducing on 2026-10-01, and nothing will warn you
+  first.** `tool/capture_server.dart` seeds every store on `2026-09-11`; `GET /budgets`
+  reports over `Period.of(today())` and `POST /expenses` files under today, so any scenario
+  touching either has an answer that depends on the month it was captured in. Measured by
+  moving the seed out of the current month: `ch37_expenses/transcripts/statuses.txt` stops
+  answering `409 over budget` and answers `200` with the expense recorded — the status-code
+  demonstration inverts — `ch38_expenses/transcripts/fresh.txt` goes from `spent: 910` to
+  `spent: 0`, and `ch37_expenses/transcripts/answers.txt` loses two budget lines and echoes
+  a different day from its `POST`. `ch36`'s `answers.txt` and `ch38`'s `stale.txt` survive,
+  both by luck.
+
+  Found while writing study 39, whose own scenario is built to avoid it — `moved.txt` asks
+  `/expenses` and never `/budgets`, so the only date in it is the seed. Not repaired there,
+  because it means recapturing evidence on two published pages and checking their prose,
+  which deserves its own commit. `OUTLINE.md`'s standing requirements and ADR 0005 both
+  carry the finding. The fix is not obvious and is worth thinking about before typing: a
+  seed dated *today* makes the budget answers stable and makes every printed `day` a clock
+  reading, which then needs the same `sed` treatment as the `date:` header.
+
+- `tool/capture_server.dart` was the one item here before that and it landed with study 35,
   which is exactly what this entry said to do: it was deliberately not written while the
   server it had to start did not exist, and writing it against the real `bin/serve.dart`
   cost no guesses. It owns the scenario — entrypoint, seeded store, commands — and

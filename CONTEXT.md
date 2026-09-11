@@ -26,9 +26,19 @@ Money out — an amount, a category, a day and a note. It has identity: two coff
 the same amount on the same day are two expenses, not one counted twice.
 _Avoid_: Transaction, Entry, Purchase, Item, Spend
 
+**Transaction** is on that list and study 39's title uses the word anyway, which is
+worth one sentence rather than an exception. There it means SQLite's — `BEGIN`,
+`COMMIT`, `ROLLBACK`, a unit of work a database either applies or does not. It is
+never a thing the tracker records, and nothing in the domain is ever called one.
+
 **Store**:
 What holds expenses.
 _Avoid_: Ledger (a ledger is double-entry and this is not), Repository, Database, Log
+
+  *Database* stays on that list and `SqliteStore` does not break it: the domain word
+  for what holds expenses is still Store, and a database is one of the things a Store
+  can be. Book III has three of them and no reader has to know which is behind a
+  `Tracker`.
 
 **Budget**:
 A spending limit for one category over one period.
@@ -55,4 +65,4 @@ _Avoid_: Service, Manager, Facade, Controller, UseCase, Interactor
 - **Income**, and therefore **Balance**. The tracker records money out only.
 - **Refund**. A negative expense is unrepresentable by design; if refunds are ever
   added, they need their own term rather than a negative Money.
-- **Account**. There is one person and one file.
+- **Account**. There is one person and one store.

@@ -41,6 +41,7 @@ class _Scenario {
     this.limit = 0,
     this.environment = const {},
     this.store,
+    this.serves,
   });
 
   final String name;
@@ -67,6 +68,15 @@ class _Scenario {
   /// package while the scenario runs, and it is deleted afterwards — a stray
   /// one would be caught by `check_slices` on the next run.
   final String? store;
+
+  /// What the entrypoint is handed as `--file`, when that is not the file the
+  /// store was seeded into.
+  ///
+  /// Every scenario before study 39 serves what it seeds. Study 39's server
+  /// reads a **database** and the seed is the `.jsonl` study 28 wrote, because
+  /// the transcript's own second command is the migration between the two.
+  /// Relative to the package for [store]'s reason, and deleted for it too.
+  final String? serves;
 
   String get transcript => 'code/$package/transcripts/$name.txt';
 }
@@ -175,6 +185,28 @@ const _scenarios = [
       'curl -s $_sends http://localhost:8080/budgets',
       'dart run bin/expenses.dart --file expenses.txt budget food 20.00',
       'curl -s $_sends http://localhost:8080/budgets',
+    ],
+  ),
+  // Study 39's server is already listening at an empty database when the
+  // migration runs, which is why this is one scenario rather than a setup step
+  // and a transcript. Nothing here asks about a **budget** and nothing POSTs,
+  // on purpose: both of those go through `Tracker.today`, and a transcript
+  // whose answer depends on which month it was captured in is one that stops
+  // reproducing on the first of a month. See `OUTLINE.md`.
+  _Scenario(
+    'moved',
+    package: 'ch39_expenses',
+    entrypoint: 'bin/serve.dart',
+    seeded: 2,
+    limit: 2000,
+    store: 'expenses.txt',
+    serves: 'expenses.db',
+    environment: {'EXPENSES_KEY': _key},
+    commands: [
+      'curl -s $_sends http://localhost:8080/expenses',
+      'dart run bin/migrate.dart --from expenses.txt --to expenses.db',
+      "curl -s $_sends 'http://localhost:8080/expenses?limit=1'",
+      'dart run bin/migrate.dart --from expenses.txt --to expenses.db',
     ],
   ),
 ];
@@ -325,9 +357,10 @@ Future<String> _capture(String root, _Scenario scenario) async {
         : '$directory/${scenario.store}',
   )..writeAsStringSync(_store(scenario));
 
+  final served = scenario.serves ?? scenario.store ?? store.path;
   final server = await Process.start(
     'dart',
-    ['run', scenario.entrypoint, '--file', scenario.store ?? store.path],
+    ['run', scenario.entrypoint, '--file', served],
     workingDirectory: directory,
     environment: scenario.environment,
   );
@@ -337,9 +370,18 @@ Future<String> _capture(String root, _Scenario scenario) async {
     await _listening(server);
     for (var i = 0; i < scenario.commands.length; i++) {
       final command = scenario.commands[i];
+      // Merged, and merged by the **shell** rather than by this buffer.
+      //
+      // Appending all of stdout and then all of stderr is not what a terminal
+      // does: a terminal shows both as they are written. Study 39's commands
+      // are the first here to put anything on stderr — `dart run` announces
+      // `Running build hooks...` there, on every run, for a package with a
+      // native dependency — and the separated version printed the program's
+      // answer before the line that really came first. Line 1 is still the
+      // command the reader types, and in their terminal it shows exactly this.
       final result = await Process.run('bash', [
         '-c',
-        command,
+        '{ $command ; } 2>&1',
       ], workingDirectory: directory);
       buffer
         ..writeln('\$ $command')
@@ -361,6 +403,10 @@ Future<String> _capture(String root, _Scenario scenario) async {
     await server.exitCode;
     temporary.deleteSync(recursive: true);
     if (scenario.store != null && store.existsSync()) store.deleteSync();
+    if (scenario.serves != null) {
+      final written = File('$directory/${scenario.serves}');
+      if (written.existsSync()) written.deleteSync();
+    }
   }
   return buffer.toString();
 }

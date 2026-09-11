@@ -129,6 +129,15 @@ against this record's premises.
   defect to find rather than a glossary entry to write.
 - `Tracker` is exported from the barrel; the server is not. `Tracker` names no `shelf`
   type, and study 34's whole lesson is what a dependency's types in a public API cost.
+
+  **Applied unchanged to `package:sqlite3` at study 39, which is the test of a rule.**
+  `SqliteStore` is built from a `Database` and `moveInto` takes one, so both sit under
+  `lib/src/` and out of the barrel for word-for-word the reason `server.dart` does; `bin/`
+  reaches them by naming the file. The barrel therefore went **down** by one at 39, which is
+  the other half of what a major version means. `test/surface_test.dart` now takes the list
+  of dependencies from `pubspec.yaml` rather than naming `shelf`, because a check that has
+  to be edited before it can notice a second dependency is a check that would not have
+  noticed one.
 - **`Tracker` takes a `Day Function()` from study 38, and no call site at the command line
   moved.** ADR 0002's rule survived the change exactly as this record predicted — a function
   in a header parameter checks nothing, so the header form stays — and the prediction it did
@@ -188,6 +197,30 @@ against this record's premises.
   go wherever `shelf` sends it rather than where `bin/serve.dart` decided. Shelf's own 500 is
   asserted beside the middleware rather than assumed.
 
+  **Amended a third time while writing study 39, and this one is a defect rather than a
+  refinement.** The rule and both amendments govern what is **printed** — the server's own
+  log, and HTTP's `date:` header on the wire. Neither covers what the clock makes the
+  program **decide**. `GET /budgets` reports over `Period.of(today())` and `POST /expenses`
+  files an expense under today, so a scenario touching either has an answer that depends on
+  the month it was captured in — and `tool/capture_server.dart` seeds every store on
+  `2026-09-11`.
+
+  Measured by moving the seed out of the current month and re-running: `ch37`'s
+  `statuses.txt` stops answering `409 over budget` and answers `200` with the expense
+  recorded, so **the status-code demonstration inverts**; `ch38`'s `fresh.txt` goes from
+  `spent: 910` to `spent: 0`; `ch37`'s `answers.txt` loses two budget lines and its `POST`
+  echoes a different day. Those three stop reproducing on **2026-10-01**, with no commit
+  having touched anything, and nothing catches it earlier because `check_transcripts`
+  defers every `curl` transcript to `capture_server` and `capture_server` compares bytes.
+
+  Study 39's own scenario is built around the rule rather than into it — `moved.txt` asks
+  `/expenses`, never `/budgets`, and never `POST`s — so the only date in it is the committed
+  seed. The three are **not** repaired here: doing it means recapturing evidence on two
+  published pages, which is its own commit and its own audit, and `OUTLINE.md` carries the
+  finding as a standing requirement. What this record has to change is the rule: *the server
+  logs nothing time-varying* is about output, and the thing that actually breaks a transcript
+  is **any answer in it that is a function of when it was captured**.
+
   **The timestamp is measured here and is deliberately not a claim on the page**, because it
   cannot be turned into an assertion. `shelf_io` writes that line straight to `stdout`: a
   `ZoneSpecification`'s `print` hook never sees it — measured, zero lines captured — and
@@ -230,8 +263,20 @@ re-read against the finished study and amended here if it was wrong.
   This is now a standing requirement in its own right, because it breaks an assumption the
   rest of them share: every other measurement in this book is deterministic, so *run it and
   write down what happened* has always been safe. A race is the case where it is not.
-- That study 39 is the overloaded one. Build hooks, a schema, `SqliteStore`, moving the
+- ~~That study 39 is the overloaded one. Build hooks, a schema, `SqliteStore`, moving the
   reader's data, deleting study 38's cache and growing `Store` is six subjects against a
-  five-section envelope. The spike should settle whether `Store`'s growth belongs in 40.
+  five-section envelope. The spike should settle whether `Store`'s growth belongs in 40.~~
+  **Half right, and the half that was wrong is instructive.** It was overloaded and it fitted
+  five sections anyway, because two of the six subjects are paragraphs rather than sections:
+  the build hook is four sentences and deleting the cache is a deletion. `Store`'s growth
+  could **not** move to 40 — the promise table owes it at 39, and a table written from the
+  finished prose outranks a prediction written before any of it. The spike was the wrong
+  instrument for that question: it measures `sqlite3`, and what decided this was a row in a
+  table this book keeps about itself.
+
+  What the arithmetic did miss is what the growth cost outside its own study. Renaming one
+  member of `Store` broke **six** implementations — the outline guessed five — and edited
+  fifteen files that had nothing to say about databases, which is study 32's bill arriving
+  for a rename rather than for an addition.
 - That six studies is enough. Five was not, and the arithmetic that found six is the same
   arithmetic that would find seven.

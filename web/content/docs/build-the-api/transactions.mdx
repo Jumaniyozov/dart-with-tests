@@ -1,0 +1,366 @@
+---
+title: The transaction that does not roll back
+study: 39
+direction: A database keeps rules a type cannot and loses one a type takes for granted, and the error handler everybody writes first commits half the work and reports success.
+description: SqliteStore behind the same Store, a schema that restates the domain's rules for a different attacker, a bound the store can finally keep, and a failing statement that leaves the transaction open.
+---
+
+Study 28 put the reader's expenses in a file, one JSON object to a line. Study 38
+wrapped a cache around it and said what would end it:
+
+> Neither is a proof, and study 39 deletes the cache instead of improving it.
+
+This is that study, and the deletion is the least of it. `package:sqlite3` brings
+durability, a schema and a store that can answer a narrower question than *give me
+everything* — and one measured trap that is better than all three put together.
+
+<Drill n={1}>
+
+<Direction>Four commands against a server that never restarts. The second one moves a file into a database; the fourth refuses to do it twice.</Direction>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch39_expenses/transcripts/moved.txt</include>
+</Console>
+
+</Drill>
+
+## 39.1 A table instead of a log
+
+```bash
+dart pub add sqlite3
+```
+
+Every `dart run` and `dart test` in this package now prints
+`Running build hooks...` — twice, on `stderr`, warm or cold. The hook does **not**
+compile SQLite; it downloads a prebuilt 3.53.4 from the package's releases, so the
+prerequisite is a network connection on the first build rather than a C toolchain,
+and the SQLite behind this program is the same on every reader's machine.
+
+Here is what a table has that a log did not.
+
+<include cwd lang="dart" meta='title="lib/src/sqlite_store.dart"'>../code/ch39_expenses/lib/src/sqlite_store.dart#schema</include>
+
+**`STRICT` is the first line of the argument and it is not decoration.** Without
+it, a column type in SQLite is a suggestion.
+
+<include cwd lang="dart" meta='title="test/sqlite_store_test.dart"'>../code/ch39_expenses/test/sqlite_store_test.dart#strict</include>
+
+An ordinary `INTEGER` column takes the string `'lots'` and hands it back as a Dart
+`String`. Study 19 is an entire study about money being an integer number of pence;
+a read that can answer a `String` where the code says `int` gives that back at the
+last possible moment. [`STRICT` arrived in SQLite 3.37.0](https://sqlite.org/stricttables.html)
+and this program binds 3.53.4, so it is there to be asked for.
+
+The `CHECK`s are the second line, and they restate rules `Money`, `Category` and
+`Limit` already keep. That is the one place in this book where writing a rule twice
+is right, and the reason is that the two copies defend against different people. A
+type defends a rule against **this program**. A schema defends it against the next
+one — the `sqlite3` shell, a backup script, whatever opens this file in five years.
+
+<include cwd lang="dart" meta='title="lib/src/sqlite_store.dart"'>../code/ch39_expenses/lib/src/sqlite_store.dart#sqlitestore</include>
+
+It takes an open `Database` and never opens one — study 27's seam once more, and
+here it buys something you can point at:
+
+<include cwd lang="dart" meta='title="test/sqlite_store_test.dart"'>../code/ch39_expenses/test/sqlite_store_test.dart#harness</include>
+
+`sqlite3.openInMemory()` gives every test the real `CHECK`s, the real `LIMIT` and
+the real primary key with no file to create and nothing to clean up. It also keeps
+`file_store.dart`'s doc comment true — that file still claims to be the only one
+under `lib/` that has heard of `dart:io`, and a store that opened its own path
+would have made it a liar in a way `server_test.dart#borrowed` could not see,
+because that test reads import lines and `package:sqlite3` reaches C through
+`dart:ffi`.
+
+The primary key is where the file's hardest-won behaviour becomes a declaration.
+
+<include cwd lang="dart" meta='title="test/sqlite_store_test.dart"'>../code/ch39_expenses/test/sqlite_store_test.dart#upsert</include>
+
+`InMemoryStore` gets *one limit per category* from a `Map`. `FileStore` earns it by
+reading the whole log forwards and letting each line overwrite the one before.
+`SqliteStore` declares `category TEXT NOT NULL PRIMARY KEY` and then has to write
+`ON CONFLICT … DO UPDATE`, because the first thing anybody writes is a plain
+`INSERT` and the database refuses it the second time somebody changes a budget.
+
+That makes six implementations of `Store` in this package, and the list is
+asserted rather than counted from memory:
+
+<include cwd lang="dart" meta='title="test/store_test.dart"'>../code/ch39_expenses/test/store_test.dart#bill</include>
+
+## 39.2 A row is already a `Map`, which is the trap
+
+Study 36 put a promise on the page about `Expense.toJson`, and this is the file it
+was waiting for:
+
+> Study 39 will move that file into a database and this shape will not move with it,
+> which is the reason it lives on `Expense` as an extension rather than inside
+> `FileStore`.
+
+The sentence behind it is older than the promise — `expense.dart`'s doc comment has
+said *a store that kept expenses in a database would want none of it* since study 29,
+before anyone had opened one.
+
+Both are right, and the interesting half is *how* they are right. A `Row` from
+`package:sqlite3` implements `Map<String, Object?>`. So `expenseFromJson(row)`
+compiles.
+
+<include cwd lang="dart" meta='title="test/sqlite_store_test.dart"'>../code/ch39_expenses/test/sqlite_store_test.dart#json</include>
+
+It compiles, it matches the map pattern study 29 wrote, and it answers a real
+`Expense` with the right money, the right category, the right day and the right
+note. One field is wrong: `acknowledged` is always `false`, because SQLite has no
+boolean, the column holds `1`, and `1 == true` is `false`.
+
+Study 32 added `acknowledged` so the program could tell an overspend somebody was
+warned about from one nobody was. A migration through `expenseFromJson` would move
+every expense with every amount correct and quietly turn the first kind into the
+second — no exception, no warning, and no test failing unless one happened to use an
+acknowledged expense.
+
+<Practice source="Dart lints — unrelated_type_equality_checks" href="https://dart.dev/tools/linter-rules/unrelated_type_equality_checks">
+**"Equality operator `==` invocation with references of unrelated types."** This
+lint exists for exactly the mistake above, it is on in this book, and it does not
+fire.
+
+It cannot. Write `1 == true` with two literals and the analyzer marks it, which is
+worth doing once to see. The line in `expenseFromJson` is
+`json['acknowledged'] == true`, where the left side came out of a
+`Map<String, Object?>` — and `Object?` is a supertype of `bool`, so as far as the
+analyzer can see the two types are perfectly related and the comparison is one that
+might be true.
+
+The transferable part is not about SQLite. **A lint is a claim about types the
+analyzer can see**, so it stops applying exactly where a value passes through
+`dynamic` or `Object?` — out of `jsonDecode`, out of a database driver, off a wire —
+which is where values are most likely to be wrong. Study 29 answered that with a map
+pattern, the cast that checks. This is the half a pattern does not reach: it checks
+the *shape*, and nothing checks that `1` was meant to be `true`.
+</Practice>
+
+So `SqliteStore` reads columns. `toJson` survives the move into a database intact
+and untouched, and it survives by not being used here — it is still what the HTTP
+edge writes on the wire and still what `FileStore` writes on a line.
+
+<include cwd lang="dart" meta='title="test/sqlite_store_test.dart"'>../code/ch39_expenses/test/sqlite_store_test.dart#roundtrip</include>
+
+The last of those three is a small thing worth naming. `Store` has promised a
+`Future` from every member since study 28, because a file cannot say *it is kept*
+by the time the call returns. `SqliteStore` can: `package:sqlite3` is a C library
+reached over `dart:ffi`, which is a function call and not an event loop, so the
+body runs to completion and the future it answers is already complete. The weaker
+promise cost the store that could not keep the stronger one, and the two that could
+keep it anyway.
+
+## 39.3 Moving in, once
+
+The reader has a file. It moves, once, and the program that moves it is the only
+thing in this book that opens both.
+
+<include cwd lang="dart" meta='title="lib/src/migration.dart"'>../code/ch39_expenses/lib/src/migration.dart#move</include>
+
+**It goes through `Store`, and that is why there is so little of it.** `FileStore`
+already knows that a log holds two shapes on the same lines, and that a category's
+latest limit is the one that counts. Reading the file directly would mean writing
+both of those again against a different destination; reading it through the
+interface means neither is written at all.
+
+<include cwd lang="dart" meta='title="test/transaction_test.dart"'>../code/ch39_expenses/test/transaction_test.dart#move</include>
+
+The second of those is the one that pays for the decision. A log that set the food
+budget twice holds two `limit` lines, and `limits` has one row per category — so a
+migration reading lines would meet `UNIQUE constraint failed` on any file whose
+owner had ever changed their mind. `FileStore.limits` answers one limit, so the
+question never arises.
+
+Everything is read **before** `BEGIN`. The reads are real disk I/O and a
+transaction is the one thing here that must not be held open longer than it has to
+be; what is left inside it is `SqliteStore`'s writes, which are finished before
+they return.
+
+<include cwd lang="dart" meta='title="bin/migrate.dart"'>../code/ch39_expenses/bin/migrate.dart#migrate</include>
+
+The refusal is `expenses(count: 1)`, and it is the shortest possible advertisement
+for 39.5: *is there anything in here?* used to mean reading everything in here and
+looking at the length.
+
+<include cwd lang="dart" meta='title="bin/expenses.dart"'>../code/ch39_expenses/bin/expenses.dart#main</include>
+
+`--file` names a database from here on and its default moved to `expenses.db`.
+`run` takes a `Store` and which one it is has never been its business, so
+`lib/src/command.dart` did not change for any of this.
+
+## 39.4 The transaction that does not roll back
+
+Now the part that is worth the study's name. `BEGIN`, `COMMIT` and `ROLLBACK` are
+`db.execute` like anything else. There is no transaction object, no callback, no
+`db.transaction(() { … })` — `package:sqlite3` gives you the statements and that is
+all.
+
+Which raises the question nobody thinks to ask: what happens to the transaction
+when a statement inside it fails?
+
+<include cwd lang="dart" meta='title="test/transaction_test.dart"'>../code/ch39_expenses/test/transaction_test.dart#harness</include>
+
+<include cwd lang="dart" meta='title="test/transaction_test.dart"'>../code/ch39_expenses/test/transaction_test.dart#open</include>
+
+`Database.autocommit` is `false` after the throw. SQLite undid the *statement* and
+did not undo the **transaction around it**, and it does that for a constraint, for
+a type, for a table that is not there and for a typo in the SQL. It does not roll
+back for you, and nothing in the exception says so.
+
+Here is the error handler everybody writes first.
+
+<include cwd lang="dart" meta='title="lib/src/rolling_back.dart"'>../code/ch39_expenses/lib/src/rolling_back.dart#caught</include>
+
+Read it as somebody reviewing it. The rows go in a transaction, so a failure cannot
+leave half of them behind. The exception is caught rather than allowed to take the
+program down. The transaction is committed on the way out. Every one of those
+sentences is a thing you would say approvingly in a review.
+
+<include cwd lang="dart" meta='title="lib/src/rolling_back.dart"'>../code/ch39_expenses/lib/src/rolling_back.dart#rolled</include>
+
+Two statements apart, and here is the difference.
+
+<include cwd lang="dart" meta='title="test/transaction_test.dart"'>../code/ch39_expenses/test/transaction_test.dart#caught</include>
+
+One row committed, the caller told nothing, and the word for what happened is
+*handled*. This is study 26's argument with a database underneath it: a `catch`
+that does not restore an invariant is not error handling, it is error hiding, and
+the two are indistinguishable from the outside until somebody counts the rows.
+
+`moveInto` has no `catch` at all. It has a `finally`, which is study 20's clause
+doing the one job it is uniquely for — running on both ways out — and the
+`if (!db.autocommit)` in it is not defensive. A bare `ROLLBACK` after a successful
+`COMMIT` throws `cannot rollback - no transaction is active`, which on the failure
+path would arrive at the caller *in place of* whatever really went wrong.
+
+<Gloss title="Why nothing this program writes can fail that CHECK">
+The rows handed to `caughtAndCommitted` come from a test, and the one that fails
+has `-1` in the `pence` column. This program cannot build it. Every amount it
+writes came through `Money`, which has no negative value to hand over, and the same
+is true of every other `CHECK` in the schema.
+
+So the constraint that fires on this page can only be fired by hand, and saying so
+is more honest than arranging a failure that looks native. It is also the point of
+39.1's second argument: the schema is not there to catch this program, it is there
+to catch the next one. The demonstration is what happens when it does.
+
+`lib/src/rolling_back.dart` is therefore a **demonstration file** and not part of
+the package, in the sense study 26 gave `lib/src/asserting.dart`: it sits under
+`lib/src/`, it is out of the barrel, and reaching it means naming the file.
+</Gloss>
+
+## 39.5 A bound a store can keep, and a cache nobody needs
+
+Study 37 shipped `GET /expenses?limit=N` and said on its own page that the number
+was cosmetic. `Tracker.expenses` found every expense there was and the route threw
+most of them away, so the document got smaller and the work did not — measured with
+a counting double, a thousandth of the reply for exactly the same reads.
+
+A bound is not something a store can keep unless it is asked for.
+
+<include cwd lang="dart" meta='title="lib/src/store.dart"'>../code/ch39_expenses/lib/src/store.dart#store</include>
+
+`all` is gone and its replacement takes the question. Both narrowings arrive
+together on purpose: `?month=2026-09&limit=2` means *the first two of September*,
+and there is no way to bound that without also knowing the month. Removing a member
+from an interface is a breaking change at every implementation and a major version,
+which is what `5.0.0` is for.
+
+<include cwd lang="dart" meta='title="lib/src/store.dart"'>../code/ch39_expenses/lib/src/store.dart#memory</include>
+
+`InMemoryStore` applies both in Dart, because a list has nowhere else to apply
+them. `FileStore` does too and stops decoding once it has enough — which saves
+nothing of the reading, because the file was pulled into memory before the loop
+began. Three implementations, three different amounts of *less*, and one of them
+does it where it counts:
+
+<include cwd lang="dart" meta='title="test/sqlite_store_test.dart"'>../code/ch39_expenses/test/sqlite_store_test.dart#bound</include>
+
+The last of those is the small surprise. `LIMIT -1` is how SQLite says *no bound*;
+`LIMIT NULL` is a `datatype mismatch`. Dart's `null` means *absent* and SQL's means
+*unknown*, and the store has to translate between them — which is the sort of thing
+that is obvious once it has thrown at you and not before.
+
+<include cwd lang="dart" meta='title="lib/src/server.dart"'>../code/ch39_expenses/lib/src/server.dart#bound</include>
+
+The route did not get cleverer. It stopped answering a question it had not asked.
+
+<include cwd lang="dart" meta='title="test/server_test.dart"'>../code/ch39_expenses/test/server_test.dart#counting</include>
+
+<include cwd lang="dart" meta='title="test/server_test.dart"'>../code/ch39_expenses/test/server_test.dart#bound</include>
+
+Study 37's double with one member renamed, and the numbers are what changed.
+Asking for one expense now costs the store one; asking for a thousand costs it a
+thousand. Study 37 measured `[1, 1000]` in both rows, which was the point it was
+making.
+
+And then the deletion.
+
+<include cwd lang="dart" meta='title="bin/serve.dart"'>../code/ch39_expenses/bin/serve.dart#serve</include>
+
+`HoldingStore` is gone, `bin/holding.dart` is gone, and nothing took their place.
+The cache existed because reading a file meant reading all of it; a database reads
+what you ask for, so there is nothing left worth holding and no invalidation
+problem to be wrong about. **A cache you can delete is the best ending a caching
+study can have** — better than a cleverer cache, because the thing that made it
+necessary went away.
+
+The other half of study 38 stays exactly as it was. `() => Day.on(DateTime.now())`
+is still a function, because a server that runs for days still has to be asked what
+day it is. Two bets were made and only one of them had a better store underneath
+it.
+
+<include cwd lang="dart" meta='title="lib/expenses.dart"'>../code/ch39_expenses/lib/expenses.dart#barrel</include>
+
+The barrel went **down** by one, which is the other half of what a major version
+means — and `SqliteStore` did not take the vacant line. It is built from a
+`package:sqlite3` `Database`, and study 34's rule is that a dependency's types in
+your public API make that dependency's promises part of yours: the sentence that
+keeps `src/server.dart` and its `shelf` `Handler` out, applied again without
+changing a word. `test/surface_test.dart` now reads the dependency list from
+`pubspec.yaml` instead of naming `shelf`, because a check you have to edit before it
+can notice a second one would not have noticed one.
+
+## Wrapping up
+
+A database keeps rules a type cannot and loses one a type takes for granted, and
+both halves of that are the study.
+
+It keeps them against a different attacker. `STRICT` and a `CHECK` restate what
+`Money` and `Category` already refuse, and the second copy is right because the
+first one only defends against this program.
+
+It loses booleans. A `Row` is a `Map<String, Object?>`, so `expenseFromJson`
+compiles, matches, and answers an `Expense` whose acknowledgement has quietly
+become `false` — with the lint that exists for exactly that mistake unable to see
+it, because the value arrived as an `Object?`. `Expense.toJson` survives the move
+into a database by not being used there, which is what study 36 said it would.
+
+`BEGIN`, `COMMIT` and `ROLLBACK` are statements and nothing calls them for you. A
+failing statement is undone; the transaction around it is **not**, and
+`Database.autocommit` is the only thing that will tell you. So the error handler
+that catches the exception and commits anyway commits half the work and reports
+success, and `moveInto` uses a `finally` with no `catch` — because there is nothing
+to do about a database that will not take a write except put it back the way it was
+and let the caller find out.
+
+`Store.all` became `Store.expenses({period, count})` and six implementations paid
+for it. A bound the store is told about is a `LIMIT`; a bound applied afterwards is
+a smaller document for the same work. Study 38's cache is deleted and nothing
+replaced it.
+
+Also met: `sqlite3.open`, `sqlite3.openInMemory`, `Database.execute`,
+`Database.select`, `Database.autocommit`, `SqliteException`, `Row`, `STRICT`,
+`CHECK`, `ON CONFLICT … DO UPDATE`, `LIMIT`, a `finally` with no `catch`, and a
+lint that cannot see the bug it is for.
+
+## Challenges
+
+Three challenges, thirteen failing tests. Make them pass one at a time. Do not edit
+the tests. The first one is `moveInto`'s `finally` written once for every caller,
+and the third one has a trap in it that the obvious statement walks straight into.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch39_expenses/transcripts/challenges.txt</include>
+</Console>
