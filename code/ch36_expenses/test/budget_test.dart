@@ -206,7 +206,7 @@ void main() {
   // #region refusing
   group('what stands in the way of an expense being recorded', () {
     test('a breach nobody acknowledged does', () {
-      expect(refuses(Breach(Money.fromPence(500)), spent(2500)), isTrue);
+      expect(Breach(Money.fromPence(500)).refuses(spent(2500)), isTrue);
     });
 
     test('and the same breach does not, once the expense says so', () {
@@ -218,15 +218,23 @@ void main() {
         acknowledged: true,
       );
 
-      expect(refuses(Breach(Money.fromPence(500)), anyway), isFalse);
+      expect(Breach(Money.fromPence(500)).refuses(anyway), isFalse);
     });
 
     test('a verdict that fits never does', () {
-      expect(refuses(Within(Money.fromPence(500)), spent(100)), isFalse);
+      expect(Within(Money.fromPence(500)).refuses(spent(100)), isFalse);
     });
 
-    test('and neither does no limit at all', () {
-      expect(refuses(null, spent(100)), isFalse);
+    test('and neither does no limit at all, called on the null itself', () {
+      const Verdict? none = null;
+
+      expect(
+        none.refuses(spent(100)),
+        isFalse,
+        reason:
+            'an extension on a nullable type is dispatched statically, so '
+            'no caller has to write down what null means',
+      );
     });
   });
   // #endregion refusing

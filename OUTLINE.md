@@ -1499,7 +1499,11 @@ study 34 was about, which is the general lesson and was not predicted anywhere.
 now.** The first draft had `Tracker.record` and `command.dart` each writing
 `verdict is Breach && !acknowledged` — the layer deciding whether to write, the edge deciding
 what to say. Green both ways, invisible to every checker, and study 37 would have made three
-copies. Extracted as `refuses(Verdict?, Expense)` beside `limitOn`. The general form is now a
+copies. Extracted as `refuses`, an extension on `Verdict?` — nullable on purpose, because a
+plain method would have made every caller write `?? false` and that is the same duplication
+one layer down. Measured on Dart 3.13.2: `none.refuses(expense)` on a `Verdict?`
+that is `null` compiles and answers `false`, because extension methods are dispatched
+statically rather than looked up on the receiver. The general form is now a
 standing requirement: **extracting a layer does not remove a duplicated rule, it creates the
 second copy**, so the moment a second caller arrives is the moment to sweep.
 
@@ -2033,8 +2037,10 @@ existing transcripts and verified to reproduce.
   report: two copies of `verdict is Breach && !expense.acknowledged`, one in the layer and
   one at the edge, and study 37 would have written a third to choose a status code. Neither
   copy was wrong and the suite was green both ways, which is why no checker saw it. The fix
-  is a `refuses(Verdict?, Expense)` beside `limitOn`, where the other rules about limits
-  already live.
+  is `refuses`, an **extension on `Verdict?`** — nullable on purpose: extension methods are
+  dispatched statically, so a `null` verdict reaches it and no caller writes `?? false`. A
+  plain method on `Verdict` would have pushed that decision back out to every call site,
+  which is the same duplication one layer down.
 
   **The general form is worth more than either instance: extracting a layer does not remove
   a duplicated rule, it creates the second copy.** The rule was written once in study 35

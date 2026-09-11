@@ -91,8 +91,22 @@ same: **when the same condition is written in two places, neither of them is the
 <include cwd lang="dart" meta='title="lib/src/budget.dart"'>../code/ch36_expenses/lib/src/budget.dart#refuses</include>
 
 It takes the `Expense` rather than a `bool`, because study 32 put the acknowledgement on the
-expense and a parameter named `acknowledged` sitting beside one that already has it is two
+expense, and a parameter named `acknowledged` sitting beside one that already has it is two
 places again.
+
+**Read the `?` on `on Verdict?`.** An extension may extend a nullable type, and extension
+methods are dispatched **statically** rather than looked up on the receiver — so
+`verdict.refuses(expense)` compiles when `verdict` is `null`, with no `?.` and no `?? false`.
+The last test above is that claim: a `Verdict?` that is `null`, called directly, answering
+`false`.
+
+That is not a trick, it is the whole reason this is not a method on `Verdict`. A method could
+only be called on a non-null one, so every caller would have had to write down what `null`
+means — the same duplication one layer down, in the same study that just removed it.
+
+An extension rather than a member for study 27's reason as well: whether a verdict refuses an
+expense is something this program does *with* a verdict. What a budget thinks of an expense is
+`Budget.on`; what an edge does with that opinion is not part of what a verdict is.
 
 <include cwd lang="dart" meta='title="test/budget_test.dart"'>../code/ch36_expenses/test/budget_test.dart#refusing</include>
 
@@ -247,14 +261,14 @@ visible.
 
 A rule that two callers ask is a rule with an owner. `verdict is Breach && !acknowledged` was
 written once in study 35 because there was one caller; the second edge turned it into
-`refuses`, beside `limitOn` where the other rules about limits live. A second caller does not
-create that problem — it finds it.
+`Verdict.refuses`, an extension on the **nullable** type so that no caller has to say what
+`null` means either. A second caller does not create that problem — it finds it.
 
 The command line's tests were not edited and are green. `bin/by_hand.dart` was deleted, which
 is a major version, and `surface_test` now holds `bin/` to a list the way it already held the
 barrel.
 
-Also met: `Tracker`, `refuses`, `Verdict` at an edge, `jsonEncode` over a list,
+Also met: `Tracker`, `Verdict.refuses`, an extension on a nullable type, `jsonEncode` over a list,
 `application/json`, and a test that reads its own package's source to check what moved.
 
 ## Challenges

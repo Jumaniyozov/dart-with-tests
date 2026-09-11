@@ -247,7 +247,7 @@ Future<Outcome> _record(
   // steps in the same order. What moved is where they live, and that is the
   // whole of 36.2.
   final verdict = await tracker.record(expense);
-  if (refuses(verdict, expense)) {
+  if (verdict.refuses(expense)) {
     // A second read, on the refusal path only, and it is the first thing the
     // second edge made awkward. `Breach` says how far over, in money, because
     // money is a word the domain has. *Budgeted at £20.00* is a sentence, and
@@ -257,8 +257,8 @@ Future<Outcome> _record(
     // The cast is what moving the rule cost. `if (verdict case Breach(:final
     // over) when !acknowledged)` narrowed the type for free and stated the
     // condition twice; `refuses` states it once and narrows nothing. One rule
-    // in one place is worth a cast that cannot fail, and saying which trade
-    // was made is better than pretending there was none.
+    // in one place is worth a cast that cannot fail, and saying which trade was
+    // made is better than pretending there was none.
     final over = (verdict as Breach).over;
     return (
       code: refused,

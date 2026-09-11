@@ -43,7 +43,7 @@ class Tracker(final Store store, final Day today) {
     final verdict = limit == null
         ? null
         : Budget.of(limit, Period.of(expense.day), await store.all).on(expense);
-    if (refuses(verdict, expense)) return verdict;
+    if (verdict.refuses(expense)) return verdict;
     await store.record(expense);
     return verdict;
   }

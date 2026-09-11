@@ -191,8 +191,8 @@ List<Budget> budgetsFor(
 /// Whether a verdict stands in the way of an expense actually being recorded.
 ///
 /// A [Breach] does, unless the expense itself says somebody was told and said
-/// record it anyway. Everything else — a [Within], or the `null` that means
-/// nobody set a limit — does not.
+/// record it anyway. A [Within] does not, and neither does the `null` that
+/// means nobody set a limit on that category.
 ///
 /// **Written down because study 36 asked it twice.** `Tracker.record` asks it
 /// to decide whether to write; the command line asks it to decide what to tell
@@ -201,9 +201,23 @@ List<Budget> budgetsFor(
 /// the type between them did not have. The answer is the same both times: when
 /// the same condition is written in two places, neither of them is the owner.
 ///
+/// **`on Verdict?`, and the `?` is the point.** An extension may extend a
+/// nullable type, and a method on one is dispatched statically — so this is
+/// callable on a `Verdict` that is `null`, with no `?.` and no `?? false` at
+/// the call site. A plain method on [Verdict] could not be, and every caller
+/// would have had to write down what `null` means. That is the same duplication
+/// one layer down, which is the thing this extension exists to remove.
+///
+/// An extension rather than a member for study 27's reason, too: whether a
+/// verdict refuses an expense is something this program does *with* a verdict.
+/// A budget's opinion about an expense is [Budget.on]; what an edge does with
+/// that opinion is not part of what a verdict is.
+///
 /// It takes the [Expense] rather than a `bool` because that is where study 32
-/// put the acknowledgement, and a parameter called `acknowledged` next to an
+/// put the acknowledgement, and a parameter named `acknowledged` next to an
 /// expense that already has one is two places again.
-bool refuses(Verdict? verdict, Expense expense) =>
-    verdict is Breach && !expense.acknowledged;
+extension Refusal on Verdict? {
+  /// Whether this verdict stops [expense] being recorded.
+  bool refuses(Expense expense) => this is Breach && !expense.acknowledged;
+}
 // #endregion refuses
