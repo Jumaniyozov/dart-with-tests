@@ -1,0 +1,19 @@
+$ curl -s -w '%{http_code}\n' http://localhost:8080/expenses
+{"problem":"who is asking?"}
+401
+
+$ curl -s -w '%{http_code}\n' -H 'authorization: Bearer a-shared-key' http://localhost:8080/nowhere
+{"problem":"no such path"}
+404
+
+$ curl -s -w '%{http_code}\n' -H 'authorization: Bearer a-shared-key' 'http://localhost:8080/expenses?month=2026-13'
+{"problem":"\"2026-13\" is not a month; write it as 2026-09"}
+400
+
+$ curl -s -w '%{http_code}\n' -H 'authorization: Bearer a-shared-key' -H 'content-type: application/json' -d '{"pence":2000,"category":"food","note":"feast"}' http://localhost:8080/expenses
+{"problem":"over budget","category":"food","limit":2000,"over":910}
+409
+
+$ curl -s -w '%{http_code}\n' -H 'authorization: Bearer a-shared-key' http://localhost:8080/expenses
+[{"day":"2026-09-11","pence":450,"category":"food","note":"tea"},{"day":"2026-09-11","pence":460,"category":"food","note":"tea"}]
+200

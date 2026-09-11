@@ -1,0 +1,5 @@
+$ dart run bin/serve.dart
+set EXPENSES_KEY to the key callers must send
+
+$ echo $?
+2

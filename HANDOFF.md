@@ -21,15 +21,18 @@ Last checked: 2026-09-11.
 
 Book I (studies 1-22) is written, audited and pushed. **Book II (23-34) is complete** —
 all twelve snapshots exist, and its promise table is empty because every promise the prose
-made has been paid. **Book III (35-40) is open: studies 35 and 36 are written**, and
-37-40 have provisional titles and no code. ADR 0005 records the order and why it costs a
+made has been paid. **Book III (35-40) is open: studies 35, 36 and 37 are written**, and
+38-40 have provisional titles and no code. ADR 0005 records the order and why it costs a
 sixth study. Book IV (41-45) has no outline.
 
-The next piece of work is study 37, `ch37_expenses`. Book III's promise table has **three**
-rows, all made by study 36, and two of them are study 37's: routing with study 26's taxonomy
-as status codes, and the refusal answering the limit as **data** so the edge stops going back
-for it. ADR 0005 also puts the declared lost-update debt in the first study with a **write**
-route, which study 37 is — a sentence on the page, never a silent handover.
+The next piece of work is study 38, `ch38_expenses`. Book III's promise table has **four**
+rows: two made by study 36 and two by study 37. Study 38's is the one study 36 shipped a bug
+for on purpose — `bin/serve.dart` reads `Day.on(DateTime.now())` once in a program that does
+not exit — and `files.mdx:119` is the older promise it pays, that a server reads once and
+holds on and needs a reason to believe what it holds is still true.
+
+The lost-update debt ADR 0005 declares was **paid into print at 37**, in 37.3, beside the
+first route that writes. Study 40 is now held to it by the table.
 
 Counts are not restated here. `OUTLINE.md` and the git log carry them, and a number
 copied into this file is a number that will be wrong within a week. That is exactly how

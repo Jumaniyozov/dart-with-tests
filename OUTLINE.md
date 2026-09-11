@@ -1516,24 +1516,69 @@ sentence belongs in the first study with a write route; study 36's server still 
 at every path. Study 37 is where routing, status codes and a `POST` arrive together, and where
 that sentence is owed.
 
-### 37 — The caller is a stranger · `the-caller-is-a-stranger` · `ch37_expenses`
+### 37 — The caller is a stranger · `the-caller-is-a-stranger` · `ch37_expenses` — **WRITTEN**
+
+Shipped: 224 green, 3 challenges at 12 failing, 5 transcripts.
 
 `shelf_router`, and the HTTP surface. The CLI's caller was the person at the keyboard;
 the server's caller sends anything.
 
 Study 26's taxonomy becomes status codes, which is the best forward payment in the book: a
 *returned* refusal is the client's fault and is a 4xx, and a *thrown* `Error` is the
-program's fault and is a 500 the client must never read the text of. Middleware is where
-that mapping lives, which is also how `Pipeline` gets taught rather than merely used.
+program's fault and is a 500. Middleware is where that mapping lives, which is also how
+`Pipeline` gets taught rather than merely used.
 
 The shared key. It authenticates a **caller, not a user** — `CONTEXT.md` says there is no
 Account, one person and one file — and the page says so in those words rather than
-letting "authentication" cover both readings.
+letting "authentication" cover both readings. `CONTEXT.md` gains **nothing**; Book III's
+one permitted word was spent at 36, and *route*, *status* and *key* are all edge words.
 
 **A bound on `list` that is a lie.** Slicing after `all` returns means `FileStore` read the
 whole file and threw most of it away, and a counting double asserts the store did identical
 work for `limit=1` and `limit=1000`. Principle 3: the reader meets the bad choice and sees
 it fail. Study 39 is where a bound can be kept.
+
+**The 500 middleware exists for a different reason than this file predicted, and only a run
+found that out.** The entry above said a thrown `Error` is *a 500 the client must never read
+the text of*, which reads as though something has to stop it reaching them. Measured: throw
+out of a handler with nothing wrapping it and `shelf_io` answers `500` with the body
+`Internal Server Error` and puts the message in its own log. **There was no leak.** What is
+actually wrong with the default is smaller and real: the body is plain text, so it would be
+the only answer on this server that is not a JSON document with a `problem` in it, and the
+report goes wherever `shelf` sends it rather than where `bin/serve.dart` decided. Both of
+those are on the page and shelf's own 500 is asserted beside the middleware.
+
+`shelf`'s log line also carries a **timestamp**, which ADR 0005 forbids this book's server
+outright — and that one is recorded in the ADR and kept **off** the page, because it cannot
+be asserted: `shelf_io` writes straight to `stdout`, a zone's `print` hook captures nothing
+(measured), and `IOOverrides` wants a `Stdout` with no public constructor. The rule that a
+claim in prose is an assertion cuts both ways, and this is the direction it cuts.
+
+**The refusal-as-data promise was paid by moving a field, not by writing a mapper.**
+`Breach` now carries the `Limit` it broke as well as `over`. `Budget.on` had the limit in
+scope when it built the verdict, so it cost nothing, and `command.dart`'s second read on the
+refusal path — the friction study 36 named — is gone with **not one character of the message
+changed**, which `check_slices` proves by holding `test/command_test.dart` byte-identical.
+
+**And it cost a major version that no contract test could see.** A primary constructor's
+field list *is* its parameter list, so a new field is a new required argument everywhere one
+is built — a breaking change to a type the barrel exports. `test/surface_test.dart` is
+byte-identical to study 36's: the barrel offers the same twelve libraries, `bin/` the same
+two programs. Study 34 held the barrel to a list, 36 held `bin/` to one, and the third thing
+to break was the **shape of a type**. Three studies, three surfaces, one lesson.
+
+**`Uri.decodeComponent` cannot throw here, and the reason is two layers away.** `Router`
+hands over the path segment exactly as it arrived — `/budgets/food%20and%20drink` reaches
+the handler as that text and not as a category with a space in it — so decoding is this
+program's job.
+That method throws an `ArgumentError` for a malformed escape, which would be a 500 for the
+caller's mistake; it cannot happen, because `Uri.parse` has already rewritten a stray `%` as
+`%25`. Asserted rather than reasoned about, which is what *it cannot throw* always needs.
+
+**`Router`'s own 404 is plain text.** Without `notFoundHandler` a missing path answers
+`Route not found`, the one answer that would not have been a document. One named argument.
+The verb is part of the key too: `POST /budgets` is a 404 and not a `405`, measured because
+a framework is entitled to decide that either way.
 
 ### 38 — The server holds on · `holding-on` · `ch38_expenses`
 
@@ -1665,15 +1710,18 @@ checked by `check_promises`, and Book II's had three rows that were fiction.
 
 | Owed by | Made in | The reader is promised |
 | --- | --- | --- |
-| 37 | 36 | Routing, what an HTTP status *means* (study 26's taxonomy over a wire), and the refusal answering the limit as **data** so the edge stops going back for it |
 | 38 | 36 | `bin/serve.dart` reads `Day.on(DateTime.now())` once in a program that does not exit, and a value read once is a bet that nothing else can change it |
 | 39 | 36 | `Expense.toJson` survives the move into a database, which is why it is an extension on `Expense` rather than something `FileStore` owns |
+| 39 | 37 | A bound a store can actually keep, because `?limit=N` slices after the read and a counting double measures that the work does not move |
+| 40 | 37 | Two callers can both pass the budget check, so the program can record a breach nothing refused — and the suspension between the decision and the write is what closes it |
 
 `check_promises` distinguishes an empty table from a missing one and fails on the second.
 
 Paid: 36←35 (the server could say only `recorded: N`, because every use case was private to
 `command.dart` and `run` answered an `Outcome`; study 36 extracted `Tracker` and the server
-answers the expenses).
+answers the expenses). 37←36 (routing, study 26's taxonomy as status codes, and the refusal
+answering the limit as data — paid by putting the `Limit` on the `Breach`, which removed the
+edge's second read and cost a major version).
 
 **But nothing checks this table, and that must be fixed before study 35 ships.**
 Measured while writing this section: `tool/check_promises.dart` hardcodes the heading
@@ -2164,6 +2212,48 @@ existing transcripts and verified to reproduce.
   different guideline. Check an ADR's consequences against the artifact, not against its own
   premises: a consequence written before the work is a prediction, and this book's method is
   to prefer the measurement.
+- **A hand-built fixture is a claim that the program would have built it that way.**
+  `tool/capture_server.dart` seeds a store by writing JSON lines, because `expenses add`
+  files an expense under *today*. It joined them with `\n` and therefore wrote a file with
+  no trailing newline — which no program of this book's ever produces, because
+  `FileStore.record` appends `'$line\n'` and `setLimit` does the same. Study 37 is the first
+  scenario with a **write** route, and the appended expense was welded onto the back of the
+  last seeded line; that line then decoded as nothing, and **two expenses vanished from an
+  answer that was supposed to gain one**.
+
+  What makes this worth a requirement is how nearly it got through. Nothing threw, nothing
+  was red, and the whole symptom was one number inside a captured transcript — `spent: 450`
+  where 1230 was right — which is a number nobody had an expectation about until two
+  transcripts from the same run disagreed with each other. Seed by imitating what the
+  program writes, byte for byte, and prefer a fixture that two independent commands can
+  contradict.
+
+  `FileStore` not checking what the file ends with is a real fragility and is **not** a
+  defect this book has fixed: every file the program itself writes ends in a newline, so it
+  is only reachable by hand. Recorded here rather than patched into a snapshot.
+- **Before writing a wrapper to prevent something, measure whether it happens without one.**
+  This file told study 37 that a thrown `Error` is *a 500 the client must never read the text
+  of*, which reads as an instruction to stop it. Measured: throw out of a handler with
+  nothing wrapping it and `shelf_io` answers `500` with the body `Internal Server Error` and
+  puts the message in its own log. **There was no leak.** The middleware still earns its
+  place — the default body is plain text where every other answer is a JSON document, and the
+  report goes wherever the framework sends it — but those are different reasons, and a first
+  draft of both the code's doc comment and the page stated the predicted one. A wrapper
+  written from an imagined failure documents the imagined failure. Assert the framework's own
+  behaviour first; study 37 does, in the same group.
+
+  **And the reason that could not be asserted was cut from the page rather than kept.**
+  `shelf`'s log line carries a timestamp, which is the sharpest objection of the three and is
+  not capturable in-process — `stdout` is written directly, a zone's `print` hook sees
+  nothing, and `IOOverrides` wants a `Stdout` that cannot be constructed. It lives in ADR
+  0005 as a measurement. A record may hold a number no test can reach; a page may not.
+- **The count sweep's noun list is too short, and it was missed by exactly one word.** The
+  requirement above sweeps `(one|two|…) (lines?|exports?|studies|types?|members?)`. Study 37
+  wrote *"arrives here as the fifteen characters `food%20and%20drink`"*, which is eighteen,
+  in the same session that reads this file. Add `characters?`, `files?`, `tests?`,
+  `packages?`, `headers?`, `routes?` and `keys?` to the sweep — and prefer the fix that was
+  taken here, which was to delete the number: *the literal text* is true for ever and the
+  count was never the point.
 - Deliberately-broken code that fails to **compile** cannot live in `lib/`: it
   would put the workspace analyze above zero and contradict study 1's Practice.
   Capture its transcript from a temporary state and inline the code in the MDX

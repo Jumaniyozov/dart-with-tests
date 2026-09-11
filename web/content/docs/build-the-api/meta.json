@@ -2,6 +2,7 @@
   "title": "Book III: Build the API",
   "pages": [
     "a-server-that-answers",
-    "a-second-edge"
+    "a-second-edge",
+    "the-caller-is-a-stranger"
   ]
 }

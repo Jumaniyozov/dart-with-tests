@@ -1,0 +1,45 @@
+# Study 37 — what changed since study 36.
+#
+# Changed — the HTTP surface, and the one domain type that had to move to pay
+# for it. `Breach` gained the `Limit` it broke, which is a breaking change to a
+# type the barrel exports, and is why this package is 3.0.0 while
+# `test/surface_test.dart` is byte-identical to study 36's.
+lib/src/budget.dart
+lib/src/command.dart
+lib/src/server.dart
+bin/serve.dart
+test/budget_test.dart
+test/server_test.dart
+test/tracker_test.dart
+pubspec.yaml
+CHANGELOG.md
+README.md
+#
+# unshown: lib/src/budget.dart#budget — `Budget.on`'s last line hands the
+#   verdict the `limit` field the budget was built from. One argument, in a
+#   region that is otherwise study 32's; 37.3 shows `#verdict`, which is where
+#   the change is legible.
+# unshown: test/budget_test.dart#verdict — one assertion added, that the breach
+#   names the limit it broke. 37.3 shows the field itself and the edge that
+#   stopped going back for it.
+# unshown: test/budget_test.dart#refusing — `Breach` gained an argument and the
+#   four assertions did not change. Study 36's page shows this group making its
+#   point.
+# unshown: test/server_test.dart#routes — five assertions that each row of the
+#   table answers and that the two misses are 404s. `answers.txt` is the same
+#   claim over a socket, which is where a path is a fact.
+# unshown: test/server_test.dart#statuses — nine assertions of the table 37.2
+#   prints. `statuses.txt` shows five of them on the wire with the codes
+#   attached, and a wall of `expect(response.statusCode, …)` is not something
+#   to read.
+# unshown: test/server_test.dart#stranger — three assertions about what the
+#   router hands over undecoded: a space, a blank, and a malformed escape. 37.1
+#   states each in a sentence, and the sentences are what is worth reading.
+# unshown: test/server_test.dart#json — two assertions behind one sentence
+#   about why every amount on this wire is an integer.
+# unshown: test/server_test.dart#returns — `expensesHandler(…)` became
+#   `expensesApi(…)` and nothing else moved. The claim is study 35's and study
+#   35's page shows it.
+# unshown: test/server_test.dart#headers — the same construction, plus the
+#   key the server now wants. `content-length` is 3 rather than 2 because the
+#   body is `[]` and a newline.

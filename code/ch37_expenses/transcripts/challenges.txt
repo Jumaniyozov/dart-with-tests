@@ -1,0 +1,6 @@
+$ dart test exercises/
+00:00 +0: loading exercises/challenges_test.dart
+00:00 +0: exercises/challenges_test.dart: challenge 1 — the same verdict, as an HTTP status no budget on the category is nothing standing in the way
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — the same verdict, as an HTTP status no budget on the category is nothing standing in the way [E]
+  UnimplementedError: 1
+…

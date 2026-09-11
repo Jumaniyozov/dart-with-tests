@@ -38,6 +38,8 @@ class _Scenario {
     required this.entrypoint,
     required this.seeded,
     required this.commands,
+    this.limit = 0,
+    this.environment = const {},
   });
 
   final String name;
@@ -45,6 +47,13 @@ class _Scenario {
   final String entrypoint;
   final int seeded;
   final List<String> commands;
+
+  /// A limit on `food`, in pence, or `0` for a store with no limits in it.
+  final int limit;
+
+  /// What the server needs in its environment to start at all. Study 37's
+  /// reads its shared key from there, and refuses to run without one.
+  final Map<String, String> environment;
 
   String get transcript => 'code/$package/transcripts/$name.txt';
 }
@@ -95,21 +104,76 @@ const _scenarios = [
     seeded: 2,
     commands: ['curl -sD - -o /dev/null http://localhost:8080/ | $_elideDate'],
   ),
+  _Scenario(
+    'answers',
+    package: 'ch37_expenses',
+    entrypoint: 'bin/serve.dart',
+    seeded: 2,
+    limit: 2000,
+    environment: {'EXPENSES_KEY': _key},
+    commands: [
+      'curl -s $_sends http://localhost:8080/expenses',
+      'curl -s $_sends http://localhost:8080/budgets',
+      'curl -s $_sends $_json '
+          '-d \'{"pence":320,"category":"food","note":"bun"}\' '
+          'http://localhost:8080/expenses',
+      'curl -s $_sends http://localhost:8080/budgets/food',
+    ],
+  ),
+  _Scenario(
+    'statuses',
+    package: 'ch37_expenses',
+    entrypoint: 'bin/serve.dart',
+    seeded: 2,
+    limit: 2000,
+    environment: {'EXPENSES_KEY': _key},
+    commands: [
+      'curl -s $_status http://localhost:8080/expenses',
+      'curl -s $_status $_sends http://localhost:8080/nowhere',
+      'curl -s $_status $_sends '
+          "'http://localhost:8080/expenses?month=2026-13'",
+      'curl -s $_status $_sends $_json '
+          '-d \'{"pence":2000,"category":"food","note":"feast"}\' '
+          'http://localhost:8080/expenses',
+      'curl -s $_status $_sends http://localhost:8080/expenses',
+    ],
+  ),
 ];
 
 /// What both entrypoints print once they are listening. Fixed, because a port
 /// chosen at run time is a clock reading by another name.
 const _ready = 'listening on http://localhost:8080';
 
+/// Study 37's shared key. A demonstration value on a loopback port, written out
+/// in the commands because the reader has to send it to get an answer at all.
+const _key = 'a-shared-key';
+
+/// `authorization` and, where there is a body, what the body is.
+const _sends = "-H 'authorization: Bearer $_key'";
+const _json = "-H 'content-type: application/json'";
+
+/// The status code, after the document, so a transcript shows both.
+const _status = r"-w '%{http_code}\n'";
+
 /// A store with a known number of expenses in it, on a fixed day.
 ///
 /// Seeded as lines rather than by running the CLI, because `expenses add` files
 /// an expense under *today*, and today is exactly the kind of thing a transcript
 /// cannot contain.
-String _store(int expenses) => [
-  for (var i = 0; i < expenses; i++)
+///
+/// **It ends in a newline, and the first scenario with a write route is what
+/// found that out.** `FileStore.record` appends `'$line\n'` and never checks
+/// what the file already ends with, so a seed without one has the new expense
+/// welded onto the back of the last seeded line — which then decodes as
+/// nothing, and two expenses vanish from an answer that was supposed to gain
+/// one. Every file the program itself writes ends in a newline, so this is the
+/// seed being an honest imitation of one rather than a bug being worked around.
+String _store(_Scenario scenario) => [
+  if (scenario.limit > 0)
+    '{"kind":"limit","category":"food","pence":${scenario.limit}}',
+  for (var i = 0; i < scenario.seeded; i++)
     '{"day":"2026-09-11","pence":${450 + i * 10},"category":"food","note":"tea"}',
-].join('\n');
+].map((line) => '$line\n').join();
 
 Future<void> main(List<String> args) async {
   final checking = args.contains('--check');
@@ -172,14 +236,14 @@ Future<String> _capture(String root, _Scenario scenario) async {
   final directory = '$root/code/${scenario.package}';
   final temporary = Directory.systemTemp.createTempSync('capture_server');
   final store = File('${temporary.path}/expenses.txt')
-    ..writeAsStringSync(_store(scenario.seeded));
+    ..writeAsStringSync(_store(scenario));
 
-  final server = await Process.start('dart', [
-    'run',
-    scenario.entrypoint,
-    '--file',
-    store.path,
-  ], workingDirectory: directory);
+  final server = await Process.start(
+    'dart',
+    ['run', scenario.entrypoint, '--file', store.path],
+    workingDirectory: directory,
+    environment: scenario.environment,
+  );
 
   final buffer = StringBuffer();
   try {

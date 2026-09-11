@@ -17,7 +17,7 @@ book is a thing the CLI was right to do and the server is not.
 | --- | --- | --- |
 | 35 | A server that answers | `shelf_io.serve` returns a `dart:io` `HttpServer`; a `Handler` is a function |
 | 36 | A second edge finds what the first one hid | A seam cut for testing turns out to be a layer |
-| 37 | The caller is a stranger | A thrown `Error` is a 500 the client must never read |
+| 37 | The caller is a stranger | A thrown `Error` is a 500 — and `shelf_io` already answers one, so the middleware is about shape and reporting |
 | 38 | The server holds on | Held state has two halves, and the date is the one you forget |
 | 39 | The transaction that does not roll back | A failing statement leaves the transaction open, and does not undo it |
 | 40 | A second writer | `await` on a completed future resumes on the microtask queue |
@@ -138,6 +138,11 @@ against this record's premises.
   `POST` together, and owes it. `Tracker.record` is now six lines with the read, the decision
   and the write each on their own — which is the shape study 40 has to talk about, legible
   before it is a problem.
+
+  **Paid at 37, in 37.3, beside the route that writes.** The page says that two callers can
+  both be told there is room and both be recorded, that this is the first study in which that
+  is possible, and that study 40 is where it is measured and closed. The promise table carries
+  the row, so `check_promises` holds study 40 to it.
 - **The server logs nothing time-varying** — no timestamps, no elapsed times, no random
   ports. Not a style rule: a transcript carrying a clock reading cannot be re-run, and
   `check_transcripts` exists because a transcript nobody re-runs is one any later commit
@@ -157,6 +162,27 @@ against this record's premises.
   Eliding it inside the tool would have been the same output and a worse artifact: a
   transcript normalised behind the reader's back is no longer real captured output of a
   command they can type.
+
+  **Amended again while writing study 37: the rule is what made a middleware necessary, and
+  this record's own row for study 37 was wrong about why.** That row said a thrown `Error` is
+  *a 500 the client must never read*, as though something had to stop it. Measured: with
+  nothing wrapping the handler, `shelf_io` answers `500` with the body `Internal Server Error`
+  and puts the message in **its own log line on stdout, which carries a timestamp**. The
+  client was never going to read it.
+
+  So `faults` exists for two smaller reasons and the page states those: the plain-text body
+  would be the only answer on this server that is not a JSON document, and the report would
+  go wherever `shelf` sends it rather than where `bin/serve.dart` decided. Shelf's own 500 is
+  asserted beside the middleware rather than assumed.
+
+  **The timestamp is measured here and is deliberately not a claim on the page**, because it
+  cannot be turned into an assertion. `shelf_io` writes that line straight to `stdout`: a
+  `ZoneSpecification`'s `print` hook never sees it — measured, zero lines captured — and
+  `IOOverrides.runZoned` wants a `Stdout`, which has no public constructor. A subprocess
+  would do it and would need a third program under `bin/`, which `surface_test`'s `#runnable`
+  group exists to refuse. A measurement a record can hold and a test cannot is exactly what
+  this section is for, and the page saying less than this file is the correct direction for
+  that gap to run.
 - Deliberately not in Book III: isolates and codegen (Book IV), deployment, an ORM, CORS
   and a browser client, versioned schema migrations, and authenticating a *user* —
   `CONTEXT.md` says there is no Account, so the shared key in study 37 authenticates a

@@ -1,0 +1,11 @@
+$ curl -s -H 'authorization: Bearer a-shared-key' http://localhost:8080/expenses
+[{"day":"2026-09-11","pence":450,"category":"food","note":"tea"},{"day":"2026-09-11","pence":460,"category":"food","note":"tea"}]
+
+$ curl -s -H 'authorization: Bearer a-shared-key' http://localhost:8080/budgets
+[{"category":"food","limit":2000,"spent":910,"remaining":1090}]
+
+$ curl -s -H 'authorization: Bearer a-shared-key' -H 'content-type: application/json' -d '{"pence":320,"category":"food","note":"bun"}' http://localhost:8080/expenses
+{"day":"2026-09-11","pence":320,"category":"food","note":"bun"}
+
+$ curl -s -H 'authorization: Bearer a-shared-key' http://localhost:8080/budgets/food
+{"category":"food","limit":2000,"spent":1230,"remaining":770}

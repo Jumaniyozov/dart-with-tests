@@ -1,0 +1,317 @@
+---
+title: The caller is a stranger
+study: 37
+direction: The command line's caller was the person at the keyboard. The server's caller sends anything, and every answer this program gives has to mean something to somebody it has never met.
+description: shelf_router and an HTTP surface; study 26's taxonomy as status codes, in middleware; a shared key that authenticates a caller rather than a person; and a bound on a list that is measured and found to be cosmetic.
+---
+
+Study 36 gave the server something to say. It still says it at every path, to
+everybody, in one shape, because nothing in it can tell one request from
+another.
+
+That is the last study in which the difference did not matter. A command line is
+typed by the person who installed it; they can be told *usage: expenses add
+&lt;amount&gt; &lt;category&gt; &lt;note&gt;* and they will read it. A server is
+sent bytes by something that read an old version of the documentation, or read
+none, or is scanning the port. Everything in this study follows from that one
+change of audience.
+
+<Drill n={1}>
+
+<Direction>Four paths, and an answer that is a document rather than a sentence.</Direction>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch37_expenses/transcripts/answers.txt</include>
+</Console>
+
+</Drill>
+
+## 37.1 A router is a table, and a table is data
+
+Telling paths apart is a chain of `if`s over `request.url`, and the reason to
+take a dependency rather than write it is that the chain is not the interesting
+part. `Router` is that chain written as data: a verb, a pattern, and what to run.
+
+<include cwd lang="dart" meta='title="lib/src/server.dart"'>../code/ch37_expenses/lib/src/server.dart#routes</include>
+
+Three things there are worth stopping on.
+
+**The verb is part of the key.** `POST /budgets` matches no row, and what comes
+back is the same 404 as `/nowhere` — not a `405 Method Not Allowed`. That is
+measured rather than assumed, because it is the kind of thing a framework is
+entitled to decide either way.
+
+**The 404 it gives away is its own.** Leave `notFoundHandler` out and a missing
+path answers `Route not found` in plain text, which would be the only answer this
+server gives that is not a JSON document with a `problem` in it. A caller would
+need a second parser for it. One named argument makes it this program's.
+
+**`<category>` matches one segment, and hands it over exactly as it arrived.**
+
+<include cwd lang="dart" meta='title="lib/src/server.dart"'>../code/ch37_expenses/lib/src/server.dart#reads</include>
+
+`/budgets/food%20and%20drink` arrives here as the literal text
+`food%20and%20drink`, not as a category with a space in it — and `food and
+drink` is a category this program can make, so decoding is work somebody has to
+do and the router is not doing it.
+
+`Uri.decodeComponent` throws an `ArgumentError` for a malformed escape, which
+would be a `500` for something that is the caller's mistake. It cannot happen
+here, and the reason is two layers away: `Uri.parse` has already rewritten a
+stray `%` as `%25`, so `/budgets/%zz` reaches this function as `%25zz` and
+decodes back to the literal `%zz`. *It cannot throw* is exactly the kind of
+sentence that is true because of something else, so `test/server_test.dart`
+asserts it: that request answers `404`, and the 404 names `%zz`.
+
+<include cwd lang="dart" meta='title="test/server_test.dart"'>../code/ch37_expenses/test/server_test.dart#harness</include>
+
+No socket and no port, still. `expensesApi` answers a `Handler`, a `Handler` is a
+function, and study 35 bought that for the whole book.
+
+## 37.2 A status code is whose fault it is
+
+Study 26 decided that expected failures are **values** and bugs are
+**exceptions**, and study 24 gave the command line three exit codes to say so:
+`0`, `1` for *you asked for something I will not do*, and `2` for *I could not
+tell what you asked*.
+
+An HTTP status is the same decision with a wider vocabulary, and the two extra
+words are exactly the ones a stranger creates.
+
+| What happened | The shell heard | The wire hears |
+| --- | --- | --- |
+| it worked | `0` | `200` |
+| the program could not read the request | `2` misuse | `400` |
+| the program will not do it | `1` refused | `409` |
+| nobody said who is asking | — | `401` |
+| there is no such thing | — | `404` |
+| the program is wrong | a crash | `500` |
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch37_expenses/transcripts/statuses.txt</include>
+</Console>
+
+Read the last two commands together. The `409` recorded nothing, and the list
+after it still has two expenses in it — the refusal is a refusal, over a wire,
+exactly as it is at a terminal.
+
+Everything above the last row is a **returned value**. Nothing in this program
+throws to say a caller got something wrong, because study 26 already settled that
+it would be the wrong mechanism: a `Reading` that failed, a `Period.parse` that
+answered `null`, a map pattern that did not match. The last row is the one that
+cannot be returned, and it is the only one that needs a place of its own.
+
+<include cwd lang="dart" meta='title="lib/src/server.dart"'>../code/ch37_expenses/lib/src/server.dart#api</include>
+
+A `Pipeline` is read outside-in: the first middleware added is the outermost, so
+faults wrap the key check wraps the routes. That ordering is not a detail. Put
+the key check outside and a bug in it would answer a stranger with whatever
+`shelf` does by default.
+
+<include cwd lang="dart" meta='title="lib/src/server.dart"'>../code/ch37_expenses/lib/src/server.dart#faults</include>
+
+**The argument for this middleware is not the one that was expected, and the
+measurement is why.** Book III's outline said a thrown `Error` is a 500 the
+client must never read the text of, with the implication that something has to
+stop it. Nothing does, because nothing has to:
+
+<include cwd lang="dart" meta='title="test/server_test.dart"'>../code/ch37_expenses/test/server_test.dart#faults</include>
+
+Throw out of a handler with no middleware anywhere and `shelf_io` answers `500`
+with the body `Internal Server Error`. The leak was never there. What *is* wrong
+with that default is smaller and real: it is the one answer on this server that is
+plain text rather than a document, so a caller would need a second parser for the
+case it can do least about — and the report goes wherever `shelf` sends it rather
+than where this program decided it should go.
+
+So the middleware owns the shape, and hands the error to a function it was given.
+The stranger learns that it failed; whoever can fix it learns why, on the stream
+`bin/serve.dart` chose.
+
+<Practice source="Effective Dart — Usage" href="https://dart.dev/effective-dart/usage#avoid-catches-without-on-clauses">
+**"AVOID catches without `on` clauses."** *"A catch clause with no `on` qualifier
+catches anything thrown by the code in the try block."* The guideline asks whether
+you really meant to handle `StackOverflowError` and `OutOfMemoryError` too, and
+recommends catching `Exception` at most.
+
+**This study declines it, at exactly one place, and the place is the argument.**
+`createMiddleware`'s `errorHandler` has no `on` clause to give — it is handed an
+`Object` — so the choice is to take it or not have it. Taking it means a stack
+overflow in a route also answers `{"problem":"this program is wrong"}`, which is
+true and is all a caller could do anything with either way.
+
+Two things make that a trade rather than a shrug, and both are the guideline's own
+objections answered. *Helpful errors vanishing* is the real cost, so nothing
+vanishes: `report` is a required argument, and a test asserts the error reached it.
+And this is the **outermost frame of a server**, where the alternative to catching
+everything is not catching narrowly — it is the process answering a stranger with
+whatever the framework happens to do.
+
+Everywhere else in this package, the guideline is followed exactly: two `on
+FormatException` clauses in `file_store.dart`, one here in `_decoded`, and an `on
+ArgParserException` in `command.dart`. One departure, at one frame, with the
+reason written down beside it, is different from a habit.
+</Practice>
+
+## 37.3 The refusal answers in money
+
+Study 36 ended by naming a place where the second edge had made things worse. The
+refusal message says *food is budgeted at £20.00*, and a `Breach` carried only how
+far over the expense went — so the command line went back to the store for the
+limit, on the refusal path, for a fact the decision had been holding all along.
+
+<include cwd lang="dart" meta='title="lib/src/budget.dart"'>../code/ch37_expenses/lib/src/budget.dart#verdict</include>
+
+`Budget.on` has the limit in scope when it builds the breach; handing it over
+costs nothing. And it is the whole `Limit` rather than its amount, because the
+category comes with it and an API answering *which* budget refused you needs both.
+
+<include cwd lang="dart" meta='title="lib/src/server.dart"'>../code/ch37_expenses/lib/src/server.dart#writes</include>
+
+`409` and not `400`: nothing was wrong with the request. It was read, understood,
+and refused by the state of this month's food budget, which is what a conflict is.
+`400` would have told the caller to go and fix their JSON.
+
+And the edge that was going back for the limit is not any more:
+
+<include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch37_expenses/lib/src/command.dart#record</include>
+
+<include cwd lang="dart" meta='title="test/tracker_test.dart"'>../code/ch37_expenses/test/tracker_test.dart#unread</include>
+
+Not one character of the message changed, which is why `test/command_test.dart`
+was not edited — and `check_slices` proves that rather than this page claiming it.
+
+**It cost a major version, and the reason is worth more than the fact.** `Breach`
+is declared with a primary constructor, so its field list *is* its parameter list:
+a new field is a new required argument everywhere one is built.
+`test/surface_test.dart` is byte-identical to study 36's and noticed nothing — the
+barrel offers the same twelve libraries and `bin/` the same two programs. Study 34 held the barrel to
+a list, study 36 held `bin/` to one, and the thing that broke this time was the
+shape of a type. **A contract test protects exactly the surface it was written
+about**, for the third time in three studies.
+
+**Two callers can both get past that check.** `Tracker.record` reads the store,
+decides, and then writes, and `FileStore` touches a disk in between — so two
+requests arriving together can both be told there is room, and both be recorded,
+leaving a month over a budget that nothing ever refused. This is the first study
+with a route that writes, so this is the study where that becomes possible. It is
+said here rather than found later: study 40 is where the suspension between the
+decision and the write is measured and closed.
+
+## 37.4 One key, and it is a caller that it authenticates
+
+<include cwd lang="dart" meta='title="lib/src/server.dart"'>../code/ch37_expenses/lib/src/server.dart#key</include>
+
+`CONTEXT.md` has said since study 23 that this program has no Account: one person,
+one file, and nothing anywhere in it that models who somebody is. So there is no
+user to authenticate, and this does not pretend there is. It answers one question
+— *is whoever sent this allowed to talk to this server at all?*
+
+That is why it is `401` and not `403`. `403` means *I know who you are and the
+answer is still no*, and knowing who somebody is requires there to be somebody.
+
+<include cwd lang="dart" meta='title="test/server_test.dart"'>../code/ch37_expenses/test/server_test.dart#key</include>
+
+`null` from a request handler means *carry on to the handler behind me*, which is
+what lets a guard read as a guard rather than as a branch around the program.
+
+<include cwd lang="dart" meta='title="bin/serve.dart"'>../code/ch37_expenses/bin/serve.dart#serve</include>
+
+The key is read from the environment rather than from `--key`, because an argument
+is in the shell history of whoever started it and in `ps` for everybody else on the
+machine. And with no key the server does not start:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch37_expenses/transcripts/nokey.txt</include>
+</Console>
+
+`2` is study 24's `misuse`, reused without renaming it. A server being started
+wrongly is somebody at a terminal asking for something the program cannot make
+sense of, which is the same failure the command line already had a number for.
+
+<Gloss title="Four facts about the world, and the version number knows about none of them">
+`bin/serve.dart` reads the file, the day, the port and the key, and every one of
+them is a fact about where this program is running rather than about what it does.
+That is the whole job of an edge, and it is why `expensesApi` takes `report` as an
+argument: writing to `stderr` is a fact about the world too.
+
+Something else is worth noticing about this study's version number. This package is
+`3.0.0` because `Breach` gained a field — a Dart caller has to change code. But the
+thing that actually broke for a *caller* is that every `curl` command from study 36
+now answers `401`, and `pubspec.yaml` has no way to say so.
+
+An HTTP surface and a package surface are two different contracts with two
+different audiences, and semantic versioning only ever promised anything about the
+second. Versioning the first is a `/v1/` in a path or a header, which is a real
+topic and is not this book's — but a reader who ships one should know that the
+number in `pubspec.yaml` is not doing it.
+</Gloss>
+
+## 37.5 A bound that is a lie, measured
+
+`GET /expenses?limit=10` is the sort of thing an API grows early, and this one is
+worth exactly as much as the store underneath it lets it be.
+
+<include cwd lang="dart" meta='title="lib/src/server.dart"'>../code/ch37_expenses/lib/src/server.dart#bound</include>
+
+`_count` before `int.tryParse` is studies 20 and 24 arriving where they belong.
+`tryParse` reads `0x10` as 16 and takes a sign wherever it is handed one; both of
+those studies shipped a bug that trusted it, and both had a person at a keyboard
+for a caller. A stranger sends `0x10` on purpose.
+
+The slice is the interesting part, and it is the wrong shape. `Tracker.expenses`
+has already answered before `take` is reached, which means `FileStore` has already
+read every line of the file. A **counting double** is how that stops being an
+opinion:
+
+<include cwd lang="dart" meta='title="test/server_test.dart"'>../code/ch37_expenses/test/server_test.dart#counting</include>
+
+<include cwd lang="dart" meta='title="test/server_test.dart"'>../code/ch37_expenses/test/server_test.dart#bound</include>
+
+One read and a thousand expenses handed over, for `limit=1` and for `limit=1000`
+alike. The document got a thousand times smaller and the work did not move at all.
+
+This is principle 3 of this book: the reader meets the bad choice and watches it
+fail, rather than being told about a good one. A bound that a store can actually
+keep needs the store to be told about it, and study 39 is where there is a store
+that could be.
+
+## Wrapping up
+
+A router is a table. The 404 for a path that is not in it comes free, the verb is
+part of the key, and the segment a pattern captures arrives exactly as it was sent
+— so decoding it is this program's job, and the reason it cannot throw is a fact
+about `Uri.parse` two layers away, which makes it a thing to assert rather than a
+thing to say.
+
+An HTTP status is study 26's taxonomy with a wider vocabulary. Everything a caller
+can get wrong is a value this program returns; the only failure that has to be
+caught is the one that means the program is wrong, and it lives in one middleware
+at the outermost frame. That middleware exists for the shape of the answer and for
+where the report goes — not to stop a leak, because the measurement found there was
+not one.
+
+A `Breach` carries the `Limit` it broke. The budget had it in hand when it decided,
+and handing it over paid off study 36's second read on the refusal path — at the
+cost of a major version, because the field list of a primary constructor is its
+parameter list, and `surface_test` could not see any of it.
+
+The shared key authenticates a **caller**, not a person, and the page says so in
+those words because this program has no Account to authenticate.
+
+`?limit=N` is cosmetic, and a counting double says so in one green test: the same
+read, the same thousand expenses, a smaller document.
+
+Also met: `Router`, `Pipeline`, `createMiddleware`, `notFoundHandler`,
+`Uri.decodeComponent`, `queryParameters`, `Response`, and a double that counts
+rather than one that answers.
+
+## Challenges
+
+Three challenges, twelve failing tests. Make them pass one at a time. Do not edit
+the tests. All three are at the edge, and the third has a trap in it that only a
+router has.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch37_expenses/transcripts/challenges.txt</include>
+</Console>

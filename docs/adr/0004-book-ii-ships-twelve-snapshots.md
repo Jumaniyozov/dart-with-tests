@@ -166,6 +166,22 @@ breaking change exactly as removing an export is. Study 36 is `2.0.0` for that r
 the surface it was written about**, and study 34's was written about the half that was
 interesting that day.
 
+**Amended again at 37, and the third instance is the one that settles the shape of the
+rule.** Study 37 put the `Limit` a budget broke onto `Breach`, which the barrel exports. A
+primary constructor's field list *is* its parameter list, so a new field is a new required
+positional argument at every place one is built — a breaking change, and `ch37_expenses` is
+`3.0.0` for it. `test/surface_test.dart` is **byte-identical to study 36's**: the barrel
+offers the same twelve libraries and `bin/` the same two programs, and both tests pass. The
+surface that moved was the *shape of a type*, which neither list can see.
+
+Three studies, three surfaces — the barrel (34), `bin/` (36), a type's constructor (37) —
+and no intention here of writing a third list. The general form is the useful part and it is
+a question to ask rather than a test to add: **a contract test tells you that the thing it
+enumerates has not moved, and says nothing whatever about the thing it does not.** What
+keeps the version number honest is the `CHANGELOG.md` entry, and `surface_test`'s oldest
+group — that `pubspec.yaml` and `CHANGELOG.md` agree — is the one that made study 37's major
+version a decision somebody had to write down.
+
 **And the naming has a visible cost, measured rather than argued.** `pub` wants
 `lib/<package name>.dart`, and these packages are named for their study number while their
 barrel is named for the program. `dart pub publish --dry-run` reports that as a warning and
