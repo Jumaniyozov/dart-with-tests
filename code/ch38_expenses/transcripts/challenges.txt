@@ -1,0 +1,6 @@
+$ dart test exercises/
+00:00 +0: loading exercises/challenges_test.dart
+00:00 +0: exercises/challenges_test.dart: challenge 1 — has it moved since you last looked the first look has nothing to compare against, so it has
+00:00 +0 -1: exercises/challenges_test.dart: challenge 1 — has it moved since you last looked the first look has nothing to compare against, so it has [E]
+  UnimplementedError: 1
+…

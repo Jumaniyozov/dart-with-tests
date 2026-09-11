@@ -40,6 +40,7 @@ class _Scenario {
     required this.commands,
     this.limit = 0,
     this.environment = const {},
+    this.store,
   });
 
   final String name;
@@ -54,6 +55,18 @@ class _Scenario {
   /// What the server needs in its environment to start at all. Study 37's
   /// reads its shared key from there, and refuses to run without one.
   final Map<String, String> environment;
+
+  /// Where to put the store, **relative to the package**, for a scenario whose
+  /// commands have to name it.
+  ///
+  /// Null puts it in a temporary directory, which is what every scenario whose
+  /// only commands are `curl` wants. Study 38 needs the other thing: its second
+  /// process is the command line, writing the same file the server is holding,
+  /// and `--file /var/folders/…` is an absolute path that no reader can type.
+  /// So that scenario names a relative path, the file is written inside the
+  /// package while the scenario runs, and it is deleted afterwards — a stray
+  /// one would be caught by `check_slices` on the next run.
+  final String? store;
 
   String get transcript => 'code/$package/transcripts/$name.txt';
 }
@@ -136,6 +149,32 @@ const _scenarios = [
           '-d \'{"pence":2000,"category":"food","note":"feast"}\' '
           'http://localhost:8080/expenses',
       'curl -s $_status $_sends http://localhost:8080/expenses',
+    ],
+  ),
+  _Scenario(
+    'stale',
+    package: 'ch38_expenses',
+    entrypoint: 'bin/holding.dart',
+    seeded: 2,
+    store: 'expenses.txt',
+    environment: {'EXPENSES_KEY': _key},
+    commands: [
+      'curl -s $_sends http://localhost:8080/budgets',
+      'dart run bin/expenses.dart --file expenses.txt budget food 20.00',
+      'curl -s $_sends http://localhost:8080/budgets',
+    ],
+  ),
+  _Scenario(
+    'fresh',
+    package: 'ch38_expenses',
+    entrypoint: 'bin/serve.dart',
+    seeded: 2,
+    store: 'expenses.txt',
+    environment: {'EXPENSES_KEY': _key},
+    commands: [
+      'curl -s $_sends http://localhost:8080/budgets',
+      'dart run bin/expenses.dart --file expenses.txt budget food 20.00',
+      'curl -s $_sends http://localhost:8080/budgets',
     ],
   ),
 ];
@@ -235,12 +274,15 @@ Future<void> main(List<String> args) async {
 Future<String> _capture(String root, _Scenario scenario) async {
   final directory = '$root/code/${scenario.package}';
   final temporary = Directory.systemTemp.createTempSync('capture_server');
-  final store = File('${temporary.path}/expenses.txt')
-    ..writeAsStringSync(_store(scenario));
+  final store = File(
+    scenario.store == null
+        ? '${temporary.path}/expenses.txt'
+        : '$directory/${scenario.store}',
+  )..writeAsStringSync(_store(scenario));
 
   final server = await Process.start(
     'dart',
-    ['run', scenario.entrypoint, '--file', store.path],
+    ['run', scenario.entrypoint, '--file', scenario.store ?? store.path],
     workingDirectory: directory,
     environment: scenario.environment,
   );
@@ -273,6 +315,7 @@ Future<String> _capture(String root, _Scenario scenario) async {
     server.kill(ProcessSignal.sigkill);
     await server.exitCode;
     temporary.deleteSync(recursive: true);
+    if (scenario.store != null && store.existsSync()) store.deleteSync();
   }
   return buffer.toString();
 }

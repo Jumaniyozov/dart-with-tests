@@ -21,15 +21,16 @@ Last checked: 2026-09-11.
 
 Book I (studies 1-22) is written, audited and pushed. **Book II (23-34) is complete** —
 all twelve snapshots exist, and its promise table is empty because every promise the prose
-made has been paid. **Book III (35-40) is open: studies 35, 36 and 37 are written**, and
-38-40 have provisional titles and no code. ADR 0005 records the order and why it costs a
-sixth study. Book IV (41-45) has no outline.
+made has been paid. **Book III (35-40) is open: studies 35 to 38 are written**, and 39-40
+have provisional titles and no code. ADR 0005 records the order and why it costs a sixth
+study. Book IV (41-45) has no outline.
 
-The next piece of work is study 38, `ch38_expenses`. Book III's promise table has **four**
-rows: two made by study 36 and two by study 37. Study 38's is the one study 36 shipped a bug
-for on purpose — `bin/serve.dart` reads `Day.on(DateTime.now())` once in a program that does
-not exit — and `files.mdx:119` is the older promise it pays, that a server reads once and
-holds on and needs a reason to believe what it holds is still true.
+The next piece of work is study 39, `ch39_expenses`. Book III's promise table has **four**
+rows and **three of them are study 39's**: `Expense.toJson` surviving the move into a
+database, a bound a store can actually keep, and study 38's cache being **deleted** rather
+than improved. Its entry in `OUTLINE.md` says it is over budget on purpose — six subjects
+against a five-section envelope — and names `Store`'s growth as the likeliest thing to move
+into study 40.
 
 The lost-update debt ADR 0005 declares was **paid into print at 37**, in 37.3, beside the
 first route that writes. Study 40 is now held to it by the table.

@@ -1,0 +1,44 @@
+# Study 38 — what changed since study 37.
+#
+# Added — a Store that reads what it wraps once, and a second entrypoint that
+# makes the bet without the reason, so one page can show what that costs.
+lib/src/holding_store.dart
+bin/holding.dart
+test/holding_store_test.dart
+# Changed — `Tracker` takes a clock instead of a day, the barrel offers one more
+# library, and `bin/` offers one more program.
+lib/expenses.dart
+lib/src/tracker.dart
+lib/src/command.dart
+lib/src/server.dart
+bin/serve.dart
+test/server_test.dart
+test/surface_test.dart
+test/tracker_test.dart
+pubspec.yaml
+CHANGELOG.md
+README.md
+#
+# unshown: lib/src/command.dart#run — one line, `Tracker(store, () => today)`,
+#   and 38.5 pins that exact line with a test rather than quoting it. The rest
+#   of the region is the switch study 33 left and study 36 already declined to
+#   re-show.
+# unshown: lib/src/command.dart#record — one pair of parentheses on
+#   `tracker.today`. 38.5 shows the signature that put them there.
+# unshown: lib/src/command.dart#budgeting — the same pair, on the line that
+#   builds the period a `budget` command reports over.
+# unshown: lib/src/server.dart#writes — the same pair again, where the edge
+#   decides what day a POSTed expense is filed under. `test/server_test.dart`
+#   asserts that one across two days, and 38.5 shows the test.
+# unshown: test/tracker_test.dart#setup — `Tracker(store, today)` became
+#   `Tracker(store, () => today)`. Every test in the file kept passing, which
+#   is the least interesting way for a signature change to go.
+# unshown: test/tracker_test.dart#cases — the same construction, and one test
+#   renamed from *the day the tracker was built with* to *the day the clock
+#   answers*, because the old name had become the bug.
+# unshown: test/server_test.dart#harness — the same construction.
+# unshown: test/server_test.dart#returns — the same construction. The claim is
+#   study 35's and study 35's page shows it.
+# unshown: test/server_test.dart#headers — the same construction.
+# unshown: test/surface_test.dart#surface — one line added to `offered`. 38.2
+#   shows the barrel itself, which is where that decision is legible.

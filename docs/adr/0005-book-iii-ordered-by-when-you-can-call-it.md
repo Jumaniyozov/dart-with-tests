@@ -18,7 +18,7 @@ book is a thing the CLI was right to do and the server is not.
 | 35 | A server that answers | `shelf_io.serve` returns a `dart:io` `HttpServer`; a `Handler` is a function |
 | 36 | A second edge finds what the first one hid | A seam cut for testing turns out to be a layer |
 | 37 | The caller is a stranger | A thrown `Error` is a 500 — and `shelf_io` already answers one, so the middleware is about shape and reporting |
-| 38 | The server holds on | Held state has two halves, and the date is the one you forget |
+| 38 | The server holds on | Held state has two halves, and the date is the one you forget — and a cache needs a number, not the thing it caches |
 | 39 | The transaction that does not roll back | A failing statement leaves the transaction open, and does not undo it |
 | 40 | A second writer | `await` on a completed future resumes on the microtask queue |
 
@@ -69,7 +69,12 @@ alternative to honouring them is amending the page that made them, not ignoring 
   explicitly that *a server that blocks on a disk stops answering everybody*, so this book
   is the thing that argument was made for. Paid at 35.
 - `writing-good-dart/files.mdx:119` — the server **reads once and holds on**, and needs a
-  reason to believe what it holds is still true. Paid at 38.
+  reason to believe what it holds is still true. Paid at 38, in both halves and in that
+  order: `HoldingStore` reads once, `bin/holding.dart` is the same server with no reason to
+  believe, and `bin/serve.dart` gives it one. The reason is a byte count rather than a
+  modification time, because a length is an integer nobody rounds and a timestamp's
+  resolution belongs to the filesystem — which would have made the test machine-dependent,
+  the one defect this book has already shipped once.
 - `writing-good-dart/budgets.mdx:219` — Book III puts **a concurrent writer on the page**,
   and ADR 0003 adds that CQRS, units of work and transaction boundaries were kept out of
   Book II *because the tracker has no concurrency*, so this is where that argument gets
@@ -124,6 +129,14 @@ against this record's premises.
   defect to find rather than a glossary entry to write.
 - `Tracker` is exported from the barrel; the server is not. `Tracker` names no `shelf`
   type, and study 34's whole lesson is what a dependency's types in a public API cost.
+- **`Tracker` takes a `Day Function()` from study 38, and no call site at the command line
+  moved.** ADR 0002's rule survived the change exactly as this record predicted — a function
+  in a header parameter checks nothing, so the header form stays — and the prediction it did
+  not make is the better half: `run` still takes a `Day`, because a command reads the clock
+  once and finishes before the day could turn, so `test/command_test.dart` went a third
+  study without an edit. The bug this fixes has no transcript and cannot have one: showing a
+  server file an expense under the wrong day requires waiting for midnight. Three tests
+  instead, one of them through the HTTP edge.
 - **The server serves from `FileStore` from study 35, and the lost update is a declared
   debt paid at 40.** Decided after the spike. The alternative — an `InMemoryStore` until
   study 38 — shares no data with the CLI, so a reader who adds an expense on the command

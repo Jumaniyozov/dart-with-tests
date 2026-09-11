@@ -1,0 +1,267 @@
+---
+title: The server holds on
+study: 38
+direction: A value read once is a bet that nothing else can change it. A command wins that bet by finishing; a server has to keep making it, and this study loses it twice.
+description: A Store that reads once and holds on, a second process that falsifies it, a byte count as the reason to believe it again, and a day that turns out to have been read once too.
+---
+
+Study 28 shipped a `Store` that opens the file every time it is asked, and said
+in its own words what that was worth:
+
+> That is fine here and would not be fine anywhere else. A CLI runs one command
+> and exits, and a cache that has to be invalidated is a second problem to be
+> wrong about. When the program becomes a server in Book III it will read once
+> and hold on, and it will need a reason to believe what it holds is still true.
+
+This is that study. It gets both halves, in that order, and the second half is
+where the interesting part is.
+
+<Drill n={1}>
+
+<Direction>Three commands, and the middle one writes to the file the server is serving.</Direction>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch38_expenses/transcripts/stale.txt</include>
+</Console>
+
+</Drill>
+
+## 38.1 Every ask is a read
+
+Before holding anything, it is worth having a number for what not holding costs.
+A **counting double** is how you get one — study 37 wrote one to show that work
+did *not* move, and this is the same instrument pointed the other way.
+
+<include cwd lang="dart" meta='title="test/holding_store_test.dart"'>../code/ch38_expenses/test/holding_store_test.dart#double</include>
+
+`expenses` is public and mutable on purpose. Somebody else changing the answer
+underneath is this study's whole subject, and a list is the cheapest stranger
+there is.
+
+<include cwd lang="dart" meta='title="test/holding_store_test.dart"'>../code/ch38_expenses/test/holding_store_test.dart#reads</include>
+
+Three asks, three reads, and then three asks and one read. Against `FileStore` each
+of those reads is a file opened, read to the end and parsed line by line — and the
+last test is the one that makes it matter: the cheapest request this program answers
+asks the store **twice**, because a budget is a limit and the expenses that count
+against it.
+
+## 38.2 Holding on is a bet, and the bet is in the signature
+
+<include cwd lang="dart" meta='title="lib/src/holding_store.dart"'>../code/ch38_expenses/lib/src/holding_store.dart#holding</include>
+
+**It has never heard of a file.** That is the decision worth stopping on. What a
+cache needs is not the thing it is caching but a cheap way to ask *has the answer
+changed?* — so that arrives as a function answering a number, and this class holds
+what it was given until the number is different.
+
+Study 27's argument, a fourth time: a dependency on the world is a parameter, and
+the end that wants an interface is the end with alternatives. `Store` has four
+implementations; there is exactly one of these, and it takes an `int Function()`.
+
+It also keeps a doc comment true. `file_store.dart` says it is the only type under
+`lib/` that has heard of `dart:io`, and a `HoldingStore` taking a `File` would have
+made that a lie. Study 36's version of this test would not have caught it — it reads
+the imports of two named files, and `File` would have arrived through a third — so
+the test now asks the directory instead:
+
+<include cwd lang="dart" meta='title="test/server_test.dart"'>../code/ch38_expenses/test/server_test.dart#borrowed</include>
+
+A doc comment that says *only* is a claim about every file there is, and the only
+honest way to check one is to list them.
+
+<include cwd lang="dart" meta='title="lib/expenses.dart"'>../code/ch38_expenses/lib/expenses.dart#barrel</include>
+
+Now the bet. A version that never moves is a promise that nothing can change the
+answer, and this is what that promise buys and costs:
+
+<include cwd lang="dart" meta='title="test/holding_store_test.dart"'>../code/ch38_expenses/test/holding_store_test.dart#bet</include>
+
+Read the first test as a sentence: *the held copy is not stale by accident; it was
+promised that nothing could change it, and something did.* Nothing in that test is
+a mistake anybody made. The list changed because something outside this object
+changed it, which is the only way a cache is ever wrong.
+
+## 38.3 A second process collects on the bet
+
+The falsifier is free, and it has been sitting in `bin/` since study 24. The
+command line writes the same file the server is holding, from another terminal, as
+a different process. Not concurrency — study 40 is concurrency — just two programs
+and one file.
+
+To show what that costs, this study ships the same server twice:
+
+<include cwd lang="dart" meta='title="bin/holding.dart"'>../code/ch38_expenses/bin/holding.dart#holding</include>
+
+`_lengthOf(file)` has moved, and that is all that has moved. It is called once, into
+a local, before the store is built — so the version never changes, so the store is
+told that nothing can change the answer. The study's own sentence, written out in
+code.
+
+<include cwd lang="dart" meta='title="test/holding_store_test.dart"'>../code/ch38_expenses/test/holding_store_test.dart#twinned</include>
+
+One line out of `bin/serve.dart` and two into `bin/holding.dart`, with the comments
+and the blanks taken out. Saying *they differ by one line* would have been close
+enough to be worth checking and wrong, so the test says which lines instead.
+
+**That is the program the transcript at the top of this page was run against.**
+The command line set a budget and really did write it — `food: £20.00` is the CLI
+reporting what it stored — and the server went on saying there are no budgets,
+because it had decided that question was answered when it started.
+
+Here are the same three commands, in the same order, against `bin/serve.dart`:
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch38_expenses/transcripts/fresh.txt</include>
+</Console>
+
+Same commands, same file, same order. The difference is one program asking a
+question it had already answered once.
+
+<include cwd lang="dart" meta='title="test/surface_test.dart"'>../code/ch38_expenses/test/surface_test.dart#runnable</include>
+
+A third program under `bin/` is a **feature**, so the list grows and nothing about it
+needs a major version — this package is `4.0.0` for a different reason, and that
+reason is 38.5's. It will not stay: study 35 shipped `by_hand.dart` so one page could
+compare two servers, study 36 deleted it, and this goes the same way in study 39 —
+along with the cache whose cost it exists to show.
+
+## 38.4 A number that changes when the answer does
+
+<include cwd lang="dart" meta='title="bin/serve.dart"'>../code/ch38_expenses/bin/serve.dart#serve</include>
+
+`file.lengthSync()` is the reason to believe, and it is a `stat` rather than a
+read: the file is opened only when the number has moved. For **this** store that
+is not an approximation. `FileStore` only ever appends — study 28 chose one JSON
+object per line precisely so that adding one would not mean rewriting all of them
+— so a byte count is an exact answer to *has anything been written?*
+
+<include cwd lang="dart" meta='title="test/holding_store_test.dart"'>../code/ch38_expenses/test/holding_store_test.dart#length</include>
+
+And the last test is the honest one. A rewrite that keeps the length is invisible
+to a byte count, and a person editing `expenses.txt` in a text editor is exactly
+the case study 29 spent a `catch` on. The cache would serve the old limit until
+something else moved the file.
+
+That is not fixed here, and pretending otherwise would be worse than saying it.
+Study 39 puts the expenses in a database, where a read asks for what it wants — and
+the cache is deleted rather than improved, which is the best ending a caching study
+can have.
+
+<Practice source="Dart linter rules" href="https://dart.dev/tools/linter-rules/avoid_slow_async_io">
+**"Avoid slow asynchronous `dart:io` methods."** The rule names `File.exists`,
+`File.stat` and `File.lastModified` among others, on the grounds that they *"are
+much slower than their synchronous counterparts."*
+
+This is a guideline that sounds like it must be wrong and is not, and study 38 is
+where it stops being abstract. `bin/serve.dart` asks a file its length on the way
+into every read, synchronously, inside a server — which looks like exactly the thing
+study 28 made every `Store` member a `Future` to avoid, and is not. What study 28's
+argument is about is a server that *blocks on a disk read*: opening a file, pulling
+it through and parsing it. That is the work this cache exists to skip. What is left
+is a `stat`, and the lint's point is that asking for one asynchronously is slower
+than just taking it.
+
+Measured rather than assumed: `await file.exists()` in `lib/` analyzes clean here,
+so the rule is **not** in `package:lints/recommended.yaml` and nothing in this
+repository was enforcing it either way. ADR 0003 recorded that once already, for
+study 28, and this is the study where the other side of it is the code.
+
+The transferable part is not about files. It is that *asynchronous* and *cheap* are
+different axes, and a signature that promises to take a while is a promise worth
+keeping only where it is true.
+</Practice>
+
+<Gloss title="Why the version is a length and not a timestamp">
+`File.lastModified` is the answer most people reach for, and it is the one this
+study could not assert.
+
+A length is an integer that the filesystem cannot round. A modification time has a
+resolution, and that resolution belongs to the **filesystem** rather than to Dart:
+microseconds on the machine this was written on, where 200 consecutive appends moved
+it 200 times out of 200, and coarser on others. Where it is coarser, a `stat` and an
+append inside the same tick are indistinguishable and the cache silently misses a
+write.
+
+So a test asserting *an append moves the timestamp* passes here and is a bet about
+the reader's disk — which is the defect study 29 shipped with a time zone, and which
+the standing requirements now sweep for. This page cannot tell you what your
+filesystem does, and that is the point rather than an omission. The measurement is worth having and is
+recorded; the assertion is not available, so the code uses the number that has no
+resolution to be wrong about.
+
+The trade runs the other way too, and 38.4's last test is it: a length misses a
+same-length rewrite and a timestamp would catch one. Neither is a guarantee. A
+cache over a file that anybody may edit is a guess with a good reason behind it,
+and this study's job is to make the reason legible rather than to pretend it is a
+proof.
+</Gloss>
+
+## 38.5 The other thing it was holding is a date
+
+The cache is the half this study was named for. The other half has been shipped on
+purpose since study 36, and it is one word in a constructor.
+
+<include cwd lang="dart" meta='title="lib/src/tracker.dart"'>../code/ch38_expenses/lib/src/tracker.dart#tracker</include>
+
+`Day today` was read once, by whoever built the tracker. For `bin/expenses.dart`
+that is correct and always will be: a command reads the clock, does one thing and
+exits, and it is finished long before the day could turn. For a server it is a bug
+that takes a day to appear and then never goes away — started on Tuesday, it files
+Friday's expenses under Tuesday.
+
+<include cwd lang="dart" meta='title="test/tracker_test.dart"'>../code/ch38_expenses/test/tracker_test.dart#clock</include>
+
+The second test is the damage rather than the demonstration. A server that was
+started in September answers October's budget questions with September's spending,
+and every number it prints is a plausible one.
+
+Study 28 said that **a signature is a promise about time**. `Day today` promised
+that the day does not change. `Day Function() today` promises nothing except that
+you can ask, and every place that reads it now says so in one pair of parentheses:
+
+<include cwd lang="dart" meta='title="test/server_test.dart"'>../code/ch38_expenses/test/server_test.dart#clock</include>
+
+And the command line did not move. `run` still takes a `Day` and hands the tracker
+`() => today` — the edge that legitimately read the clock once keeps doing it, and
+the third test above holds that line to the letter. `test/command_test.dart` has
+now gone three studies without being edited, which `check_slices` proves rather
+than this page claiming it.
+
+## Wrapping up
+
+Two kinds of held state and one mechanism: a value read once is a bet that nothing
+else can change it. A command always wins that bet, because it finishes. A server
+makes it again on every request.
+
+`HoldingStore` reads what it wraps once and holds on until a number it was given
+moves. It has never heard of a file, because what a cache needs is a cheap way to
+ask whether the answer changed, and that is a parameter rather than a dependency.
+
+The falsifier was free and already in `bin/`: the command line, writing the same
+file from another process. `bin/holding.dart` is `bin/serve.dart` with the file's
+length read once instead of asked for, and the two transcripts are the same three
+commands answering differently.
+
+A byte count is exact for a store that only appends, and blind to a rewrite that
+keeps the length. A timestamp would catch that one and has a resolution that is the
+filesystem's business rather than this program's, so it is measured here and not
+asserted. Neither is a proof, and study 39 deletes the cache instead of improving
+it.
+
+`Tracker` asks what day it is instead of being told once. `run` still reads the
+clock a single time, because a command is over before the answer could change —
+which is the same sentence as the cache, pointed at the other kind of value.
+
+Also met: `HoldingStore`, `Day Function()`, `lengthSync`, `existsSync`, a decorator
+over an interface, and a counting double used to show that work went away.
+
+## Challenges
+
+Three challenges, twelve failing tests. Make them pass one at a time. Do not edit
+the tests. The second one asks you to make a different bet from this study's, and
+to be able to say which bet it is.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch38_expenses/transcripts/challenges.txt</include>
+</Console>

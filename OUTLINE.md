@@ -1580,24 +1580,63 @@ caller's mistake; it cannot happen, because `Uri.parse` has already rewritten a 
 The verb is part of the key too: `POST /budgets` is a 404 and not a `405`, measured because
 a framework is entitled to decide that either way.
 
-### 38 — The server holds on · `holding-on` · `ch38_expenses`
+### 38 — The server holds on · `holding-on` · `ch38_expenses` — **WRITTEN**
+
+Shipped: 239 green, 3 challenges at 12 failing, 4 transcripts.
 
 `FileStore.all` opens the file every time it is asked, and study 28's own Gloss already
 admitted this would not do for a server. Hold the expenses instead, and measure the
 difference.
 
-Then falsify it, and the falsifier is free: `dart run bin/expenses.dart add 4.50 coffee`
-in another terminal, against the same file. Not concurrency — a second **process** — and
-the held copy is simply wrong. That is `files.mdx:119` paid in the words it was promised
-in: it needs a reason to believe what it holds is still true.
+Then falsify it, and the falsifier is free: the command line, in another terminal, against
+the same file. Not concurrency — a second **process** — and the held copy is simply wrong.
+That is `files.mdx:119` paid in the words it was promised in: it needs a reason to believe
+what it holds is still true.
 
 **The second thing it is holding is a date.** `Tracker`'s `today` was captured at startup,
-so a server started yesterday files today's expenses under yesterday. One transcript. The
-fix is a clock, and study 28's *a signature is a promise about time* is the argument,
-arriving where something depends on it.
+so a server started yesterday files today's expenses under yesterday. The fix is a clock,
+and study 28's *a signature is a promise about time* is the argument, arriving where
+something depends on it.
 
 Two kinds of stale state, one mechanism: a value read once is a bet that nothing else can
 change it.
+
+**`HoldingStore` takes an `int Function()` and has never heard of a file, which was not
+predicted here and is the study's best line.** What a cache needs is not the thing it is
+caching but a cheap way to ask whether the answer moved. Making that a parameter keeps
+`file_store.dart`'s doc claim — *the only type under `lib/` that has heard of `dart:io`* —
+true, and that claim would **not** have been caught if it had gone false:
+`server_test#borrowed` reads import lines, and `File` would have arrived through the new
+file instead.
+
+**The version is a length, not a timestamp, and the reason is the machine-dependence
+requirement.** `File.lastModified` is what everyone reaches for; its resolution belongs to
+the filesystem rather than to Dart — measured at microseconds here, 200 appends moving it
+200 times, and one second on filesystems still in use. A test asserting *an append moves
+the timestamp* would pass here and fail elsewhere, which is study 29's time-zone defect in
+a new costume. A byte count has no resolution to be wrong about and is **exact** for a
+store that only appends, and what it misses — a same-length rewrite — is asserted rather
+than hidden. The general form is new and is now a standing requirement: pick the signal
+with no resolution, rather than writing the machine-dependent test carefully.
+
+**The `Day` → `Day Function()` change moved no call site at the command line, and that is
+the payoff.** `run` still takes a `Day` and hands the tracker `() => today`, because a
+command reads the clock once and is finished before the day could turn. Only the server's
+paths grew parentheses. `test/command_test.dart` has now gone **three** studies without
+being edited, which `check_slices` proves.
+
+**Two entrypoints, for study 35's reason.** `bin/holding.dart` is `bin/serve.dart` with the
+file's length read once at startup instead of asked for — the study's own sentence written
+out in code — so both transcripts are real captured output of real programs rather than one
+of them being captured from a temporarily broken state. Study 39 deletes it and the cache
+together.
+
+**The outline said "one transcript" for the date bug and there is none, because there
+cannot be.** A transcript of a server filing an expense under the wrong day requires the
+day to turn while the server is running. The evidence is three tests instead — two on
+`Tracker` and one through the HTTP edge — and the second of them is the damage rather than
+the demonstration: a server started in September answers October's budget questions with
+September's spending, and every number it prints is plausible.
 
 ### 39 — The transaction that does not roll back · `transactions` · `ch39_expenses`
 
@@ -1710,9 +1749,9 @@ checked by `check_promises`, and Book II's had three rows that were fiction.
 
 | Owed by | Made in | The reader is promised |
 | --- | --- | --- |
-| 38 | 36 | `bin/serve.dart` reads `Day.on(DateTime.now())` once in a program that does not exit, and a value read once is a bet that nothing else can change it |
 | 39 | 36 | `Expense.toJson` survives the move into a database, which is why it is an extension on `Expense` rather than something `FileStore` owns |
 | 39 | 37 | A bound a store can actually keep, because `?limit=N` slices after the read and a counting double measures that the work does not move |
+| 39 | 38 | The cache is **deleted** rather than improved, because a database reads what you ask for rather than all of it and then throws most of it away |
 | 40 | 37 | Two callers can both pass the budget check, so the program can record a breach nothing refused — and the suspension between the decision and the write is what closes it |
 
 `check_promises` distinguishes an empty table from a missing one and fails on the second.
@@ -1721,7 +1760,9 @@ Paid: 36←35 (the server could say only `recorded: N`, because every use case w
 `command.dart` and `run` answered an `Outcome`; study 36 extracted `Tracker` and the server
 answers the expenses). 37←36 (routing, study 26's taxonomy as status codes, and the refusal
 answering the limit as data — paid by putting the `Limit` on the `Breach`, which removed the
-edge's second read and cost a major version).
+edge's second read and cost a major version). 38←36 (`bin/serve.dart` read
+`Day.on(DateTime.now())` once in a program that does not exit; `Tracker` takes a
+`Day Function()` and only the server's call sites moved).
 
 **But nothing checks this table, and that must be fixed before study 35 ships.**
 Measured while writing this section: `tool/check_promises.dart` hardcodes the heading
@@ -2254,6 +2295,41 @@ existing transcripts and verified to reproduce.
   `packages?`, `headers?`, `routes?` and `keys?` to the sweep — and prefer the fix that was
   taken here, which was to delete the number: *the literal text* is true for ever and the
   count was never the point.
+- **A transcript is evidence only if the harness ran what the reader would run.**
+  `capture_server` handed study 38's server `--file ../code/ch38_expenses/expenses.txt`
+  while setting that same directory as its working directory, so the path resolved to
+  nothing and the store was empty from the first request. Every earlier scenario had passed
+  an **absolute** temporary path, where a wrong working directory cannot show, so the defect
+  had been latent for three studies and surfaced the moment a scenario needed a path the
+  reader could type. The symptom was a transcript that read as a bug in the program — the
+  fixed server and the broken one gave the same answer — and the thing that found it was
+  running the same commands by hand and getting a different result.
+
+  So: **when a captured transcript and a hand-run of the same commands disagree, suspect the
+  harness first.** And prefer a scenario whose commands a reader could copy verbatim, because
+  a command only the tool can construct is a command nothing checks. This is the second
+  instance of the same family in two studies — study 37's seed was written in a shape the
+  program never writes — and the family is: a harness that imitates the reader approximately
+  produces evidence about the harness.
+
+  The proximate cause is worth its own sentence because it will recur: **a search-and-replace
+  that is not asserted is an edit that may not have happened.** Four of five edits to
+  `capture_server` that session asserted their target was present; the fifth did not, and it
+  was the one that silently did nothing, because `dart format` had reflowed the line it was
+  looking for.
+- **Pick the signal that has no resolution, rather than writing the machine-dependent test
+  carefully.** Study 38 needed a number that changes when a file's contents change.
+  `File.lastModified` is the obvious one and its resolution is the **filesystem's** — measured
+  at microseconds here, moving on 200 appends out of 200, and one second on filesystems still
+  in use, where a `stat` and an append in the same second are indistinguishable. Any test
+  asserting *an append moves the timestamp* would have passed here and failed elsewhere, which
+  is study 29's time-zone defect wearing different clothes.
+
+  The existing requirement says to sweep for that and to assert the **dependence** rather than
+  the answer. This adds the cheaper move that comes first: when two signals would do, prefer
+  the one that is an integer nobody rounds. A byte count is exact for a store that only
+  appends, and what it misses — a rewrite of the same length — is a different sentence
+  entirely, and one a test can state on any machine.
 - Deliberately-broken code that fails to **compile** cannot live in `lib/`: it
   would put the workspace analyze above zero and contradict study 1's Practice.
   Capture its transcript from a temporary state and inline the code in the MDX

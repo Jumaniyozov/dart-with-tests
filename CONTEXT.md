@@ -45,8 +45,9 @@ _Avoid_: Summary, Statement, Overview
 
 **Tracker**:
 Everything the program can be asked to do, said in the words above. It holds a Store and
-the day it thinks it is, and it answers in Expenses, Budgets and Verdicts — never in exit
+**asks** what day it is, and it answers in Expenses, Budgets and Verdicts — never in exit
 codes, status codes or text meant for a person. Both edges call it; neither is named in it.
+(It held the day until study 38, which is the study about what holding costs.)
 _Avoid_: Service, Manager, Facade, Controller, UseCase, Interactor
 
 ## Deliberately absent

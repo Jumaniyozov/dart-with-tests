@@ -1,0 +1,8 @@
+$ curl -s -H 'authorization: Bearer a-shared-key' http://localhost:8080/budgets
+[]
+
+$ dart run bin/expenses.dart --file expenses.txt budget food 20.00
+food: £20.00
+
+$ curl -s -H 'authorization: Bearer a-shared-key' http://localhost:8080/budgets
+[]
