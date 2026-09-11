@@ -19,22 +19,27 @@ Last checked: 2026-09-11.
 
 ## State
 
-Book I (studies 1-22) is written, audited and pushed. **Book II (23-34) is complete** —
-all twelve snapshots exist, and its promise table is empty because every promise the prose
-made has been paid. **Book III (35-40) is open: studies 35 to 39 are written**, and 40 has
-a provisional title and no code. ADR 0005 records the order and why it costs a sixth
-study. Book IV (41-45) has no outline.
+Book I (studies 1-22) is written, audited and pushed. **Book II (23-34) is complete.**
+**Book III (35-40) is complete**: all six snapshots exist, and all three promise tables
+are empty, because every promise any of the three books made in print has been paid.
+ADR 0005 records Book III's order and why it cost a sixth study. **Book IV (41-45) has no
+outline, and writing one is the next piece of work.**
 
-The next piece of work is study 40, `ch40_expenses`, which closes Book III. Its promise
-table now has **one** row and it is study 40's: two callers can both pass the budget check,
-and the suspension between the decision and the write is what closes it. The lost-update
-debt ADR 0005 declares was **paid into print at 37**, in 37.3, beside the first route that
-writes, and the table is what holds study 40 to it.
+`PRODUCT.md` says Book IV is isolates and real parallelism, codegen, and the reference
+material. Two of those are debts with a paper trail rather than blank pages: study 40
+names the distinction between concurrency and parallelism and promises Book IV the second
+half of it, and ADR 0005's *Deliberately not in Book III* list is the rest of the agenda —
+isolates, `json_serializable`, an ORM, versioned schema migrations, deployment, CORS,
+WebSockets, and authenticating a user. Outline it the way Book III was outlined: measure
+first in a spike that lives outside `code/` and is never committed, and let the titles
+come from what the spike finds.
 
-**Read the spike's findings in `OUTLINE.md` before writing a line of it.** A lost update
-against `FileStore` is a coin — 11/40, then 10/40, then 4/40 at two callers — and the
-deterministic version is a store that suspends in `record` rather than in `all`, 30/30
-across 90 trials. A flaky test in a book about testing is not a trade this book makes.
+**Read Book III's spike findings and study 40's entry in `OUTLINE.md` before touching
+concurrency again.** Two of them will save a day. A lost update against `FileStore` is a
+coin — 11/40, then 10/40, then 4/40 — so a measurement of a race is a sample and never a
+fact. And the thing that actually decides whether two callers can interleave is **how they
+arrive**: two `POST`s on two sockets against study 39's server breach 0 times in 40, while
+the same two calls started with `Future.wait` breach every time.
 
 Counts are not restated here. `OUTLINE.md` and the git log carry them, and a number
 copied into this file is a number that will be wrong within a week. That is exactly how
@@ -130,7 +135,7 @@ a constructor"* — now recorded as `19→23` so the tool can see it.
 ## Open, on the book
 
 - **Three server transcripts stop reproducing on 2026-10-01, and nothing will warn you
-  first.** `tool/capture_server.dart` seeds every store on `2026-09-11`; `GET /budgets`
+  first.** *Still open, and now the oldest thing on this list.* `tool/capture_server.dart` seeds every store on `2026-09-11`; `GET /budgets`
   reports over `Period.of(today())` and `POST /expenses` files under today, so any scenario
   touching either has an answer that depends on the month it was captured in. Measured by
   moving the seed out of the current month: `ch37_expenses/transcripts/statuses.txt` stops
@@ -147,6 +152,14 @@ a constructor"* — now recorded as `19→23` so the tool can see it.
   carry the finding. The fix is not obvious and is worth thinking about before typing: a
   seed dated *today* makes the budget answers stable and makes every printed `day` a clock
   reading, which then needs the same `sed` treatment as the `date:` header.
+
+- **`bin/writers.dart` is the first transcript in this book whose value is that it is
+  deterministic, and nothing re-runs it.** `check_transcripts` re-runs `dart test`
+  transcripts only, on purpose — its own comment says `dart run` on a program that writes
+  or exits is not a checker's business, and 39 transcripts in this book are `dart run`. So
+  study 40 pinned both facts the file shows in `test/alone_test.dart` instead, and the page
+  says so. If Book IV wants those 39 covered, the narrow version is an opt-in: a transcript
+  a SLICE declares re-runnable, rather than a rule about every `dart run`.
 
 - `tool/capture_server.dart` was the one item here before that and it landed with study 35,
   which is exactly what this entry said to do: it was deliberately not written while the

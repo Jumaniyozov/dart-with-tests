@@ -1,6 +1,6 @@
 # Expense tracker
 
-The domain built across Books II and III, studies 23–39. Book I has no domain: each of
+The domain built across Books II and III, studies 23–40. Book I has no domain: each of
 its studies is an independent toy, so this file starts at study 23.
 
 Where prose and code disagree about a word, this file decides. Rationale lives in
@@ -54,15 +54,23 @@ computed, never stored.
 _Avoid_: Summary, Statement, Overview
 
 **Tracker**:
-Everything the program can be asked to do, said in the words above. It holds a Store and
-**asks** what day it is, and it answers in Expenses, Budgets and Verdicts — never in exit
-codes, status codes or text meant for a person. Both edges call it; neither is named in it.
-(It held the day until study 38, which is the study about what holding costs.)
+Everything the program can be asked to do, said in the words above. It holds a Store,
+**asks** what day it is, and is **told** whether it is alone; it answers in Expenses,
+Budgets and Verdicts — never in exit codes, status codes or text meant for a person. Both
+edges call it; neither is named in it. (It held the day until study 38, which is the study
+about what holding costs.)
 _Avoid_: Service, Manager, Facade, Controller, UseCase, Interactor
+
+  **Alone is not a domain word and does not get an entry**, which ADR 0005's *one new
+  term* rule is the reason for. It is a capability the edge hands over, like the clock
+  before it, and the tracker knows no more about what it does than it knows about which
+  calendar the day came from. If it ever needs a noun, something has leaked.
 
 ## Deliberately absent
 
 - **Income**, and therefore **Balance**. The tracker records money out only.
 - **Refund**. A negative expense is unrepresentable by design; if refunds are ever
   added, they need their own term rather than a negative Money.
-- **Account**. There is one person and one store.
+- **Account**. There is one person and one store. Study 40 does not change that: two
+  writers here are two *programs* — the server and the command line — rather than two
+  people, and the shared key study 37 added authenticates a caller for the same reason.

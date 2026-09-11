@@ -1717,7 +1717,117 @@ prose than the largest and a third more code. So a study that is over budget doe
 show up as a sixth heading; it shows up as sections carrying five and six includes,
 which is the number to watch when planning Book IV.
 
-### 40 — A second writer · `a-second-writer` · `ch40_expenses`
+### 40 — A second writer · `a-second-writer` · `ch40_expenses` — **WRITTEN**
+
+Shipped: 269 green, 3 challenges at 12 failing, 3 transcripts.
+
+**The debt this study existed to pay had already been paid, by accident, and the
+outline could not have known.** `bin/serve.dart` served from `FileStore` when
+ADR 0005 declared the debt; study 39 replaced it with `SqliteStore`, which
+reaches C over `dart:ffi`. Measured through two real sockets, forty trials at
+two, three and four concurrent callers: **0 breaches, every time.** `FileStore`
+in the same harness gave 15/40, 13/40 and 20/40 — the coin the spike found,
+reproduced a fourth time.
+
+**And the same measurement at a different level says the opposite, which is the
+study.** Two `tracker.record` calls started with `Future.wait` against that same
+`SqliteStore` record **both** expenses, 4 runs out of 4 — £12.00 against a
+£10.00 limit. Same store, same tracker, same code. What differed was how the two
+calls arrived: `shelf_io` delivers one socket event at a time and the microtask
+queue drains between them, so a handler that only awaits complete futures cannot
+be interrupted. **The safety was a property of the arrival, and nothing in the
+program said so.**
+
+So the study is not *close the race*; the race was closed. It is **make it a
+thing the program says**, and the transferable sentence is that a guarantee
+nobody wrote down is a guarantee the next commit takes away.
+
+**`Tracker` takes an `Alone` as a third argument, required.** A generic function
+type — `Future<T> Function<T>(Future<T> Function() body)` — handed in the way
+study 38 handed in the clock. It is deliberately **not** a fifth member on
+`Store`: study 28 settled that an interface promises what its weakest
+implementation can keep, and this is the first time that rule has been applied
+in the refusing direction. `FileStore` cannot keep it, so `Store` must not offer
+it. Eight call sites paid, which is a tenth of what renaming a member cost at 39.
+
+**`BEGIN IMMEDIATE`, and the measurement is better than the rule.** Two
+connections, both deferred: both read the same total, one `INSERT` upgrades its
+shared lock, the other is answered `database is locked` — **and then the
+`COMMIT` of the one that did get in fails as well**, because the loser is still
+holding its read. Everybody told yes, nothing recorded. That is a stronger
+argument for `IMMEDIATE` than *it takes the lock earlier*, and no prediction
+here reached it. `COMMIT` failing is also the case that makes study 39's
+`finally` with no `catch` load-bearing rather than tidy.
+
+**What a boundary buys is not success; it is a loud failure instead of a wrong
+answer.** One connection holds one transaction, so two in-flight calls through
+`aloneIn` give `cannot start a transaction within a transaction` and **one**
+recorded expense. The budget holds. A caller gets an error it can retry, which
+is the trade, stated on the page in those words.
+
+**No busy timeout, and the reason is `dart:ffi` again.** SQLite waits inside the
+C call, which runs on the isolate's only thread: asserted by scheduling a
+`Timer.run` and finding it has not fired when the blocked statement throws. The
+synchrony that made two requests unable to interleave is the synchrony that
+makes waiting unaffordable — a property is rarely convenient in only one
+direction.
+
+**ADR 0005 predicted study 40 would weigh CQRS and units of work and decline
+them. It does, and a third candidate arrived that the prediction did not name.**
+A unit of work is `alone` minus the object; CQRS answers a question this program
+does not have, because `Store.expenses` and `Store.record` are the same shape
+and study 31 already moved the one thing that was not. The third is a **queue**,
+and it nearly earned its place — it is the right answer for the `Future.wait`
+case and it turns the exception into a `Breach` from the budget. Declined
+because nothing in the package produces that case, and shipped as challenge 1.
+
+**Two defects in study 39 were found by copying it, and neither is a race.**
+`_defaultPath` was still `'expenses.txt'` while four sentences — CHANGELOG, a
+doc comment, the README and the published page — said `expenses.db`, with
+`arguments_test.dart` asserting the old value three times; following study 39's
+own README gives `SqliteException(26): file is not a database` on the next
+command. Fixed at `4c2820f`, recorded in ADR 0004 as a one-snapshot retroactive
+fix. And `server.dart#writes` still carried study 37's sentence naming
+`FileStore`, describing a program the package had not run for a whole study,
+with 261 tests green underneath it, because no test asks what a doc comment
+says.
+
+**A tooling limit found by building on it, then not building on it.**
+`check_regions` matches `#region (\w+)` lazily to the first `#endregion`, so a
+**nested** region is invisible to it and the outer one's text is silently
+truncated. `alone` started as a method inside `#sqlitestore` and is now a
+top-level `aloneIn` in its own region — which turned out to be the better design
+anyway, because two stores over one `Database` share one transaction and a
+member would have said otherwise.
+
+**A measurement has an author, and the same sweep that checks a block quote does
+not check one.** The page's first draft said *the same nested `BEGIN` study 39
+measured*; the nested `BEGIN` was measured by **Book III's spike**, before study
+39 was written, and lives in this file's *What the spike measured* section. The
+standing requirement about block quotes covers prose somebody said — this is a
+number somebody took, cited from memory the same way. It is the third
+misattribution in two studies, and the general form is one sentence: **cite the
+run, not the study you remember it from.**
+
+Smaller things worth not rediscovering. A generic method tear-off satisfies a
+generic function type, and so does an inline `<T>(body) => …` literal with its
+parameter type inferred from the context. A redundant `async` was **not**
+measurable as an extra microtask hop — the experiment written to prove it
+printed the opposite, and the Practice was rewritten around what the guideline
+actually says. `bin/` gained `writers.dart`, a demonstration in the sense study
+38 gave `bin/holding.dart`: the thing this study is about cannot be shown by a
+test that passes, because a reader has to see £12.00 and then £6.00.
+
+**Not the overloaded one, and this is the first time the measurement was taken
+with a script rather than by hand.** Prose words excluding `<include>` lines,
+then includes, over all six pages in one run: 1864/14, 2365/17, 2525/20,
+2099/17, 2757/27, and this one at **2721/18**. Study 39's entry quotes word
+counts a little higher because they were counted a different way; these six were
+counted together and are comparable with each other, which is the only property
+the number needs. Five numbered sections, like every other study in Books II and
+III. Study 39 remains the biggest on both axes, and the gap on includes is the
+one to watch — nine fewer here, for a page that is not much shorter.
+
 
 Name the machinery first, because everything else follows from it: an `await` on an
 already-completed future resumes on the **microtask** queue, and that queue drains
@@ -1758,7 +1868,13 @@ promise you can only keep in a CLI is a promise you should not have made in a CL
 ### Deliberately not in Book III
 
 - **Isolates and real parallelism.** Book IV (41–45), per `PRODUCT.md`. Study 40 names the
-  distinction and promises it, so this is a debt the promise table tracks.
+  distinction in 40.1 — one thread of one isolate, two things in progress and one running —
+  and says the second half is Book IV's. **It is not in a promise table and cannot be
+  yet**, because `check_promises` matches a row against the page of the study that pays it
+  and Book IV has no pages. It is carried by `HANDOFF.md`'s State section and by this list
+  until Book IV is outlined, at which point it becomes the first row of Book IV's inherited
+  promises. A debt with two records and no checker is the case this book has been wrong
+  about before, so: **the outline for Book IV must open by writing that row.**
 - **Codegen** — `json_serializable`, OpenAPI generation. Book IV. The domain already has
   hand-written `toJson`/`fromJson` from study 29 and they are the better teaching artifact.
 - **An ORM** (`drift`). Codegen, and it hides the schema study 39 exists to show.
@@ -1794,9 +1910,14 @@ checked by `check_promises`, and Book II's had three rows that were fiction.
 
 | Owed by | Made in | The reader is promised |
 | --- | --- | --- |
-| 40 | 37 | Two callers can both pass the budget check, so the program can record a breach nothing refused — and the suspension between the decision and the write is what closes it |
 
 `check_promises` distinguishes an empty table from a missing one and fails on the second.
+
+40←37 (two callers can both pass the budget check — paid by measuring that they
+could **not**, through two sockets, because study 39's store never suspends, and
+that they very much could through two calls in flight against that same store.
+`Tracker` takes an `Alone` as a third required argument and `record` runs inside
+it; `bin/` hands over `BEGIN IMMEDIATE` and the tests hand over `unguarded`).
 
 Paid: 36←35 (the server could say only `recorded: N`, because every use case was private to
 `command.dart` and `run` answered an `Outcome`; study 36 extracted `Tracker` and the server

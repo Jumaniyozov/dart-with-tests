@@ -1,0 +1,10 @@
+$ dart run bin/writers.dart
+Running build hooks...Running build hooks...without a boundary
+  first  recorded, £4.00 left
+  second recorded, £4.00 left
+  the month holds £12.00 against £10.00
+
+with the boundary bin/serve.dart hands over
+  first  recorded, £4.00 left
+  second not served: database is locked
+  the month holds £6.00 against £10.00

@@ -163,7 +163,22 @@ against this record's premises.
 
   **Paid at 37, in 37.3, beside the route that writes.** The page says that two callers can
   both be told there is room and both be recorded, that this is the first study in which that
-  is possible, and that study 40 is where it is measured and closed. The promise table carries
+  is possible, and that study 40 is where it is measured and closed.
+
+  **And this bullet's premise expired at 39, which nobody noticed for a study.** The server
+  stopped serving from `FileStore` when study 39 gave it a `SqliteStore`, and `dart:ffi` is a
+  function call rather than an event loop — so the race was closed, by accident, with nothing
+  written down. Measured at study 40 through two real sockets: **0 breaches in 40 trials** at
+  two, three and four concurrent callers, where `FileStore` in the same harness gave 15, 13
+  and 20. The declared debt was paid by a study that was not trying to pay it.
+
+  Two things follow and both are on study 40's page. The sentence in `server.dart#writes`
+  naming `FileStore` outlived the program it described by a whole study, with 261 tests green
+  underneath it, because no test asks what a doc comment says. And the safety turned out to be
+  a property of **how requests arrive** rather than of this program: the same two calls started
+  with `Future.wait` against that same `SqliteStore` record both expenses, every time. So study
+  40 is not *close the race* — it is make it something the program says, which is `Tracker`'s
+  third constructor argument. The promise table carries
   the row, so `check_promises` holds study 40 to it.
 - **The server logs nothing time-varying** — no timestamps, no elapsed times, no random
   ports. Not a style rule: a transcript carrying a clock reading cannot be re-run, and
@@ -237,10 +252,26 @@ against this record's premises.
 **Predicted.** These are guesses this record is making before the work. Each is to be
 re-read against the finished study and amended here if it was wrong.
 
-- That study 40 will **weigh CQRS and units of work and decline them**, the way study 34
+- ~~That study 40 will **weigh CQRS and units of work and decline them**, the way study 34
   declined `public_member_api_docs`. The tracker's API is small and a five-endpoint
   service rarely needs either. But declining is only honest after measuring, and if the
-  concurrent writer turns out to need a unit of work, this bullet is what was wrong.
+  concurrent writer turns out to need a unit of work, this bullet is what was wrong.~~
+  **Right, and it named two of the three candidates.** A unit of work is what `alone` is
+  minus the object, and there is one use case in this program that reads before it writes.
+  CQRS answers a question the tracker does not have: `Store.expenses` answers an `Expense`
+  and `Store.record` takes one, and study 31 already moved the one thing that was not the
+  same shape into `Report`. The third candidate is a **queue** — the second caller waiting
+  its turn in Dart rather than being refused by SQLite — which this record did not
+  anticipate and which came closest to earning its place, because it is the right answer
+  for two calls in flight and it turns the exception into a `Breach` from the budget.
+  Declined because nothing in the package produces that case. All three are study 40's
+  challenges, which is where *what you would write if you needed it* belongs.
+
+  **What a boundary buys had to be restated, and it is not what this record assumed.** It
+  does not make the second caller succeed. One connection holds one transaction, so two
+  calls in flight give `cannot start a transaction within a transaction` and one recorded
+  expense: the boundary converts a **silently wrong answer into a loud failure**, and the
+  budget holds either way.
 - ~~That the microtask queue draining before the next socket event means a handler awaiting
   an `InMemoryStore` **cannot** interleave with another request.~~ **Measured, and it holds.**
   Two requests on two already-open sockets: `InMemoryStore` gives `A enter, A exit, B enter,

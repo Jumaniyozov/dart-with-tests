@@ -1,0 +1,329 @@
+---
+title: A second writer
+study: 40
+direction: The lost update this book declared three studies ago had already closed itself, and a guarantee nobody wrote down is a guarantee the next commit takes away.
+description: Why two requests cannot interleave and two calls can, a transaction boundary handed to Tracker the way study 38 handed it a clock, and the verb that decides whether a second writer is refused before it reads or after it has already decided.
+---
+
+Study 37 shipped the first route that writes, and said what it had just made
+possible:
+
+> It is said here rather than found later: study 40 is where the suspension between the decision and the write is measured and closed.
+
+This is that study. The measurement went first, as it always does here, and it
+came back with an answer nobody had written down: **the lost update was already
+gone.** Study 39 closed it, by accident, and left no record that it had.
+
+<Drill n={1}>
+
+<Direction>The same two expenses, against the same limit, given to two writers twice. The only difference is whether the program says anything about being alone.</Direction>
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch40_expenses/transcripts/writers.txt</include>
+</Console>
+
+</Drill>
+
+## 40.1 The race that closed itself
+
+Start with the machinery, because everything after it follows.
+
+<include cwd lang="dart" meta='title="test/alone_test.dart"'>../code/ch40_expenses/test/alone_test.dart#machinery</include>
+
+Two callbacks are queued before anything yields, and the timer's delay is zero,
+so nothing about *time* separates them. What separates them is which queue they
+are on. An `await` on a future that is already complete resumes on the
+**microtask queue**, and Dart drains that queue to empty before the event loop
+is allowed to deliver the next event — and the next request arriving on a socket
+is an event.
+
+**None of this is parallelism, and the two words are not interchangeable.**
+Everything on this page happens on one thread of one isolate: two things are *in
+progress* at once and exactly one of them is *running* at any moment.
+Parallelism — two things running at the same instant, on two cores — needs
+isolates, which is Book IV's, and it is a debt this study takes on by naming the
+distinction rather than finishing it.
+
+So a handler that only ever awaits already-complete futures runs from its first
+line to its last with nothing else getting a turn. `SqliteStore` reaches C
+through `dart:ffi`, which is a function call and not an event loop, so every
+answer it gives is complete before it is returned. Study 39 replaced the store
+under `bin/serve.dart` and, without mentioning it, made the read-decide-write in
+`Tracker.record` uninterruptible.
+
+Now do something with it. Here is the arrangement every test on this page uses:
+
+<include cwd lang="dart" meta='title="test/alone_test.dart"'>../code/ch40_expenses/test/alone_test.dart#harness</include>
+
+£6.00 twice against £10.00 is the smallest arrangement in which *both callers
+were told yes* is a sentence with a victim — either expense is fine on its own
+and the pair is not.
+
+<include cwd lang="dart" meta='title="test/alone_test.dart"'>../code/ch40_expenses/test/alone_test.dart#arrival</include>
+
+**The two tests do the same thing to the same store and disagree**, and that is
+the whole of 40.1. Two `POST`s on two sockets record one expense. Two
+`Tracker.record` calls already in flight record two — £12.00 against a £10.00
+limit, both callers told there was room, nothing refused.
+
+Nothing about the second test is exotic. `Future.wait` over two calls is what
+any batch importer writes, what a retry loop writes, and what the next edge this
+program grows will write. The safety in the first test was never `Tracker`'s and
+never `SqliteStore`'s: it was a fact about **how the two requests arrived**.
+
+<Gloss title="Why the harness connects both sockets before writing either request">
+<include cwd lang="dart" meta='title="test/alone_test.dart"'>../code/ch40_expenses/test/alone_test.dart#sockets</include>
+
+Book III's spike wrote its first version of this as one loop — connect, write,
+connect, write — and measured that nothing ever interleaves, for any store at
+all. It was measuring the client. `await Socket.connect` yields, which lets the
+server finish the first request before the second one exists.
+
+A harness that imitates the reader approximately produces evidence about the
+harness, which is a thing this book has now been caught by twice.
+</Gloss>
+
+## 40.2 A boundary is something an edge hands over
+
+`Tracker.record` reads the limits, reads the month, decides, and writes. Those
+four steps have to be one step. The question is who gets to say so.
+
+<include cwd lang="dart" meta='title="lib/src/tracker.dart"'>../code/ch40_expenses/lib/src/tracker.dart#alone</include>
+
+**The obvious home for this is a fifth member on `Store`, and study 28 already
+ruled it out.** That study made every member of `Store` return a `Future`, and
+the reason is written into the interface's doc comment: a signature is a claim
+about time, `void record(Expense)` is a claim a file cannot keep, so the promise
+had to be the weaker, truer one. An interface promises what its *weakest*
+implementation can keep. `Store.alone` would have had to promise the opposite —
+more than `FileStore` can keep — and the two implementations that could keep it
+would have been carrying a member the third was lying about.
+
+So it is handed in, which is exactly what study 38 did with the clock. The thing
+that can really make a unit of work is the database; `bin/` is where this
+program decides which database it has; `bin/` is therefore where it is decided
+whether anything is guaranteed at all.
+
+<include cwd lang="dart" meta='title="lib/src/tracker.dart"'>../code/ch40_expenses/lib/src/tracker.dart#tracker</include>
+
+`record` lost its `async` in the move. Its body no longer awaits anything — it
+hands a body to `alone` and answers whatever comes back — so the only thing
+`async` would add is a word.
+
+**The third parameter has no default, and that is the argument this study is
+making in one line of syntax.** A default of `unguarded` would have let every
+existing call site keep the guarantee it happened to have, without anyone
+deciding anything, which is precisely the state study 39 shipped in.
+
+<include cwd lang="dart" meta='title="test/tracker_test.dart"'>../code/ch40_expenses/test/tracker_test.dart#moved</include>
+
+That test is study 36's, holding `command.dart` to naming `Store` and `Day`
+exactly once each. It had to change, and the first rewrite of it asserted the
+one-line spelling of a signature `dart format` had just wrapped — a test about
+the formatter. Collapsing the whitespace first is the fix, and the
+general form is the one the standing requirements already carry: **the thing you
+are checking has been reformatted since it was written.**
+
+<include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch40_expenses/lib/src/command.dart#run</include>
+
+`run` takes it named, and with a default. The asymmetry is deliberate rather
+than tired: `Tracker` is the layer a boundary is spoken about at, so it has to
+be said there. `run` is one caller of it, every test that calls `run` has one
+store and one caller, and `unguarded` describes that exactly. The one caller
+that is a real second writer — `bin/expenses.dart`, in somebody's other terminal
+— passes the real one.
+
+## 40.3 The verb is the whole of it
+
+<include cwd lang="dart" meta='title="lib/src/sqlite_store.dart"'>../code/ch40_expenses/lib/src/sqlite_store.dart#alone</include>
+
+This is study 39's first challenge grown up. That one asked for
+`atomically<T>(Database db, T Function() body)`; this is the same shape with a
+`Future` in it, and it is a free function rather than a member because two
+stores over one `Database` share one transaction — a member would have said
+otherwise.
+
+What is not obvious is `IMMEDIATE`.
+
+<include cwd lang="dart" meta='title="test/alone_test.dart"'>../code/ch40_expenses/test/alone_test.dart#lock</include>
+
+**`BEGIN` on its own is a deferred transaction, and deferred is the wrong
+promise for a decision.** It takes no lock. The first `SELECT` takes a shared
+one, which is not exclusive, so a second writer reads the same total and is told
+the same thing. The first write then has to upgrade its shared lock to a write
+lock — and the upgrade is what fails, *after* the decision, which is the worst
+possible moment to find out.
+
+Read the second test again, because it gets worse than that. The writer that
+*did* get in cannot finish either: its `COMMIT` is answered `database is locked`,
+because the loser is still holding its read. **Both callers were told yes and
+nothing at all was recorded.** `COMMIT` is the statement nobody writes a `catch`
+around, which is why the `finally` study 39 argued for is not a nicety.
+
+`BEGIN IMMEDIATE` asks for the write lock at the top. The second writer is
+refused before it reads anything, so it never gets a total it would then be
+allowed to trust.
+
+<include cwd lang="dart" meta='title="test/alone_test.dart"'>../code/ch40_expenses/test/alone_test.dart#loud</include>
+
+One connection holds one transaction, so two calls in flight against one
+`SqliteStore` do not both get in — the second `BEGIN IMMEDIATE` fails with
+*cannot start a transaction within a transaction* — the nested `BEGIN` Book
+III's spike found before study 39 was written, arriving here from a direction
+that spike had no way to reach.
+
+That is the trade this study makes, stated plainly: **a boundary does not make
+the second caller succeed. It makes the second caller fail instead of succeeding
+wrongly.** One expense is recorded, the budget holds, and somebody gets an error
+they can retry. The alternative was £12.00 under a £10.00 limit and nobody
+knowing.
+
+## 40.4 What waiting costs, and three answers this study does not ship
+
+SQLite has a knob for exactly this. `PRAGMA busy_timeout = N` makes a second
+writer wait up to N milliseconds for the lock instead of failing. It is one
+line, and this program does not set it.
+
+<include cwd lang="dart" meta='title="test/alone_test.dart"'>../code/ch40_expenses/test/alone_test.dart#blocking</include>
+
+**SQLite waits inside the C call, and `dart:ffi` runs that call on this
+isolate's only thread.** A timer that is already due does not run while it
+waits. So a server that waits two seconds for a lock is a server that answers
+nobody for two seconds — not just the caller that is waiting; everybody.
+
+That is the same fact as 40.1 wearing the other face. `dart:ffi` being
+synchronous is what made two requests unable to interleave, and it is what makes
+waiting unaffordable. A property is rarely convenient in only one direction.
+
+ADR 0003 kept CQRS, units of work and transaction boundaries out of Book II on
+the grounds that the tracker had no concurrency, and promised the argument here,
+with a real concurrent writer on the page. Here it is, and here is the argument:
+
+- **A unit of work** — an object that collects changes and commits them
+  together — is what `alone` is, minus the object. There is one use case in this
+  program that reads before it writes. A type whose whole job is to be the thing
+  a single function passes to a single other function is a name where a
+  parameter would do.
+- **CQRS** — separate models for reading and writing — is an answer to reads and
+  writes wanting different shapes. Ask this program what shapes those are:
+  `Store.expenses` answers `Expense`, `Store.record` takes one. They are the same
+  shape, and study 31 already moved the one thing that was not (`totals`) into
+  `Report`, where it derives from expenses rather than from a store.
+- **A queue**, so the second caller waits its turn in Dart rather than being
+  refused by SQLite, is the one that nearly earned its place — it is small, it is
+  the right answer for the `Future.wait` case, and it makes the second caller get
+  a `Breach` from the budget instead of an exception from a database. It is not
+  shipped because no code in this package produces that case, and a mechanism
+  added for a caller that does not exist is a guess about a caller.
+
+All three are the challenges at the bottom of this page, which is the honest
+place for them: *here is what you would write if you needed it* is a different
+sentence from *here is what this program needs*.
+
+## 40.5 Two writers, and what study 28 was really promising
+
+<include cwd lang="dart" meta='title="bin/writers.dart"'>../code/ch40_expenses/bin/writers.dart#writers</include>
+
+The interleaving is scripted and the program says so. Book III's spike measured
+two real overlapping writers breaching 11 times in 40, then 10, then 4 — so a
+program that raced them would print a different answer the second time the
+reader ran it, and line 1 of a transcript in this book is a command the reader
+can type. What is deterministic is the *shape*: both read before either writes.
+Run that shape and what each writer is told is a fact about SQLite rather than
+about who won — the same two facts `test/alone_test.dart` asserts above, which
+is what keeps this file honest, because `check_transcripts` re-runs `dart test`
+and not `dart run`.
+
+Two connections and not two processes, because two connections is what two
+processes have. The lock is on the file.
+
+<include cwd lang="dart" meta='title="bin/serve.dart"'>../code/ch40_expenses/bin/serve.dart#serve</include>
+
+<include cwd lang="dart" meta='title="bin/expenses.dart"'>../code/ch40_expenses/bin/expenses.dart#main</include>
+
+Both edges hand over the same boundary, and the command line is not an
+afterthought: it has been the second writer since study 35 kept it, and study 38
+used it as one on purpose. Two terminals are two writers.
+
+<include cwd lang="dart" meta='title="lib/src/server.dart"'>../code/ch40_expenses/lib/src/server.dart#writes</include>
+
+**The sentence that route used to carry is why this study exists.** Study 37
+wrote *`FileStore` touches a disk in between*, which was true when it was
+written. Study 39 changed what `bin/serve.dart` builds and did not change this
+doc comment, so for one whole study a published page described a program the
+package no longer ran — with 261 tests passing underneath it, because no test
+asks what a doc comment says.
+
+That is the shape of the whole study, one level up. **A guarantee nobody wrote
+down is a guarantee the next commit takes away**, and the same is true of a
+guarantee that arrives by accident: study 39 made the race impossible and told
+nobody, so nothing would have noticed the day it became possible again.
+
+Which is what study 28 was promising all along. Every member of `Store` returns
+a `Future` — not because a file is slow, but because a signature is a claim
+about time, and a claim about time is the only kind of claim concurrency can
+falsify. Book III spent six studies finding out what that costs.
+
+<Practice source="Effective Dart — Usage" href="https://dart.dev/effective-dart/usage#dont-use-async-when-it-has-no-useful-effect">
+**"If you can omit the `async` without changing the behavior of the function, do
+so."** `Tracker.record` was `async` for four studies and is not any more: its
+body became one expression, `alone(...)`, and there is nothing left for `async`
+to do.
+
+The usual reading of this rule is tidiness. There is a better one, and study 28
+is where this book already wrote it down: **`Future` and `async` are two
+different claims.** `Future` is what a member *answers* — a promise about when
+the caller finds out. `async` is what a member's *body does* — a statement that
+it suspends somewhere in the middle, which is a statement about whether anything
+else can happen while it runs.
+
+So this rule is not the only one worth following, and this book declines it once
+on purpose. `InMemoryStore.record` is `async` with nothing to await, because
+`async => _recorded.add(expense)` is the shortest honest way to answer an
+already-complete future. `Tracker.record` is not, because it has nothing to
+suspend for. Ask which of the two claims you are making before deleting the word.
+</Practice>
+
+## Wrapping up
+
+The lost update this book declared at study 37 had already closed itself, and an
+accident is not a rule.
+
+It closed because `SqliteStore` talks to C over `dart:ffi` and never suspends,
+and because an `await` on a completed future resumes on the microtask queue,
+which drains before the event loop delivers the next socket event. Measured from
+both sides: two `POST`s on two sockets record one expense, and the same two calls
+started with `Future.wait` record both.
+
+`Tracker` takes an `Alone` as a third argument with no default, because the one
+thing a caller can get wrong about a tracker is what it is allowed to assume. It
+is a function and not a member on `Store`, because study 28 settled that an
+interface promises what its weakest implementation can keep.
+
+`BEGIN IMMEDIATE` and not `BEGIN`. Deferred takes its lock at the first read and
+has to upgrade it at the first write, so a second writer decides on a number it
+is not entitled to and then finds out — and the writer that did get in has its
+`COMMIT` refused as well, which leaves everybody told yes and nothing recorded.
+
+There is no busy timeout, and that is a decision. SQLite waits inside the C call,
+`dart:ffi` runs it on this isolate's only thread, and a timer that is already due
+does not fire while it waits.
+
+CQRS, a unit of work and a queue were each weighed and none is shipped. The
+argument ADR 0003 promised is made, and the adoption was never the point.
+
+Also met: the microtask queue against the event loop, a generic function type as
+a parameter, a generic function literal, `BEGIN IMMEDIATE`, `PRAGMA
+busy_timeout`, `SqliteException.resultCode`, `Timer.run`, `Socket.connect`, and a
+doc comment that had been false for a whole study.
+
+## Challenges
+
+Three challenges, twelve failing tests. Make them pass one at a time. Do not edit
+the tests. All three are the answers 40.4 weighed and declined, so finishing them
+is not fixing this program — it is finding out what the one it does not need
+would have cost.
+
+<Console>
+<include cwd lang="saff-console" meta='title="terminal"'>../code/ch40_expenses/transcripts/challenges.txt</include>
+</Console>

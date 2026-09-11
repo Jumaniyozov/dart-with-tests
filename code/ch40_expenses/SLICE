@@ -1,0 +1,39 @@
+# Study 40 — what changed since study 39.
+#
+# Added — the boundary the read-decide-write runs inside, measured from both
+# sides, and a program that shows two writers the same two expenses.
+bin/writers.dart
+test/alone_test.dart
+# Changed — `Tracker` takes a third argument and `record` runs inside it;
+# `SqliteStore` gains the one implementation of it that is really one; and both
+# entrypoints hand it over, because both of them are writers.
+lib/src/tracker.dart
+lib/src/sqlite_store.dart
+lib/src/command.dart
+lib/src/server.dart
+bin/expenses.dart
+bin/serve.dart
+test/tracker_test.dart
+test/server_test.dart
+test/surface_test.dart
+pubspec.yaml
+CHANGELOG.md
+README.md
+#
+# unshown: test/surface_test.dart#runnable — `writers.dart` added to the list
+#   of programs `dart run ch40_expenses:<name>` reaches, and the doc comment
+#   saying why an addition is not the breaking change a removal is. 40.5 shows
+#   the program; the contract it joined is study 36's and is explained there.
+# unshown: test/tracker_test.dart#setup — one argument, `unguarded`, in the
+#   `setUp` every group in the file shares. The default is what a test with one
+#   store and one caller has, and 40.2 says so where `run` does the same.
+# unshown: test/tracker_test.dart#clock — the same argument at two more call
+#   sites, in study 38's group about the day being asked for rather than
+#   remembered. Nothing it asserts changed.
+# unshown: test/server_test.dart#harness — the same argument, in the setup two
+#   studies' worth of route tests share.
+# unshown: test/server_test.dart#clock — the same argument.
+# unshown: test/server_test.dart#returns — the same argument, inside study 35's
+#   assertion that `io.serve` hands back a `dart:io` `HttpServer`.
+# unshown: test/server_test.dart#headers — the same argument, inside study 35's
+#   assertion about what `serve` puts on the wire.
