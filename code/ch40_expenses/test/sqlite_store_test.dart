@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:ch40_expenses/expenses.dart';
 import 'package:ch40_expenses/src/sqlite_store.dart';
@@ -328,4 +329,50 @@ void main() {
     });
   });
   // #endregion upsert
+
+  // #region every
+  /// *Every statement goes through `_named`* is a rule, and a rule nobody
+  /// checks is a habit.
+  ///
+  /// It was written as a sentence first and it was false: `_named` began as a
+  /// private member of `SqliteStore`, so `aloneIn`'s own `BEGIN IMMEDIATE` —
+  /// the statement the whole of study 40 is about — was the one that could
+  /// still answer in `package:sqlite3`'s vocabulary. A test at the HTTP edge
+  /// found it, which is two layers further out than it should have been found.
+  ///
+  /// This reads the source rather than the behaviour on purpose. Reaching
+  /// every statement by contending for a lock would mean five tests that each
+  /// hold a database open; the claim is about the shape of the file, so the
+  /// file is what it asks.
+  group('every statement this package sends to SQLite', () {
+    test('is wrapped in the one function that gives result code 5 a name', () {
+      // Whitespace collapsed first, because `dart format` decides where a
+      // wrapped statement breaks and a line-based version of this test is a
+      // test about the formatter.
+      final source = File('lib/src/sqlite_store.dart')
+          .readAsStringSync()
+          .replaceAll(RegExp(r'\s+'), ' ');
+
+      // `dart format` puts a break after `_named(` when the statement is long,
+      // which collapses to a space, so the wrapper is matched as a shape
+      // rather than as a string.
+      final wrapper = RegExp(r'_named\(\s*\(\)\s*=>\s*$');
+      final direct = [
+        for (final match in RegExp(
+          r'db\.(execute|select)\(',
+        ).allMatches(source))
+          if (!wrapper.hasMatch(source.substring(0, match.start)))
+            source.substring(match.start, match.start + 40),
+      ];
+
+      expect(
+        direct,
+        isEmpty,
+        reason:
+            'a statement outside _named can still throw SqliteException '
+            'past Tracker and out at an edge that is not allowed to name it',
+      );
+    });
+  });
+  // #endregion every
 }

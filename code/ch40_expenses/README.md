@@ -45,11 +45,8 @@ Every answer is a JSON document, and every refusal has a `problem` in it.
 
 `401` nobody said who is asking · `400` the request could not be read ·
 `409` a budget refused it · `404` no such path, or no such budget ·
+`503` another writer has the database, so send the same request again ·
 `500` this program is wrong, and it will not say more than that.
-
-A database another writer has locked is answered `500` as well, and should not
-be: it is a conflict rather than a bug. Study 40 measures it and says so rather
-than fixing it, because naming the failure is a type at two edges.
 
 ## What this package offers
 
@@ -67,8 +64,9 @@ private to the package and free to change without a major version.
   is what both edges call. It takes a `Day Function()`, not a `Day`: a server
   outlives a day and has to ask. It also takes an `Alone`, which is how the
   edge says what it can promise about two writers arriving at once.
-- `Alone`, `unguarded` — a body run as one unit, and the one that promises
-  nothing. The edge that chose the database is the edge that knows.
+- `Alone`, `unguarded`, `Busy` — a body run as one unit, the one that promises
+  nothing, and what a writer is told when another writer has the database. The
+  edge that chose the database is the edge that knows.
 - `run` — one command line, start to finish, answering an `Outcome` rather than
   printing. The terminal's edge, and only the terminal's.
 

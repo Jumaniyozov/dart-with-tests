@@ -1,5 +1,6 @@
 import 'package:sqlite3/sqlite3.dart';
 
+import 'alone.dart';
 import 'budget.dart';
 import 'category.dart';
 import 'day.dart';
@@ -67,7 +68,7 @@ class SqliteStore._(final Database db) implements Store {
   /// Read and write expenses in [db], creating the tables if they are not
   /// there.
   factory SqliteStore(Database db) {
-    db.execute(schema);
+    _named(() => db.execute(schema));
     return SqliteStore._(db);
   }
 
@@ -95,14 +96,16 @@ class SqliteStore._(final Database db) implements Store {
   /// 37's counting double, now measuring a difference.
   @override
   Future<List<Expense>> expenses({Period? period, int? count}) async {
-    final rows = db.select(
-      'SELECT day, pence, category, note, acknowledged FROM expenses '
-      'WHERE day >= ? AND day <= ? ORDER BY id LIMIT ?',
-      [
-        period?.first.asText ?? _dawn,
-        period?.last.asText ?? _dusk,
-        count ?? _unbounded,
-      ],
+    final rows = _named(
+      () => db.select(
+        'SELECT day, pence, category, note, acknowledged FROM expenses '
+        'WHERE day >= ? AND day <= ? ORDER BY id LIMIT ?',
+        [
+          period?.first.asText ?? _dawn,
+          period?.last.asText ?? _dusk,
+          count ?? _unbounded,
+        ],
+      ),
     );
     return List.unmodifiable([for (final row in rows) ?_expenseFrom(row)]);
   }
@@ -115,24 +118,28 @@ class SqliteStore._(final Database db) implements Store {
   /// were first set, which is the order the other two answer in.
   @override
   Future<List<Limit>> get limits async {
-    final rows = db.select('SELECT category, pence FROM limits ORDER BY rowid');
+    final rows = _named(
+      () => db.select('SELECT category, pence FROM limits ORDER BY rowid'),
+    );
     return List.unmodifiable([for (final row in rows) ?_limitFrom(row)]);
   }
 
   @override
-  Future<void> record(Expense expense) async => db.execute(
-    'INSERT INTO expenses (day, pence, category, note, acknowledged) '
-    'VALUES (?, ?, ?, ?, ?)',
-    [
-      expense.day.asText,
-      expense.amount.pence,
-      expense.category.name,
-      expense.note,
-      // `1` and not `true`. `sqlite3` would store a `true` as a `1` for you and
-      // the column would still be an integer, so the conversion happens either
-      // way — this is the version where you can see it happen.
-      expense.acknowledged ? 1 : 0,
-    ],
+  Future<void> record(Expense expense) async => _named(
+    () => db.execute(
+      'INSERT INTO expenses (day, pence, category, note, acknowledged) '
+      'VALUES (?, ?, ?, ?, ?)',
+      [
+        expense.day.asText,
+        expense.amount.pence,
+        expense.category.name,
+        expense.note,
+        // `1` and not `true`. `sqlite3` would store a `true` as a `1` for you and
+        // the column would still be an integer, so the conversion happens either
+        // way — this is the version where you can see it happen.
+        expense.acknowledged ? 1 : 0,
+      ],
+    ),
   );
 
   /// Set the limit on a category, **replacing** any limit already on it.
@@ -144,10 +151,12 @@ class SqliteStore._(final Database db) implements Store {
   /// has promised since study 32. `excluded` is SQLite's name for the row that
   /// was refused.
   @override
-  Future<void> setLimit(Limit limit) async => db.execute(
-    'INSERT INTO limits (category, pence) VALUES (?, ?) '
-    'ON CONFLICT (category) DO UPDATE SET pence = excluded.pence',
-    [limit.category.name, limit.amount.pence],
+  Future<void> setLimit(Limit limit) async => _named(
+    () => db.execute(
+      'INSERT INTO limits (category, pence) VALUES (?, ?) '
+      'ON CONFLICT (category) DO UPDATE SET pence = excluded.pence',
+      [limit.category.name, limit.amount.pence],
+    ),
   );
 
   /// One row back into an expense, or `null` for a row this program cannot
@@ -237,14 +246,40 @@ class SqliteStore._(final Database db) implements Store {
 /// defensive: a `ROLLBACK` after a successful `COMMIT` throws *cannot rollback
 /// - no transaction is active*, which would arrive at the caller in place of
 /// whatever really went wrong.
+/// Whatever [statement] answers, with *database is locked* given a name.
+///
+/// **Every statement this package sends to SQLite goes through here**, and
+/// `test/sqlite_store_test.dart` asserts that rather than trusting it — the
+/// first version of this function was a private member of [SqliteStore], which
+/// left [aloneIn]'s own `BEGIN IMMEDIATE` as the one statement in the package
+/// that could still answer a caller in `package:sqlite3`'s vocabulary. It was
+/// found by a test at the edge, which is later than it should have been.
+///
+/// Result code 5 is `SQLITE_BUSY` and it can arrive at any statement, not only
+/// at a `BEGIN`: a `SELECT` while a writer is committing, a `setLimit` with no
+/// transaction near it. Translating it in one place is what lets
+/// `server.dart` and `command.dart` catch [Busy] without either of them having
+/// heard of `package:sqlite3`, which `test/surface_test.dart` exists to stop.
+///
+/// Every other [SqliteException] goes past untouched. A `CHECK` violation is
+/// this program being wrong and should arrive looking like it.
+T _named<T>(T Function() statement) {
+  try {
+    return statement();
+  } on SqliteException catch (error) {
+    if (error.resultCode == 5) throw const Busy();
+    rethrow;
+  }
+}
+
 Future<T> aloneIn<T>(Database db, Future<T> Function() body) async {
-  db.execute('BEGIN IMMEDIATE');
+  _named(() => db.execute('BEGIN IMMEDIATE'));
   try {
     final answer = await body();
-    db.execute('COMMIT');
+    _named(() => db.execute('COMMIT'));
     return answer;
   } finally {
-    if (!db.autocommit) db.execute('ROLLBACK');
+    if (!db.autocommit) _named(() => db.execute('ROLLBACK'));
   }
 }
 // #endregion alone

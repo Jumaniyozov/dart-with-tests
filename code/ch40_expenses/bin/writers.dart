@@ -86,8 +86,8 @@ Future<String> told(Tracker tracker) async {
       Breach(:final over) => 'refused, ${over.asText} over',
       null => 'recorded, no limit on food',
     };
-  } on SqliteException catch (error) {
-    return 'not served: ${error.message}';
+  } on Busy catch (busy) {
+    return 'not served: $busy';
   }
 }
 // #endregion writers

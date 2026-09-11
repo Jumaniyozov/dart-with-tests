@@ -27,6 +27,17 @@ down.
 - **Changed** — `run` takes `alone:`, named and defaulting to `unguarded`.
   `bin/expenses.dart` passes the real one, because two terminals are two
   writers.
+- **Added** — `src/alone.dart`, exported, holding `Alone`, `unguarded` and
+  `Busy`. Its own library rather than a corner of `src/tracker.dart` because
+  `src/sqlite_store.dart` throws `Busy` and must not learn what a `Tracker` is
+  to do it. Thirteen libraries; study 39 took one away and this puts one back.
+- **Changed** — a locked database is answered rather than thrown past. Every
+  statement this package sends to SQLite goes through one function that turns
+  result code 5 into `Busy`; `POST /expenses` answers `503` with *another
+  writer has the database; try again*, and the command line answers `refused`
+  with the same sentence on `stderr`. It used to be `500 this program is wrong`
+  and an uncaught `SqliteException` — neither of which was true, and the second
+  broke `run`'s contract to answer an `Outcome` and never to print.
 - No busy timeout. SQLite waits inside the C call and `dart:ffi` runs it on
   this isolate's only thread, so a server that waits for a lock is a server
   answering nobody.

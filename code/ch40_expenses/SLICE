@@ -2,6 +2,7 @@
 #
 # Added — the boundary the read-decide-write runs inside, measured from both
 # sides, and a program that shows two writers the same two expenses.
+lib/src/alone.dart
 bin/writers.dart
 test/alone_test.dart
 # Changed — `Tracker` takes a third argument and `record` runs inside it;
@@ -9,6 +10,7 @@ test/alone_test.dart
 # entrypoints hand it over, because both of them are writers.
 lib/src/tracker.dart
 lib/src/sqlite_store.dart
+lib/expenses.dart
 lib/src/command.dart
 lib/src/migration.dart
 lib/src/server.dart
@@ -16,6 +18,7 @@ bin/expenses.dart
 bin/serve.dart
 test/tracker_test.dart
 test/server_test.dart
+test/sqlite_store_test.dart
 test/surface_test.dart
 pubspec.yaml
 CHANGELOG.md
@@ -44,3 +47,9 @@ README.md
 #   a bulk write. The shape itself is study 39's page, shown there whole; 40.3
 #   says what having two of it cost and shows `aloneIn`, which is the copy that
 #   survived.
+# unshown: lib/src/sqlite_store.dart#sqlitestore — four statements wrapped in
+#   `_named`, which 40.3 shows whole in `#alone` beside the check that asserts
+#   no statement escapes it. The class itself is study 39's and is shown there.
+# unshown: test/surface_test.dart#surface — one line, `src/alone.dart`, added
+#   to the list of libraries the barrel offers. 40.2 shows the barrel, which is
+#   where the decision is legible; the contract is study 34's.

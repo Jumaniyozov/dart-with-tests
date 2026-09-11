@@ -153,22 +153,6 @@ a constructor"* — now recorded as `19→23` so the tool can see it.
   seed dated *today* makes the budget answers stable and makes every printed `day` a clock
   reading, which then needs the same `sed` treatment as the `date:` header.
 
-- **A locked database is answered as a bug, at both edges, and it is a conflict.**
-  Measured at study 40: `POST /expenses` answers `500` with
-  `{"problem":"this program is wrong"}`, and `dart run bin/expenses.dart add` throws
-  `SqliteException(5)` out of `run` — the function whose contract since study 24 is to
-  answer an `Outcome` and never to print, so the reader gets a Dart stack trace. Neither
-  is new at 40: a plain `INSERT` against a locked database has thrown since study 39.
-
-  The fix is a failure this program can name — a small type `aloneIn` throws, `server.dart`
-  turns into a status (`503` or `409`) and `command.dart` turns into `refused`. It cannot
-  live in `sqlite_store.dart`, because `test/server_test.dart#borrowed` reads import lines
-  and `server.dart` must not import `package:sqlite3`; it wants its own file under
-  `lib/src/`. Roughly six files, two edges and a README table. Declared in a `<Gloss>` on
-  study 40's page rather than done there, which is how ADR 0003 and ADR 0005 declare every
-  debt in this book — but it is a **defect** rather than a topic, so it wants doing before
-  Book IV adds callers to either edge.
-
 - **`bin/writers.dart` is the first transcript in this book whose value is that it is
   deterministic, and nothing re-runs it.** `check_transcripts` re-runs `dart test`
   transcripts only, on purpose — its own comment says `dart run` on a program that writes

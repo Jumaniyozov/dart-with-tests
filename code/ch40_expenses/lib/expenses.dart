@@ -2,10 +2,16 @@
 /// The expense tracker's public face.
 library;
 
-/// Twelve exports now, and the count went **down**, which is what a major
-/// version is for. `src/holding_store.dart` is gone: study 38's cache existed
-/// because reading a file meant reading all of it, and a database reads what
-/// you ask for.
+/// Thirteen exports, and the new one is the smallest library here.
+/// `src/alone.dart` holds what a [Tracker] is told about being alone and what
+/// it throws when it is not — a function type, a default, and a named failure.
+/// It is its own file rather than a corner of `src/tracker.dart` because
+/// `src/sqlite_store.dart` throws that failure and must not, in doing so,
+/// learn what a `Tracker` is.
+///
+/// The count went **down** at study 39, which is what a major version is also
+/// for. `src/holding_store.dart` went: study 38's cache existed because reading
+/// a file meant reading all of it, and a database reads what you ask for.
 ///
 /// `src/sqlite_store.dart` did not take its place here, and that is study 34's
 /// rule applied for the second time. `SqliteStore` is built from a `Database`,
@@ -14,6 +20,7 @@ library;
 /// `src/server.dart` would have handed them `package:shelf`. Both are reached
 /// by naming the file, which is legal inside one package and is what `bin/`
 /// does.
+export 'src/alone.dart';
 export 'src/budget.dart';
 export 'src/category.dart';
 export 'src/command.dart';

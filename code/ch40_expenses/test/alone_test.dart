@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:ch40_expenses/expenses.dart';
 import 'package:ch40_expenses/src/server.dart';
 import 'package:ch40_expenses/src/sqlite_store.dart';
+import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as io;
 import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
@@ -36,6 +38,14 @@ int spent(Database db) =>
 /// The boundary `bin/serve.dart` hands over, over one connection.
 Alone lockedBy(Database db) =>
     <T>(body) => aloneIn(db, body);
+
+/// One `POST /expenses`, built rather than sent.
+Request _post() => Request(
+  'POST',
+  Uri.parse('http://localhost/expenses'),
+  headers: {'authorization': 'Bearer k'},
+  body: jsonEncode({'pence': 600, 'category': 'food', 'note': 'lunch'}),
+);
 
 /// A store already holding [limit], over a database with no file.
 Future<SqliteStore> fresh(Database db) async {
@@ -227,7 +237,7 @@ void main() {
       expect(spent(second), 0);
       await expectLater(
         aloneIn(first, () => store.record(lunch())),
-        throwsA(isA<SqliteException>().having((e) => e.resultCode, 'code', 5)),
+        throwsA(isA<Busy>()),
         reason:
             'the write was accepted and the commit was not, which is the '
             'one failure path a transaction wrapper is written for and the '
@@ -282,6 +292,110 @@ void main() {
     );
   });
   // #endregion lock
+
+  // #region named
+  group('and a locked database, at the two edges that have to answer for it', () {
+    late Directory directory;
+    late Database held;
+    late Database mine;
+
+    setUp(() {
+      directory = Directory.systemTemp.createTempSync('named');
+      final path = '${directory.path}/expenses.db';
+      held = sqlite3.open(path);
+      mine = sqlite3.open(path);
+      SqliteStore(held);
+    });
+
+    tearDown(() {
+      held.close();
+      mine.close();
+      directory.deleteSync(recursive: true);
+    });
+
+    test('is Busy rather than a type two edges are not allowed to see', () {
+      held.execute('BEGIN IMMEDIATE');
+
+      expect(
+        () => SqliteStore(mine).record(lunch()),
+        throwsA(isA<Busy>()),
+        reason:
+            'server.dart and command.dart may not import package:sqlite3 — '
+            'test/surface_test.dart is there to stop it — so the one file that '
+            'may is the file that gives the failure a name',
+      );
+    });
+
+    test('and every statement is translated, not only the transaction', () {
+      held.execute('BEGIN IMMEDIATE');
+      final store = SqliteStore(mine);
+
+      expect(() => store.setLimit(limit), throwsA(isA<Busy>()));
+      expect(
+        () => aloneIn(mine, () => store.record(lunch())),
+        throwsA(isA<Busy>()),
+      );
+    });
+
+    test('but a CHECK violation is still this program being wrong', () {
+      expect(
+        () => mine.execute(
+          "INSERT INTO expenses (day, pence, category, note, acknowledged) "
+          "VALUES ('2026-09-11', -1, 'food', 'lunch', 0)",
+        ),
+        throwsA(isA<SqliteException>()),
+        reason:
+            'only result code 5 is renamed; anything else arrives looking '
+            'like what it is',
+      );
+    });
+
+    test('the server answers 503 and says the request is worth repeating', () async {
+      final api = expensesApi(
+        Tracker(SqliteStore(mine), () => day, lockedBy(mine)),
+        key: 'k',
+        report: (error, stack) => fail('a conflict is not a fault: $error'),
+      );
+      held.execute('BEGIN IMMEDIATE');
+
+      final answer = await api(_post());
+
+      expect(answer.statusCode, 503);
+      expect(
+        jsonDecode(await answer.readAsString()),
+        {'problem': 'another writer has the database; try again'},
+        reason:
+            '500 would have said this program is wrong, which is false, '
+            'and 409 would have said send something else, which is also false',
+      );
+    });
+
+    test(
+      'and the command line answers refused rather than a stack trace',
+      () async {
+        final store = SqliteStore(mine);
+        held.execute('BEGIN IMMEDIATE');
+
+        final outcome = await run(
+          ['add', '6.00', 'food', 'lunch'],
+          store,
+          day,
+          alone: lockedBy(mine),
+        );
+
+        expect(outcome.code, refused);
+        expect(outcome.err, 'another writer has the database; try again');
+        expect(
+          outcome.out,
+          isEmpty,
+          reason:
+              "run's contract since study 24 is an Outcome and never a "
+              'print, and an uncaught SqliteException breaks both halves',
+        );
+      },
+    );
+  });
+  // #endregion named
 
   // #region blocking
   group('and waiting for that lock', () {

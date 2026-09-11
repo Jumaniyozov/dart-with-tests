@@ -1712,14 +1712,14 @@ deleting the cache is a deletion.
 **The overload shows in the includes rather than in the sections, and that is the
 measurement worth keeping.** Counted the same way across Book III — prose words
 excluding `<include>` lines, numbered sections, includes — the five pages run
-1931/14, 2447/17, 2604/20, 2184/17, and this one at **3127/18**. Seven per cent more
+1931/14, 2447/17, 2604/20, 2184/17, and this one at **3231/23**. Seven per cent more
 prose than the largest and a third more code. So a study that is over budget does not
 show up as a sixth heading; it shows up as sections carrying five and six includes,
 which is the number to watch when planning Book IV.
 
 ### 40 — A second writer · `a-second-writer` · `ch40_expenses` — **WRITTEN**
 
-Shipped: 270 green, 3 challenges at 12 failing, 3 transcripts.
+Shipped: 276 green, 3 challenges at 12 failing, 3 transcripts.
 
 **The debt this study existed to pay had already been paid, by accident, and the
 outline could not have known.** `bin/serve.dart` served from `FileStore` when
@@ -1838,16 +1838,33 @@ comments, a second copy of a shape, and the page's own adjectives.
    the **third**. A count written from an impression, in the paragraph about a
    harness measuring itself.
 
-**And one thing the audit measured and deliberately did not fix.** Against a
-database another writer has locked, `POST /expenses` answers `500` with
-`{"problem":"this program is wrong"}` — it is not wrong, it is a conflict — and
-`dart run bin/expenses.dart add` throws `SqliteException(5)` out of `run`, the
-function whose whole contract since study 24 is to answer an `Outcome`. Neither
-is new: a plain `INSERT` against a locked database has thrown since study 39, so
-taking the lock a statement earlier named the failure rather than creating it.
-Fixing it is a failure this program can *name*, at two edges, in the last study
-of a book. Declared on the page in a `<Gloss>` and on `HANDOFF.md`'s open list,
-which is how this book has declared every other debt.
+**And one thing the audit measured, declared as a debt, and then fixed on the
+next pass rather than leaving.** Against a database another writer has locked,
+`POST /expenses` answered `500` with `{"problem":"this program is wrong"}` — it
+is not wrong, it is a conflict — and `dart run bin/expenses.dart add` threw
+`SqliteException(5)` out of `run`, the function whose whole contract since study
+24 is to answer an `Outcome` and never to print. Neither was new: a plain
+`INSERT` against a locked database has thrown since study 39, so study 40 named
+the failure rather than creating it.
+
+`lib/src/alone.dart` is a new exported library holding `Alone`, `unguarded` and
+now `Busy` — its own file rather than a corner of `tracker.dart`, because
+`sqlite_store.dart` throws `Busy` and a store must not import the layer above it
+to name what it throws. Thirteen libraries; 39 took one away, 40 puts one back.
+`503` over HTTP, not `500` (which is false) and not `409` (which means *send
+something else* where this means *send the same thing again*); `refused` at the
+terminal.
+
+**And the rule that made it possible was false when it was written.** *Every
+statement goes through the one function that renames result code 5* began as a
+private member of `SqliteStore`, which left `aloneIn`'s own `BEGIN IMMEDIATE` —
+the statement the whole study is about — still answering in `package:sqlite3`'s
+vocabulary. A test at the HTTP edge found it, two layers further out than it
+should have been found. It is a check now rather than a sentence: a group in
+`test/sqlite_store_test.dart` reads the source with whitespace collapsed and
+fails on any `db.execute`/`db.select` not wrapped, proved both ways by unwrapping
+one and putting it back. **A rule nobody checks is a habit** — and this one was
+not even a habit, it was a sentence that had never been true.
 
 **A measurement has an author, and the same sweep that checks a block quote does
 not check one.** The page's first draft said *the same nested `BEGIN` study 39
@@ -1871,7 +1888,7 @@ test that passes, because a reader has to see £12.00 and then £6.00.
 process rather than about the subject.** Counted with a script rather than by
 hand, for the first time: prose words excluding `<include>` lines, then
 includes, over all six Book III pages in one run — 1864/14, 2365/17, 2525/20,
-2099/17, 2757/27, and this one at **3127/18**. Study 39's entry quotes word
+2099/17, 2757/27, and this one at **3231/23**. Study 39's entry quotes word
 counts a little higher because they were counted a different way; these six were
 counted together and are comparable with each other, which is the only property
 the number needs.

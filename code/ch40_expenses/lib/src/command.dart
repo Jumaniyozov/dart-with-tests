@@ -1,5 +1,6 @@
 import 'package:args/args.dart';
 
+import 'alone.dart';
 import 'budget.dart';
 import 'category.dart';
 import 'day.dart';
@@ -186,6 +187,29 @@ Future<Outcome> run(
         : (code: misuse, out: '', err: "no command named '$first'");
   }
 
+  // **One `catch` for every command, because every command touches the
+  // database.** `add` writes inside a transaction, `budget` writes a single
+  // statement, and `list` reads — and SQLite can answer *database is locked* to
+  // any of them while the server holds the file. `SqliteStore` gives that one
+  // failure a name so this file can catch it without ever having heard of
+  // `package:sqlite3`.
+  //
+  // `refused` and not `misuse`: nothing about what was typed is wrong, and
+  // study 24's code for *the program will not do this* is the closest true
+  // thing a shell can be told. The message is the part that says it is worth
+  // typing again.
+  try {
+    return await _dispatch(tracker, command);
+  } on Busy catch (busy) {
+    return (code: refused, out: '', err: '$busy; try again');
+  }
+}
+
+/// One parsed command, run.
+///
+/// Split out of [run] at study 40 so the `try` above has a body rather than a
+/// forty-line `switch` inside it. Nothing about the dispatch changed.
+Future<Outcome> _dispatch(Tracker tracker, ArgResults command) async {
   return switch ((command.name, command.rest)) {
     ('add', [final amount, final category, ...final note])
         when note.isNotEmpty =>

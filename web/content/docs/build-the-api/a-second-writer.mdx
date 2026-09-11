@@ -90,7 +90,7 @@ resolved to nothing, and this.
 `Tracker.record` reads the limits, reads the month, decides, and writes. Those
 four steps have to be one step. The question is who gets to say so.
 
-<include cwd lang="dart" meta='title="lib/src/tracker.dart"'>../code/ch40_expenses/lib/src/tracker.dart#alone</include>
+<include cwd lang="dart" meta='title="lib/src/alone.dart"'>../code/ch40_expenses/lib/src/alone.dart#alone</include>
 
 **The obvious home for this is a fifth member on `Store`, and study 28 already
 ruled it out.** That study made every member of `Store` return a `Future`, and
@@ -105,6 +105,16 @@ So it is handed in, which is exactly what study 38 did with the clock. The thing
 that can really make a unit of work is the database; `bin/` is where this
 program decides which database it has; `bin/` is therefore where it is decided
 whether anything is guaranteed at all.
+
+**It is its own library rather than a corner of `tracker.dart`**, and the reason
+is one import. `sqlite_store.dart` throws the failure at the bottom of that file
+and `server.dart` catches it at the top; if both lived beside `Tracker`, a store
+would have had to import the layer above it to name what it throws.
+
+<include cwd lang="dart" meta='title="lib/expenses.dart"'>../code/ch40_expenses/lib/expenses.dart#barrel</include>
+
+Thirteen libraries now. Study 39 took one away and this one puts one back, which
+is what the two halves of a major version look like.
 
 <include cwd lang="dart" meta='title="lib/src/tracker.dart"'>../code/ch40_expenses/lib/src/tracker.dart#tracker</include>
 
@@ -189,31 +199,42 @@ the second caller succeed. It makes the second caller fail instead of succeeding
 wrongly.** One expense is recorded, the budget holds, and somebody gets an
 error. The alternative was £12.00 under a £10.00 limit and nobody knowing.
 
-<Gloss title="And the error they get is not yet a good one">
-Measured, against a database another writer has locked:
+<Gloss title="And what that error is, at each of the two edges">
+The failure had to be given a name before either edge could answer it, because
+`server.dart` and `command.dart` are not allowed to import `package:sqlite3` —
+study 34's rule, kept by `test/surface_test.dart`. So the one file that may
+translates it.
 
-- `POST /expenses` answers **`500`** with `{"problem":"this program is wrong"}`.
-  It is not wrong. Another writer had the lock, which is a conflict rather than
-  a bug, and study 26 spent a whole study on the difference between the two.
-- `dart run bin/expenses.dart add …` **throws** `SqliteException(5)` out of
-  `run` — the function whose entire contract, since study 24, is to answer an
-  `Outcome` and never to print. The reader gets a Dart stack trace.
+<include cwd lang="dart" meta='title="lib/src/alone.dart"'>../code/ch40_expenses/lib/src/alone.dart#alone</include>
 
-Neither is new at study 40. A plain `INSERT` against a locked database has
-thrown the same exception since study 39; taking the lock a statement earlier
-did not create the failure, it named it. What is new is that this study is the
-one that knows it is there.
+<include cwd lang="dart" meta='title="lib/src/sqlite_store.dart"'>../code/ch40_expenses/lib/src/sqlite_store.dart#alone</include>
 
-Fixing it means a failure this program can *name* — something `server.dart` can
-turn into a status and `command.dart` can turn into an exit code — and that is a
-type, at two edges, in the last study of a book, for a case two writers reach in
-microseconds. So it is declared here rather than done here, which is how ADR
-0003 and ADR 0005 have declared every other debt in this book: in a sentence, in
-the study where it starts.
+`503` and not `500`: another writer holding the database is the ordinary use of
+a program with two edges, and the default answer would have been *this program
+is wrong*, which is false and tells the caller to stop rather than to try again.
+Not `409` either — that is what a budget refusing an expense answers, and it
+means *send something else*. This one means *send the same thing again*.
 
-`bin/writers.dart` catches it and prints one line, which is the one place in
-this package that handles it at all — and a demonstration being gentler than the
-program is exactly the kind of thing worth saying out loud.
+At the terminal it is `refused`, study 24's exit code 1, with one line on
+`stderr`. What it must not be is what it was: an uncaught `SqliteException` out
+of `run`, whose entire contract since study 24 is to answer an `Outcome` and
+never to print.
+
+<include cwd lang="dart" meta='title="test/alone_test.dart"'>../code/ch40_expenses/test/alone_test.dart#named</include>
+
+**The rule in that doc comment was false when it was written, and a test found
+it two layers away.** `_named` began as a private member of `SqliteStore`, which
+left `aloneIn`'s own `BEGIN IMMEDIATE` — the one statement this whole study is
+about — still answering in `package:sqlite3`'s vocabulary. So the rule is a
+check now rather than a sentence:
+
+<include cwd lang="dart" meta='title="test/sqlite_store_test.dart"'>../code/ch40_expenses/test/sqlite_store_test.dart#every</include>
+
+It reads the source rather than the behaviour, because the claim is about the
+shape of the file; reaching every statement by contending for a lock would be
+five tests each holding a database open. And it is proved the way every checker
+in this book is proved — unwrap one statement and it goes red, put it back and
+it goes green.
 </Gloss>
 
 ## 40.4 What waiting costs, and three answers this study does not ship

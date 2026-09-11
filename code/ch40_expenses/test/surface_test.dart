@@ -16,6 +16,7 @@ void main() {
   /// and costs a major version. That is the whole of what a version number
   /// promises, and this list is where the promise is made.
   const offered = {
+    'src/alone.dart',
     'src/budget.dart',
     'src/category.dart',
     'src/command.dart',

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 
+import 'alone.dart';
 import 'budget.dart';
 import 'category.dart';
 import 'day.dart';
@@ -283,7 +284,22 @@ Future<Response> _record(Tracker tracker, Request request) async {
     return _problem(400, 'an expense is a pence, a category and a note');
   }
 
-  final verdict = await tracker.record(expense);
+  final Verdict? verdict;
+  try {
+    verdict = await tracker.record(expense);
+  } on Busy {
+    // **`503` and not `500`, and the difference is whether anybody is wrong.**
+    // Another writer held the database, which is the ordinary use of a program
+    // with two edges, and `faults` would have answered *this program is wrong*
+    // — a sentence that is false and that tells the caller to stop rather than
+    // to try again. The same request, sent again, works.
+    //
+    // Not `409` either, which is what a budget refusing an expense answers.
+    // That is a conflict with the **state**: send it again and it is refused
+    // again, because something about this month has to change first. This one
+    // is a conflict with the **moment**.
+    return _problem(503, 'another writer has the database; try again');
+  }
   if (verdict.refuses(expense)) {
     final breach = verdict! as Breach;
     return _json(409, {
