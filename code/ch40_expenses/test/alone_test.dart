@@ -214,6 +214,37 @@ void main() {
       expect(() => second.execute('BEGIN IMMEDIATE'), returnsNormally);
     });
 
+    test('makes aloneIn fail at COMMIT, and the finally is what undoes it', () async {
+      // Seeded first: a writer cannot even set a limit while a reader is
+      // sitting in an open transaction, which is the same lock arriving one
+      // statement earlier.
+      final store = await fresh(first);
+
+      // A reader that stays. `BEGIN IMMEDIATE` still lets the writer in — a
+      // reserved lock and a shared one coexist — and the exclusive lock
+      // `COMMIT` needs does not.
+      second.execute('BEGIN');
+      expect(spent(second), 0);
+      await expectLater(
+        aloneIn(first, () => store.record(lunch())),
+        throwsA(isA<SqliteException>().having((e) => e.resultCode, 'code', 5)),
+        reason:
+            'the write was accepted and the commit was not, which is the '
+            'one failure path a transaction wrapper is written for and the '
+            'only one that reaches the finally with the transaction still open',
+      );
+
+      second.execute('COMMIT');
+      expect(
+        await store.expenses(),
+        isEmpty,
+        reason:
+            'autocommit was still false, so the finally rolled it back — a '
+            'wrapper that only rolled back when the body threw would have left '
+            'this row half-written and said nothing',
+      );
+    });
+
     test(
       'is let all the way in by BEGIN, which moves the failure to COMMIT',
       () {

@@ -17,6 +17,10 @@ down.
 - **Added** — `SqliteStore.alone`, which runs a body inside `BEGIN IMMEDIATE`.
   The verb is the whole of it: `BEGIN` lets a second writer read a total it is
   not allowed to trust and moves the failure to `COMMIT`.
+- **Changed** — `moveInto` calls `aloneIn` instead of writing `BEGIN`, a
+  `try`, a `COMMIT` and a rolling-back `finally` itself. Study 39 wrote that
+  shape once; study 40 wrote it a second time, which is the moment to notice.
+  It also changed verb: a bulk write takes the write lock before it starts.
 - **Added** — `bin/writers.dart`, a demonstration rather than a capability, in
   the sense study 38 gave `bin/holding.dart`. Two writers against one database
   file, interleaved on purpose, printing £12.00 and then £6.00.

@@ -32,13 +32,21 @@ typedef Alone = Future<T> Function<T>(Future<T> Function() body);
 ///
 /// **The honest default, and the name is the documentation.** A [Tracker] built
 /// with this one is a tracker whose read-decide-write can be interleaved by
-/// anything that gets a turn in the middle of it — which, measured, is nothing
-/// at all when the store never suspends, and everything when it does. That
-/// difference is a property of the store rather than of this program, and a
-/// program should not rely on a property it does not state.
+/// anything that gets a turn in the middle of it — and whether anything does is
+/// a property of the store rather than of this program, which is the reason a
+/// program should not rely on it.
+///
+/// Book III's spike measured exactly where the turn has to fall. A store that
+/// suspends in the **read** is harmless: every caller resumes with the same
+/// answer and the first to resume runs decision-and-write to completion,
+/// because nothing after the read yields — one expense recorded, 30 trials out
+/// of 30. A store that suspends in the **write** breaches every time, over the
+/// same 30. So *it suspends* is not the condition; *it suspends between the
+/// decision and the write* is.
 ///
 /// It is what the tests use, because a test with one store and one caller has
-/// no second writer to exclude, and it is what nothing under `bin/` uses.
+/// no second writer to exclude, and it is half of what `bin/writers.dart`
+/// shows. Nothing that serves a reader is built with it.
 Future<T> unguarded<T>(Future<T> Function() body) => body();
 // #endregion alone
 
@@ -69,10 +77,15 @@ Future<T> unguarded<T>(Future<T> Function() body) => body();
 /// **[alone] is a transaction since study 40, and it is required on purpose.**
 /// Book III declared at study 37 that two callers could both pass the budget
 /// check, and study 39 closed that by accident: `SqliteStore` reaches C through
-/// `dart:ffi`, so nothing in [record] suspends and nothing can get in. Measured
-/// — 0 breaches in 40 trials at two, three and four callers. An accident is not
-/// a rule, and the second writer that is still real is in another **process**,
-/// where no argument about this program's event loop reaches.
+/// `dart:ffi`, so nothing in [record] suspends and no second **request** can
+/// get in. `test/alone_test.dart` asserts that through two sockets, at the one
+/// trial a suite can afford; study 40 is where the forty are written down.
+///
+/// An accident is not a rule, and two things still reach past it. Another
+/// **process** — the command line, in another terminal — shares nothing with
+/// this isolate's event loop. And two calls in flight *here* interleave on the
+/// microtask queue and breach every time, which the test beside that one shows:
+/// the safety was a property of how requests arrived, not of this program.
 ///
 /// So the boundary is a parameter with no default. A default of [unguarded]
 /// would have let every call site keep the guarantee it happened to have, which
@@ -144,6 +157,14 @@ class Tracker(
   /// No parameter, because nothing asks for another period yet. Adding one is
   /// an optional argument and no caller moves — the same reasoning ADR 0002
   /// records for a check that arrives after a type has shipped.
+  ///
+  /// **No [alone] either, and that is a decision rather than an oversight.**
+  /// This reads the limits and then the expenses as two statements, so a second
+  /// *process* can write between them and a report can pair a limit from before
+  /// with a month from after. A read has no read-decide-write: the worst it can
+  /// answer is a moment stale, which is what any report of a moving number is,
+  /// and holding a transaction open across two reads to fix that would take the
+  /// lock away from the writers for the length of a report.
   Future<List<Budget>> budgets() async {
     final month = Period.of(today());
     return budgetsFor(

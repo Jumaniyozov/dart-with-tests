@@ -47,6 +47,10 @@ Every answer is a JSON document, and every refusal has a `problem` in it.
 `409` a budget refused it · `404` no such path, or no such budget ·
 `500` this program is wrong, and it will not say more than that.
 
+A database another writer has locked is answered `500` as well, and should not
+be: it is a conflict rather than a bug. Study 40 measures it and says so rather
+than fixing it, because naming the failure is a type at two edges.
+
 ## What this package offers
 
 `lib/expenses.dart` is the whole public surface. Everything under `lib/src/` is

@@ -80,7 +80,9 @@ all. It was measuring the client. `await Socket.connect` yields, which lets the
 server finish the first request before the second one exists.
 
 A harness that imitates the reader approximately produces evidence about the
-harness, which is a thing this book has now been caught by twice.
+harness. Book III has now been caught by that three times — a seeded file
+written in a shape the program never writes, a server handed a path that
+resolved to nothing, and this.
 </Gloss>
 
 ## 40.2 A boundary is something an edge hands over
@@ -143,6 +145,16 @@ This is study 39's first challenge grown up. That one asked for
 stores over one `Database` share one transaction — a member would have said
 otherwise.
 
+**It also took a transaction away from somewhere else, which is the part worth
+watching for.** Study 39 wrote this exact shape by hand inside `moveInto` —
+`BEGIN`, a `try`, a `COMMIT`, a `finally` that rolls back if `autocommit` says
+the transaction is still open. Writing `aloneIn` made a second copy of it, and
+the standing rule this book keeps rediscovering is that **extracting a layer
+does not remove a duplicated rule, it creates the second copy**, so the moment
+to look is the moment the second caller arrives rather than the third.
+`moveInto` calls `aloneIn` now, and it changed verb on the way: a move that is
+going to write should take the write lock before it starts.
+
 What is not obvious is `IMMEDIATE`.
 
 <include cwd lang="dart" meta='title="test/alone_test.dart"'>../code/ch40_expenses/test/alone_test.dart#lock</include>
@@ -174,9 +186,35 @@ that spike had no way to reach.
 
 That is the trade this study makes, stated plainly: **a boundary does not make
 the second caller succeed. It makes the second caller fail instead of succeeding
-wrongly.** One expense is recorded, the budget holds, and somebody gets an error
-they can retry. The alternative was £12.00 under a £10.00 limit and nobody
-knowing.
+wrongly.** One expense is recorded, the budget holds, and somebody gets an
+error. The alternative was £12.00 under a £10.00 limit and nobody knowing.
+
+<Gloss title="And the error they get is not yet a good one">
+Measured, against a database another writer has locked:
+
+- `POST /expenses` answers **`500`** with `{"problem":"this program is wrong"}`.
+  It is not wrong. Another writer had the lock, which is a conflict rather than
+  a bug, and study 26 spent a whole study on the difference between the two.
+- `dart run bin/expenses.dart add …` **throws** `SqliteException(5)` out of
+  `run` — the function whose entire contract, since study 24, is to answer an
+  `Outcome` and never to print. The reader gets a Dart stack trace.
+
+Neither is new at study 40. A plain `INSERT` against a locked database has
+thrown the same exception since study 39; taking the lock a statement earlier
+did not create the failure, it named it. What is new is that this study is the
+one that knows it is there.
+
+Fixing it means a failure this program can *name* — something `server.dart` can
+turn into a status and `command.dart` can turn into an exit code — and that is a
+type, at two edges, in the last study of a book, for a case two writers reach in
+microseconds. So it is declared here rather than done here, which is how ADR
+0003 and ADR 0005 have declared every other debt in this book: in a sentence, in
+the study where it starts.
+
+`bin/writers.dart` catches it and prints one line, which is the one place in
+this package that handles it at all — and a demonstration being gentler than the
+program is exactly the kind of thing worth saying out loud.
+</Gloss>
 
 ## 40.4 What waiting costs, and three answers this study does not ship
 

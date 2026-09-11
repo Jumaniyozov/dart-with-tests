@@ -1712,14 +1712,14 @@ deleting the cache is a deletion.
 **The overload shows in the includes rather than in the sections, and that is the
 measurement worth keeping.** Counted the same way across Book III — prose words
 excluding `<include>` lines, numbered sections, includes — the five pages run
-1931/14, 2447/17, 2604/20, 2184/17, and this one at **2793/27**. Seven per cent more
+1931/14, 2447/17, 2604/20, 2184/17, and this one at **3127/18**. Seven per cent more
 prose than the largest and a third more code. So a study that is over budget does not
 show up as a sixth heading; it shows up as sections carrying five and six includes,
 which is the number to watch when planning Book IV.
 
 ### 40 — A second writer · `a-second-writer` · `ch40_expenses` — **WRITTEN**
 
-Shipped: 269 green, 3 challenges at 12 failing, 3 transcripts.
+Shipped: 270 green, 3 challenges at 12 failing, 3 transcripts.
 
 **The debt this study existed to pay had already been paid, by accident, and the
 outline could not have known.** `bin/serve.dart` served from `FileStore` when
@@ -1800,6 +1800,55 @@ top-level `aloneIn` in its own region — which turned out to be the better desi
 anyway, because two stores over one `Database` share one transaction and a
 member would have said otherwise.
 
+**Audited after it was written, and the audit found eight things the eight tools
+could not.** All six live where a checker declares it does not look — doc
+comments, a second copy of a shape, and the page's own adjectives.
+
+1. **`moveInto` and `aloneIn` were two copies of one transaction**, identical in
+   structure down to the `if (!db.autocommit)`. Study 40 wrote the second one.
+   That is the standing requirement about a layer creating the second copy,
+   arriving in the study that quotes it. `moveInto` calls `aloneIn` now, and
+   gained `IMMEDIATE` on the way, which is strictly better for a bulk write.
+2. **`unguarded`'s doc comment said interleaving is "everything when it does"
+   suspend** — contradicting the spike's own 30/30 finding that a suspension in
+   the **read** is harmless. A false sentence in a region shown on the page,
+   about the one measurement this study is built on.
+3. **The same doc said `unguarded` is "what nothing under `bin/` uses"**, and
+   `bin/writers.dart` uses it, in the line the page shows.
+4. **`Tracker`'s doc stated "0 breaches in 40 trials" with no test behind it** —
+   the run lived in a spike that was never committed. The doc now says what
+   `test/alone_test.dart` asserts and points at this file for the trials.
+5. **`aloneIn`'s `COMMIT`-fails path was untested**, and it is the only path
+   that reaches the `finally` with the transaction still open — which is the
+   thing the page says makes a `finally` with no `catch` load-bearing rather
+   than tidy. Now a test: a reader in an open `BEGIN` lets the write in and
+   blocks the commit, and nothing is recorded. That is 270 rather than 269.
+6. **A doc comment in a shipped package cited `OUTLINE.md`**, a file the
+   package does not contain and `.pubignore` never had to exclude because it
+   lives above the package. The only such reference in forty packages, and it
+   was three hours old. ADRs are cited by name throughout and that is fine; a
+   path is not.
+7. **`Tracker.budgets` reads limits and expenses as two statements** with no
+   boundary, so a second process can write between them. Left as it is and now
+   said in the doc: a read has no read-decide-write, the worst it answers is a
+   moment stale, and holding a transaction across two reads would take the lock
+   from the writers for the length of a report.
+8. **The page said the harness family had caught this book "twice"**; the
+   standing requirements already record two, so the spike's socket harness is
+   the **third**. A count written from an impression, in the paragraph about a
+   harness measuring itself.
+
+**And one thing the audit measured and deliberately did not fix.** Against a
+database another writer has locked, `POST /expenses` answers `500` with
+`{"problem":"this program is wrong"}` — it is not wrong, it is a conflict — and
+`dart run bin/expenses.dart add` throws `SqliteException(5)` out of `run`, the
+function whose whole contract since study 24 is to answer an `Outcome`. Neither
+is new: a plain `INSERT` against a locked database has thrown since study 39, so
+taking the lock a statement earlier named the failure rather than creating it.
+Fixing it is a failure this program can *name*, at two edges, in the last study
+of a book. Declared on the page in a `<Gloss>` and on `HANDOFF.md`'s open list,
+which is how this book has declared every other debt.
+
 **A measurement has an author, and the same sweep that checks a block quote does
 not check one.** The page's first draft said *the same nested `BEGIN` study 39
 measured*; the nested `BEGIN` was measured by **Book III's spike**, before study
@@ -1818,15 +1867,26 @@ actually says. `bin/` gained `writers.dart`, a demonstration in the sense study
 38 gave `bin/holding.dart`: the thing this study is about cannot be shown by a
 test that passes, because a reader has to see £12.00 and then £6.00.
 
-**Not the overloaded one, and this is the first time the measurement was taken
-with a script rather than by hand.** Prose words excluding `<include>` lines,
-then includes, over all six pages in one run: 1864/14, 2365/17, 2525/20,
-2099/17, 2757/27, and this one at **2721/18**. Study 39's entry quotes word
+**The longest page in the book, and the audit is why — which is a fact about
+process rather than about the subject.** Counted with a script rather than by
+hand, for the first time: prose words excluding `<include>` lines, then
+includes, over all six Book III pages in one run — 1864/14, 2365/17, 2525/20,
+2099/17, 2757/27, and this one at **3127/18**. Study 39's entry quotes word
 counts a little higher because they were counted a different way; these six were
 counted together and are comparable with each other, which is the only property
-the number needs. Five numbered sections, like every other study in Books II and
-III. Study 39 remains the biggest on both axes, and the gap on includes is the
-one to watch — nine fewer here, for a page that is not much shorter.
+the number needs.
+
+The page was **2721 words when it was first written**, second to study 39. The
+audit added four hundred, almost all of it one `<Gloss>` stating a measured
+defect the study had not looked at. So the honest reading is not *study 40 is
+overloaded*: it is that **an audit costs prose, because what it finds has to be
+said**, and Book II's 1535–2489 envelope was measured on studies nobody had
+audited yet. Book IV should budget for the second pass rather than be surprised
+by it.
+
+Includes tell the other half and are the axis worth watching: 18 against study
+39's 27, on a page with more prose. Five numbered sections, like every other
+study in Books II and III.
 
 
 Name the machinery first, because everything else follows from it: an `await` on an
@@ -2507,6 +2567,14 @@ existing transcripts and verified to reproduce.
   instance of the same family in two studies — study 37's seed was written in a shape the
   program never writes — and the family is: a harness that imitates the reader approximately
   produces evidence about the harness.
+
+  **Third instance, at study 40, and it is the one that would have published a wrong
+  result.** The spike's first concurrency harness awaited `Socket.connect` for the second
+  request before writing the first, so the server finished request A before B existed — and
+  it reported that nothing ever interleaves, for every store, which is exactly the
+  conclusion study 40 was about to draw for a different reason. Connect every socket, then
+  write with no `await` between. Anyone counting: the running total for this family is
+  three, and study 40's page says three.
 
   The proximate cause is worth its own sentence because it will recur: **a search-and-replace
   that is not asserted is an edit that may not have happened.** Four of five edits to

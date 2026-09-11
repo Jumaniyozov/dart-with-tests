@@ -10,6 +10,7 @@ test/alone_test.dart
 lib/src/tracker.dart
 lib/src/sqlite_store.dart
 lib/src/command.dart
+lib/src/migration.dart
 lib/src/server.dart
 bin/expenses.dart
 bin/serve.dart
@@ -37,3 +38,9 @@ README.md
 #   assertion that `io.serve` hands back a `dart:io` `HttpServer`.
 # unshown: test/server_test.dart#headers — the same argument, inside study 35's
 #   assertion about what `serve` puts on the wire.
+# unshown: lib/src/migration.dart#move — the hand-written `BEGIN`/`COMMIT` and
+#   its `finally` replaced by a call to `aloneIn`, plus the doc comment saying
+#   why the second copy is the one that stayed and what changing the verb buys
+#   a bulk write. The shape itself is study 39's page, shown there whole; 40.3
+#   says what having two of it cost and shows `aloneIn`, which is the copy that
+#   survived.
