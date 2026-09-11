@@ -1436,7 +1436,7 @@ as checked rather than skipped.
 
 ### 36 — A second edge finds what the first one hid · `a-second-edge` · `ch36_expenses` — **WRITTEN**
 
-Shipped: 193 green, 3 challenges at 11 failing, 5 transcripts.
+Shipped: 197 green, 3 challenges at 11 failing, 5 transcripts.
 
 The server cannot reach `_add`. It is private to `command.dart`, and so are `_setLimit`,
 `_list` and `_record` — every use case the tracker has. The CLI never needed them public
@@ -1494,6 +1494,18 @@ its job, so this study deletes it — the same move study 27 made with `assertin
 **breaking change**: `2.0.0`, and a new `#runnable` group in `surface_test` holding `bin/` to a
 list the way study 34 held the barrel. Study 34's contract test protected exactly the surface
 study 34 was about, which is the general lesson and was not predicted anywhere.
+
+**The audit after construction found the real defect, and it is the study's third section
+now.** The first draft had `Tracker.record` and `command.dart` each writing
+`verdict is Breach && !acknowledged` — the layer deciding whether to write, the edge deciding
+what to say. Green both ways, invisible to every checker, and study 37 would have made three
+copies. Extracted as `refuses(Verdict?, Expense)` beside `limitOn`. The general form is now a
+standing requirement: **extracting a layer does not remove a duplicated rule, it creates the
+second copy**, so the moment a second caller arrives is the moment to sweep.
+
+The same pass removed `Tracker.budgets`'s optional `Period` — no caller ever passed one —
+and tightened `record` to six lines with the read, the decision and the write each on their
+own, which is the shape study 40 has to talk about.
 
 **No write route yet, so the declared debt does not begin here.** ADR 0005 says the lost-update
 sentence belongs in the first study with a write route; study 36's server still answers `GET`
@@ -1866,6 +1878,16 @@ existing transcripts and verified to reproduce.
   rather than a tool — collect every `## N.M` heading and grep prose and `.dart` comments
   for `N.M` that is not one of them, discounting money (`12.5`) and versions.
 
+- **An optional parameter no caller passes is a guess about a caller.** Study 36 shipped
+  `Tracker.budgets([Period? period])` in its first draft, and nothing in the package, the
+  tests or the exercises ever passed one — while `Tracker.expenses([Period? period])` beside
+  it is passed one twice, which is what a parameter that has earned its place looks like.
+  The cost of *not* having it is measured and near zero: an optional parameter can be added
+  to a shipped signature without a single caller moving, which is the same mechanism ADR
+  0002 records for a check arriving after a type ships. Sweep with
+  `grep -rnoE '\[[A-Za-z<>?, ]+ [a-z][A-Za-z]*\]' code/*/lib`, which also matches **list
+  patterns** — `('list', [final month])` in `command.dart` — so read the hits rather than
+  counting them, and check each real parameter against a call site that passes one.
 - **`dart format` must be clean across `code/`**, because study 1 tells the
   reader to format on save and two included files had drifted.
   `dart format --output=none --set-exit-if-changed .` is the check.
@@ -2004,6 +2026,21 @@ existing transcripts and verified to reproduce.
   free: a factory takes the unnamed constructor slot and no caller moves. This is the
   companion to the `==` requirement above; both are questions to ask of a value type the
   moment it exists.
+
+  **It recurred in study 36 with a layer rather than a second edge, and an audit found it
+  rather than construction.** `Tracker.record` decided whether an unacknowledged breach
+  stops the write, and `command.dart` decided the same thing again to decide what to
+  report: two copies of `verdict is Breach && !expense.acknowledged`, one in the layer and
+  one at the edge, and study 37 would have written a third to choose a status code. Neither
+  copy was wrong and the suite was green both ways, which is why no checker saw it. The fix
+  is a `refuses(Verdict?, Expense)` beside `limitOn`, where the other rules about limits
+  already live.
+
+  **The general form is worth more than either instance: extracting a layer does not remove
+  a duplicated rule, it creates the second copy.** The rule was written once in study 35
+  because there was one caller. Adding a caller is precisely the event that turns a
+  single-use condition into a shared one, so the moment to sweep for this is the moment a
+  second caller arrives — not later, when there are three.
 - **Book II only — the domain never holds a `DateTime`.** Measured: for one
   instant `local == utc` is `false` while their hash codes are equal,
   `toIso8601String()` drops the offset, and `DateTime(2026, 2, 31)` is the 3rd of

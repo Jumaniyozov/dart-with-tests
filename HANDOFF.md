@@ -78,7 +78,7 @@ has no `test/` at all — the standing requirements say so, because the reader h
 nothing. It printed a failure and stopped, which reads like a broken book rather than a
 broken command. Corrected while outlining Book III: 33 packages have a `test/`, and they
 held **1248 tests**, which is the number this file's predecessors quoted without a working
-loop to produce it. Studies 35 and 36 make it 35 packages and **1622 tests**; re-run the loop
+loop to produce it. Studies 35 and 36 make it 35 packages and **1626 tests**; re-run the loop
 rather than trusting any of these numbers.
 
 The seven `check_*` tools cover different halves and none subsumes another —

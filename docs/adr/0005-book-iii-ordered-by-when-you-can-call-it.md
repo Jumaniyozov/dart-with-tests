@@ -111,6 +111,14 @@ against this record's premises.
   per ADR 0004. `ch35_expenses` is `ch34_expenses` plus a server. The CLI survives.
 - `.pubignore` and `test/surface_test.dart` carry forward from study 34. A contract nobody
   checks is one that drifts, and Book III adds a second thing to the surface.
+
+  **Amended while writing study 36: the surface was bigger than the test.** This bullet
+  assumed the only question was *what else gets exported* — `Tracker` does, the server does
+  not, and `surface_test` reads the barrel. It does. But study 36 **deleted**
+  `bin/by_hand.dart`, and `dart run ch35_expenses:by_hand` was something a caller could do,
+  so that is a breaking change and nothing noticed. `surface_test` gained a `#runnable` group
+  holding `bin/` to a declared list, and the package is `2.0.0`. The general form, recorded
+  in ADR 0004 as well: a contract test protects exactly the surface it was written about.
 - `CONTEXT.md` gains exactly one term, **Tracker**, and no others. If Book III needs a
   second domain word, something has leaked from the edge into the domain, and that is a
   defect to find rather than a glossary entry to write.
@@ -124,6 +132,12 @@ against this record's premises.
   debt where Book II had three, declared the way ADR 0003 declares those: a sentence in the
   study where it begins, never a silent handover. It begins with the first **write** route,
   because a read has no read-decide-write, so the page can name the study exactly.
+
+  **Confirmed at 36: the study is 37.** Studies 35 and 36 both answer `GET` at every path and
+  write nothing, so neither owes the sentence. Study 37 brings routing, status codes and a
+  `POST` together, and owes it. `Tracker.record` is now six lines with the read, the decision
+  and the write each on their own — which is the shape study 40 has to talk about, legible
+  before it is a problem.
 - **The server logs nothing time-varying** — no timestamps, no elapsed times, no random
   ports. Not a style rule: a transcript carrying a clock reading cannot be re-run, and
   `check_transcripts` exists because a transcript nobody re-runs is one any later commit

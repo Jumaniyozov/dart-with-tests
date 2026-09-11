@@ -148,6 +148,24 @@ to 18 KB. `SLICE` is a manifest this layout invented; it exists to keep twelve c
 honest, and it is not something a reader downloading the package would ever want. Any later
 book whose packages are meant to be read as packages should carry one.
 
+**Amended while writing study 36: a snapshot may also *delete*, and `bin/` is part of what
+it ships.** Two things this record's consequences did not separate.
+
+A slice has always been able to remove a file — study 27 dropped `asserting.dart` and
+`check_slices` reports *removed but not in SLICE* for one that is not declared — but nothing
+here said so, and Book II only ever did it once. Study 36 deletes study 35's
+`bin/by_hand.dart` on the same grounds: a demonstration file belongs to the study that
+demonstrated something with it, and the snapshot layout is what lets it stay there for ever.
+
+The second is the one worth recording. The consequence above is about what `.pubignore`
+keeps *out* of the archive; it did not ask what the archive's **public surface** is. Study 34
+answered *the barrel* and wrote `test/surface_test.dart` around it. That is half the answer:
+a script under `bin/` is reachable as `dart run <package>:<name>`, so removing one is a
+breaking change exactly as removing an export is. Study 36 is `2.0.0` for that reason, and
+`surface_test` now holds `bin/` to a declared list too. **A contract test protects exactly
+the surface it was written about**, and study 34's was written about the half that was
+interesting that day.
+
 **And the naming has a visible cost, measured rather than argued.** `pub` wants
 `lib/<package name>.dart`, and these packages are named for their study number while their
 barrel is named for the program. `dart pub publish --dry-run` reports that as a warning and

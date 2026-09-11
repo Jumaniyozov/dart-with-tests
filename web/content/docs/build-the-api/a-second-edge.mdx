@@ -77,18 +77,49 @@ dependencies on the world can be handed to it instead of fetched. A layer bounda
 place where the world stops. They are the same line, and the difference between noticing it
 and not is whether a second caller ever turns up.
 
-The edge that is left is thinner, and one place got slightly worse:
+## 36.3 A rule you wrote once and now need twice
+
+The first draft of this study had `Tracker.record` deciding whether a breach stops the
+expense being written, and `command.dart` deciding the same thing again to decide what to
+say. Two copies of `verdict is Breach && !acknowledged`, one in the layer and one at the
+edge, and study 37 would have made a third.
+
+That is the shape study 32 found inside `Limit`, where the `budget` command and
+`limitFromJson` each enforced a rule the type between them did not have. The answer is the
+same: **when the same condition is written in two places, neither of them is the owner.**
+
+<include cwd lang="dart" meta='title="lib/src/budget.dart"'>../code/ch36_expenses/lib/src/budget.dart#refuses</include>
+
+It takes the `Expense` rather than a `bool`, because study 32 put the acknowledgement on the
+expense and a parameter named `acknowledged` sitting beside one that already has it is two
+places again.
+
+<include cwd lang="dart" meta='title="test/budget_test.dart"'>../code/ch36_expenses/test/budget_test.dart#refusing</include>
+
+This is what a second caller is *for*. The duplication was not there in study 35 — there was
+one caller, so the rule was written once, in the only place that asked. Adding an edge did
+not create the problem; it made a single-use rule into a shared one, and shared rules have an
+owner or they drift.
+
+And this is what is left at the edge:
 
 <include cwd lang="dart" meta='title="lib/src/command.dart"'>../code/ch36_expenses/lib/src/command.dart#record</include>
 
-Four steps became one call. But the refusal message needs the limit's **amount** — *budgeted
-at £20.00* — and `Breach` carries only how far over it went, because *money over* is a thing
-the domain can say and *budgeted at* is a sentence. So the edge goes back for it, on the
-refusal path only.
+Four steps became one call, and the condition became one question asked of the domain.
 
-Worth naming rather than hiding: that second read is the first friction the second edge
-caused, and study 37 is where it stops being friction, because an API answers the limit as
-**data** and does not have to write a sentence around it.
+**The extraction cost something and the code says so.** The old line was
+`if (verdict case Breach(:final over) when !acknowledged)` — a pattern that stated the
+condition *and* narrowed the type, handing `over` out for free. `refuses` states the
+condition once and narrows nothing, so the edge casts. That cast cannot fail, and one rule
+in one place is worth it; naming the trade is better than pretending there was none.
+
+One other thing is still worse than it was: the refusal message needs the limit's **amount** —
+*budgeted at £20.00* — and `Breach` carries only how far over it went, because *money over*
+is a thing the domain can say and *budgeted at* is a sentence somebody writes. So the edge
+goes back for it, on the refusal path only.
+
+Worth naming rather than hiding. Study 37 is where it stops being friction, because an API
+answers the limit as **data** and does not have to write a sentence around it.
 
 And the thing that did not move at all:
 
@@ -100,7 +131,7 @@ One line differs between study 35's command tests and study 36's, and it is the 
 — ADR 0004's one permitted difference. Thirty-four tests of the command line, not edited, all
 green. The behaviour of the CLI is not a claim this study makes; it is a file nobody touched.
 
-## 36.3 The server, now that there is something to serve
+## 36.4 The server, now that there is something to serve
 
 <include cwd lang="dart" meta='title="lib/src/server.dart"'>../code/ch36_expenses/lib/src/server.dart#handler</include>
 
@@ -138,7 +169,7 @@ will file Friday's expenses under Tuesday. It is shipped on purpose: study 38 is
 read once turns out to be a bet that nothing else can change it, and this is one of the two
 halves of that.
 
-## 36.4 The barrel gains one line, and `bin/` turns out to be a contract
+## 36.5 The barrel gains one line, and `bin/` turns out to be a contract
 
 <include cwd lang="dart" meta='title="lib/expenses.dart"'>../code/ch36_expenses/lib/expenses.dart#barrel</include>
 
@@ -191,6 +222,12 @@ tests hand it an `InMemoryStore`. The seam is already below it.
 The header constructor form is ADR 0002's rule rather than a preference: `Tracker` checks
 nothing, because a `Store` and a `Day` are already-valid values by the time they reach it.
 Where a type must check something, the check goes on a constructor with a body to put it in.
+
+And it has no `operator ==`, which study 25 says to decide the moment a type exists rather
+than the moment a map needs one. Two trackers over the same store are not *the same tracker*
+in any sense a caller could use — like `FileStore`, this is a thing that does something, not
+a value that means something, so identity is the right equality and silence is the right way
+to say so.
 </Gloss>
 
 ## Wrapping up
@@ -208,12 +245,17 @@ where a function's dependency on the world can be handed in instead of fetched; 
 boundary is where the world stops. They are the same line, and a second edge is what makes it
 visible.
 
+A rule that two callers ask is a rule with an owner. `verdict is Breach && !acknowledged` was
+written once in study 35 because there was one caller; the second edge turned it into
+`refuses`, beside `limitOn` where the other rules about limits live. A second caller does not
+create that problem — it finds it.
+
 The command line's tests were not edited and are green. `bin/by_hand.dart` was deleted, which
 is a major version, and `surface_test` now holds `bin/` to a list the way it already held the
 barrel.
 
-Also met: `Tracker`, `Verdict` at an edge, `jsonEncode` over a list, `application/json`, and a
-test that reads its own package's source to check what moved.
+Also met: `Tracker`, `refuses`, `Verdict` at an edge, `jsonEncode` over a list,
+`application/json`, and a test that reads its own package's source to check what moved.
 
 ## Challenges
 

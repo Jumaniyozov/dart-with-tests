@@ -12,9 +12,11 @@ bin/by_hand.dart
 # Changed — every private use case now takes a Tracker instead of a Store and a
 # Day, the server takes one too, and the barrel offers it
 lib/expenses.dart
+lib/src/budget.dart
 lib/src/command.dart
 lib/src/server.dart
 bin/serve.dart
+test/budget_test.dart
 test/surface_test.dart
 test/server_test.dart
 pubspec.yaml
@@ -23,21 +25,21 @@ README.md
 #
 # unshown: lib/src/command.dart#run — one line added, `final tracker =
 #   Tracker(store, today)`, and four call sites that now pass it. 36.2 shows
-#   `#record`, where the change is the lesson; `run`'s own switch is the same
-#   switch study 33 left.
+#   `#record` in 36.3, where the change is the lesson; `run`'s own switch is the
+#   same switch study 33 left.
 # unshown: lib/src/command.dart#budgeting — `Store store, Day today` became
 #   `Tracker tracker` and the four `store.` calls became `tracker.` ones.
 #   Mechanical, and re-showing it would suggest the budget commands changed.
 # unshown: lib/src/command.dart#listing — the same, and `_list` lost the filter
 #   it used to write by hand because `Tracker.expenses` takes the period.
 # unshown: test/tracker_test.dart#cases — the six use cases asserted one at a
-#   time. 36.1 shows `#verdicts`, which is the only one with an argument in it,
-#   and `#moved`, which is what the extraction proved. A list of method names
-#   being green is not something to read.
+#   time. 36.1 shows `#verdicts`, which is the only one with an argument in
+#   it, and 36.2 shows `#moved`, which is what the extraction proved. A list of
+#   method names being green is not something to read.
 # unshown: test/server_test.dart#returns — `expensesHandler(InMemoryStore())`
 #   became `expensesHandler(Tracker(…))` and nothing else moved. Study 35's page
 #   shows this region making its point, which has not changed.
 # unshown: test/server_test.dart#headers — the same construction, and
 #   `content-length` is 2 rather than 12 because the body is now `[]`.
 # unshown: test/surface_test.dart#surface — one line added to `offered`.
-#   36.4 shows the barrel itself, which is where that decision is legible.
+#   36.5 shows the barrel itself, which is where that decision is legible.

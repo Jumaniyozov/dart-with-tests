@@ -40,16 +40,10 @@ class Tracker(final Store store, final Day today) {
   /// this.
   Future<Verdict?> record(Expense expense) async {
     final limit = limitOn(expense.category, await store.limits);
-    if (limit == null) {
-      await store.record(expense);
-      return null;
-    }
-    final verdict = Budget.of(
-      limit,
-      Period.of(expense.day),
-      await store.all,
-    ).on(expense);
-    if (verdict is Breach && !expense.acknowledged) return verdict;
+    final verdict = limit == null
+        ? null
+        : Budget.of(limit, Period.of(expense.day), await store.all).on(expense);
+    if (refuses(verdict, expense)) return verdict;
     await store.record(expense);
     return verdict;
   }
@@ -66,11 +60,12 @@ class Tracker(final Store store, final Day today) {
       if (period == null || period.contains(expense.day)) expense,
   ];
 
-  /// Every budget in force, over the period given or the one [today] is in.
-  Future<List<Budget>> budgets([Period? period]) async => budgetsFor(
-    await store.limits,
-    period ?? Period.of(today),
-    await store.all,
-  );
+  /// Every budget in force, over the period [today] falls in.
+  ///
+  /// No parameter, because nothing asks for another period yet. Adding one is
+  /// an optional argument and no caller moves — the same reasoning ADR 0002
+  /// records for a check that arrives after a type has shipped.
+  Future<List<Budget>> budgets() async =>
+      budgetsFor(await store.limits, Period.of(today), await store.all);
 }
 // #endregion tracker

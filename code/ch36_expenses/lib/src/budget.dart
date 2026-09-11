@@ -186,3 +186,24 @@ List<Budget> budgetsFor(
   Iterable<Expense> expenses,
 ) => [for (final limit in limits) Budget.of(limit, period, expenses)];
 // #endregion budget
+
+// #region refuses
+/// Whether a verdict stands in the way of an expense actually being recorded.
+///
+/// A [Breach] does, unless the expense itself says somebody was told and said
+/// record it anyway. Everything else — a [Within], or the `null` that means
+/// nobody set a limit — does not.
+///
+/// **Written down because study 36 asked it twice.** `Tracker.record` asks it
+/// to decide whether to write; the command line asks it to decide what to tell
+/// the person. Two copies of one condition is the shape study 32 found inside
+/// `Limit`, where the `budget` command and `limitFromJson` each enforced a rule
+/// the type between them did not have. The answer is the same both times: when
+/// the same condition is written in two places, neither of them is the owner.
+///
+/// It takes the [Expense] rather than a `bool` because that is where study 32
+/// put the acknowledgement, and a parameter called `acknowledged` next to an
+/// expense that already has one is two places again.
+bool refuses(Verdict? verdict, Expense expense) =>
+    verdict is Breach && !expense.acknowledged;
+// #endregion refuses

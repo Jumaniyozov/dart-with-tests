@@ -184,7 +184,8 @@ Future<String> _capture(String root, _Scenario scenario) async {
   final buffer = StringBuffer();
   try {
     await _listening(server);
-    for (final command in scenario.commands) {
+    for (var i = 0; i < scenario.commands.length; i++) {
+      final command = scenario.commands[i];
       final result = await Process.run('bash', [
         '-c',
         command,
@@ -193,7 +194,11 @@ Future<String> _capture(String root, _Scenario scenario) async {
         ..writeln('\$ $command')
         ..write(result.stdout)
         ..write(result.stderr);
-      if (command != scenario.commands.last) buffer.writeln();
+      // By index, not by value. A scenario is allowed to run the same command
+      // twice — which is exactly what proves a server answers the same thing
+      // at two paths — and `command != commands.last` would then silently drop
+      // the blank line after the first of them.
+      if (i < scenario.commands.length - 1) buffer.writeln();
     }
     // `curl -s` prints a body with no trailing newline when the body has none,
     // which leaves a file that does not end in one. Every other transcript in

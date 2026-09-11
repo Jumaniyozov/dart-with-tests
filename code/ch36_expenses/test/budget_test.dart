@@ -202,4 +202,32 @@ void main() {
     });
   });
   // #endregion acknowledged
+
+  // #region refusing
+  group('what stands in the way of an expense being recorded', () {
+    test('a breach nobody acknowledged does', () {
+      expect(refuses(Breach(Money.fromPence(500)), spent(2500)), isTrue);
+    });
+
+    test('and the same breach does not, once the expense says so', () {
+      final anyway = Expense(
+        Money.fromPence(2500),
+        Category('food'),
+        Day(2026, 9, 9),
+        'x',
+        acknowledged: true,
+      );
+
+      expect(refuses(Breach(Money.fromPence(500)), anyway), isFalse);
+    });
+
+    test('a verdict that fits never does', () {
+      expect(refuses(Within(Money.fromPence(500)), spent(100)), isFalse);
+    });
+
+    test('and neither does no limit at all', () {
+      expect(refuses(null, spent(100)), isFalse);
+    });
+  });
+  // #endregion refusing
 }

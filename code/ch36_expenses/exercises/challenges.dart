@@ -22,8 +22,8 @@ import 'package:ch36_expenses/expenses.dart';
 ///    One wrinkle worth meeting on purpose: in an `async` function the return
 ///    context is a `FutureOr<Money>`, and `fold` will infer *that* as its
 ///    accumulator type and then refuse `+`. Give it the type argument —
-///    `fold<Money>(…)` — which is study 22's rule about inference having only
-///    the context you hand it.
+///    `fold<Money>(…)` — which is study 18's lesson about inference taking
+///    whatever the context offers and being right about nothing else.
 Future<Money> spentIn(Tracker tracker, Period period) =>
     throw UnimplementedError('1');
 
