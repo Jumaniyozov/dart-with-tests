@@ -85,6 +85,15 @@ class _Scenario {
 /// the command that captures it is the command that elides it.
 const _elideDate = r"sed 's/^date: .*/date: <elided, so this can be re-run>/'";
 
+/// The other clock reading, and it took three transcripts going red to find
+/// it.
+///
+/// The seed below is filed under **today**, so anything printing a day is
+/// printing one. Same convention as [_elideDate] and the same reason: it is on
+/// line 1, where the reader can see it and run it. [_undated] fails on any
+/// transcript that keeps a raw one, so no scenario can forget it.
+const _elideDay = r"""sed 's/"day":"[0-9][0-9-]*"/"day":"<today, elided>"/g'""";
+
 const _scenarios = [
   _Scenario(
     'answers',
@@ -116,8 +125,11 @@ const _scenarios = [
     entrypoint: 'bin/serve.dart',
     seeded: 2,
     commands: [
-      'curl -s http://localhost:8080/',
-      'curl -s http://localhost:8080/budgets',
+      // Study 36 has no router, so **both** of these answer the expenses and
+      // both print a day. Only the first was piped at first, and the check at
+      // the bottom of this file is what said so.
+      'curl -s http://localhost:8080/ | $_elideDay',
+      'curl -s http://localhost:8080/budgets | $_elideDay',
     ],
   ),
   _Scenario(
@@ -135,11 +147,11 @@ const _scenarios = [
     limit: 2000,
     environment: {'EXPENSES_KEY': _key},
     commands: [
-      'curl -s $_sends http://localhost:8080/expenses',
+      'curl -s $_sends http://localhost:8080/expenses | $_elideDay',
       'curl -s $_sends http://localhost:8080/budgets',
       'curl -s $_sends $_json '
           '-d \'{"pence":320,"category":"food","note":"bun"}\' '
-          'http://localhost:8080/expenses',
+          'http://localhost:8080/expenses | $_elideDay',
       'curl -s $_sends http://localhost:8080/budgets/food',
     ],
   ),
@@ -158,7 +170,7 @@ const _scenarios = [
       'curl -s $_status $_sends $_json '
           '-d \'{"pence":2000,"category":"food","note":"feast"}\' '
           'http://localhost:8080/expenses',
-      'curl -s $_status $_sends http://localhost:8080/expenses',
+      'curl -s $_status $_sends http://localhost:8080/expenses | $_elideDay',
     ],
   ),
   _Scenario(
@@ -203,9 +215,9 @@ const _scenarios = [
     serves: 'expenses.db',
     environment: {'EXPENSES_KEY': _key},
     commands: [
-      'curl -s $_sends http://localhost:8080/expenses',
+      'curl -s $_sends http://localhost:8080/expenses | $_elideDay',
       'dart run bin/migrate.dart --from expenses.txt --to expenses.db',
-      "curl -s $_sends 'http://localhost:8080/expenses?limit=1'",
+      "curl -s $_sends 'http://localhost:8080/expenses?limit=1' | $_elideDay",
       'dart run bin/migrate.dart --from expenses.txt --to expenses.db',
     ],
   ),
@@ -226,11 +238,24 @@ const _json = "-H 'content-type: application/json'";
 /// The status code, after the document, so a transcript shows both.
 const _status = r"-w '%{http_code}\n'";
 
-/// A store with a known number of expenses in it, on a fixed day.
+/// A store with a known number of expenses in it, filed under **today**.
 ///
-/// Seeded as lines rather than by running the CLI, because `expenses add` files
-/// an expense under *today*, and today is exactly the kind of thing a transcript
-/// cannot contain.
+/// Seeded as lines rather than by running the CLI, because `expenses add` needs
+/// a running program and this has to exist before one starts.
+///
+/// **Today, and that is the repair three transcripts needed.** It was a fixed
+/// day, written down once, which made every answer that goes through
+/// `Tracker.today` a function of the month it was captured in: `GET /budgets`
+/// reports over `Period.of(today())` and `POST /expenses` files under today. On
+/// the first of the next month `ch37`'s `statuses.txt` would have stopped
+/// answering `409 over budget` and answered `200` with the expense recorded —
+/// the status-code demonstration inverting, with no commit having touched
+/// anything.
+///
+/// A seed in the same month as the clock removes that whole class, because
+/// nothing the server **decides** can then depend on the month. What it costs
+/// is that a printed `day` is a clock reading, which [_elideDay] handles and
+/// [_undated] enforces.
 ///
 /// **It ends in a newline, and the first scenario with a write route is what
 /// found that out.** `FileStore.record` appends `'$line\n'` and never checks
@@ -243,8 +268,16 @@ String _store(_Scenario scenario) => [
   if (scenario.limit > 0)
     '{"kind":"limit","category":"food","pence":${scenario.limit}}',
   for (var i = 0; i < scenario.seeded; i++)
-    '{"day":"2026-09-11","pence":${450 + i * 10},"category":"food","note":"tea"}',
+    '{"day":"$_today","pence":${450 + i * 10},"category":"food","note":"tea"}',
 ].map((line) => '$line\n').join();
+
+/// Today, as the domain writes it.
+String get _today {
+  final now = DateTime.now();
+  final month = now.month.toString().padLeft(2, '0');
+  final day = now.day.toString().padLeft(2, '0');
+  return '${now.year}-$month-$day';
+}
 
 Future<void> main(List<String> args) async {
   final checking = args.contains('--check');
@@ -266,6 +299,11 @@ Future<void> main(List<String> args) async {
   for (final scenario in _scenarios) {
     final captured = await _capture(root, scenario);
     final file = File('$root/${scenario.transcript}');
+    final dated = _undated(captured);
+    if (dated != null) {
+      problems.add('${scenario.transcript}: $dated');
+      continue;
+    }
     if (!checking) {
       file.parent.createSync(recursive: true);
       file.writeAsStringSync(captured);
@@ -431,6 +469,28 @@ Future<void> _listening(Process server) async {
     onTimeout: () =>
         throw StateError('the server never said "$_ready". It said:\n$said'),
   );
+}
+
+/// The first raw day left in a captured transcript, or `null` when there is
+/// none.
+///
+/// **The half of this that a person cannot be trusted with.** The seed is
+/// filed under today, so every answer that goes through `Tracker.today` is
+/// stable — that is the half a rule fixes. The other half is that a day can
+/// still be *printed*, and whether a given command prints one is a judgement
+/// somebody makes once and nobody re-makes when a route changes. So it is
+/// asked of the bytes instead, every run, for every scenario.
+///
+/// It looks for the field the program actually writes rather than for a date
+/// anywhere: `?month=2026-13` and *write it as 2026-09* are literal text in a
+/// command and an error message, and neither is a clock reading.
+String? _undated(String captured) {
+  final raw = RegExp(r'"day":"[0-9]{4}-[0-9]{2}-[0-9]{2}"')
+      .firstMatch(captured);
+  return raw == null
+      ? null
+      : 'it keeps ${raw.group(0)}, which is today and will not be next month'
+            ' — pipe that command through _elideDay';
 }
 
 /// The first line that differs, which is what a person needs to see.

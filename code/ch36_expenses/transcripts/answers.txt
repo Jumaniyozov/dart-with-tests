@@ -1,4 +1,4 @@
-$ curl -s http://localhost:8080/
-[{"day":"2026-09-11","pence":450,"category":"food","note":"tea"},{"day":"2026-09-11","pence":460,"category":"food","note":"tea"}]
-$ curl -s http://localhost:8080/budgets
-[{"day":"2026-09-11","pence":450,"category":"food","note":"tea"},{"day":"2026-09-11","pence":460,"category":"food","note":"tea"}]
+$ curl -s http://localhost:8080/ | sed 's/"day":"[0-9][0-9-]*"/"day":"<today, elided>"/g'
+[{"day":"<today, elided>","pence":450,"category":"food","note":"tea"},{"day":"<today, elided>","pence":460,"category":"food","note":"tea"}]
+$ curl -s http://localhost:8080/budgets | sed 's/"day":"[0-9][0-9-]*"/"day":"<today, elided>"/g'
+[{"day":"<today, elided>","pence":450,"category":"food","note":"tea"},{"day":"<today, elided>","pence":460,"category":"food","note":"tea"}]

@@ -134,24 +134,14 @@ a constructor"* — now recorded as `19→23` so the tool can see it.
 
 ## Open, on the book
 
-- **Three server transcripts stop reproducing on 2026-10-01, and nothing will warn you
-  first.** *Still open, and now the oldest thing on this list.* `tool/capture_server.dart` seeds every store on `2026-09-11`; `GET /budgets`
-  reports over `Period.of(today())` and `POST /expenses` files under today, so any scenario
-  touching either has an answer that depends on the month it was captured in. Measured by
-  moving the seed out of the current month: `ch37_expenses/transcripts/statuses.txt` stops
-  answering `409 over budget` and answers `200` with the expense recorded — the status-code
-  demonstration inverts — `ch38_expenses/transcripts/fresh.txt` goes from `spent: 910` to
-  `spent: 0`, and `ch37_expenses/transcripts/answers.txt` loses two budget lines and echoes
-  a different day from its `POST`. `ch36`'s `answers.txt` and `ch38`'s `stale.txt` survive,
-  both by luck.
-
-  Found while writing study 39, whose own scenario is built to avoid it — `moved.txt` asks
-  `/expenses` and never `/budgets`, so the only date in it is the seed. Not repaired there,
-  because it means recapturing evidence on two published pages and checking their prose,
-  which deserves its own commit. `OUTLINE.md`'s standing requirements and ADR 0005 both
-  carry the finding. The fix is not obvious and is worth thinking about before typing: a
-  seed dated *today* makes the budget answers stable and makes every printed `day` a clock
-  reading, which then needs the same `sed` treatment as the `date:` header.
+- **`check_shipped` reported study 39's suite as failing once, and it passes.** Seen a
+  single time, immediately after a `capture_server` run, and green on every run since
+  including an immediate re-run of ch39's suite by hand. Both tools start real programs
+  in the same package — `capture_server` binds port 8080 and the `sqlite3` build hook
+  takes a lock on first use — so a collision is the likely cause and neither tool says
+  anything about it. Recorded rather than chased: if it recurs, make `check_shipped`
+  print the failing suite's output instead of one line, which is the change that would
+  have settled it in one run.
 
 - **`bin/writers.dart` is the first transcript in this book whose value is that it is
   deterministic, and nothing re-runs it.** `check_transcripts` re-runs `dart test`

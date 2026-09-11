@@ -228,13 +228,25 @@ against this record's premises.
   having touched anything, and nothing catches it earlier because `check_transcripts`
   defers every `curl` transcript to `capture_server` and `capture_server` compares bytes.
 
-  Study 39's own scenario is built around the rule rather than into it — `moved.txt` asks
-  `/expenses`, never `/budgets`, and never `POST`s — so the only date in it is the committed
-  seed. The three are **not** repaired here: doing it means recapturing evidence on two
-  published pages, which is its own commit and its own audit, and `OUTLINE.md` carries the
-  finding as a standing requirement. What this record has to change is the rule: *the server
-  logs nothing time-varying* is about output, and the thing that actually breaks a transcript
-  is **any answer in it that is a function of when it was captured**.
+  Study 39's own scenario was built around the rule rather than into it — `moved.txt` asks
+  `/expenses`, never `/budgets`, and never `POST`s. What this record has to change is the
+  rule: *the server logs nothing time-varying* is about output, and the thing that actually
+  breaks a transcript is **any answer in it that is a function of when it was captured**.
+
+  **Repaired after study 40, and the rule is now two rules because the defect was two.**
+  The seed is filed under **today**, so nothing the server *decides* depends on the month —
+  the seeded expenses are always inside `Period.of(today())`. And because a printed `day` is
+  then a clock reading, `capture_server` refuses to write or pass any transcript containing
+  `"day":"YYYY-MM-DD"`, with the four commands that print one piping through a `sed` on line
+  1 exactly as the `date:` header already did. Both halves proved: seeding a month away from
+  the server's clock reproduces the October failure (`spent: 910` becomes `spent: 0`), and
+  deleting one pipe makes the check name the file and the value.
+
+  So this record's rule reaches its final form: **the server prints nothing time-varying,
+  the harness decides nothing time-varying, and what is left on the wire is elided in a
+  command the reader can see.** The first is a constraint on the program, the second on the
+  fixture, and only the third can be a convention — which is why the first two are enforced
+  and the third is written down.
 
   **The timestamp is measured here and is deliberately not a claim on the page**, because it
   cannot be turned into an assertion. `shelf_io` writes that line straight to `stdout`: a

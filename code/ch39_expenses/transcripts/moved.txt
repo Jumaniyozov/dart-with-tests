@@ -1,11 +1,11 @@
-$ curl -s -H 'authorization: Bearer a-shared-key' http://localhost:8080/expenses
+$ curl -s -H 'authorization: Bearer a-shared-key' http://localhost:8080/expenses | sed 's/"day":"[0-9][0-9-]*"/"day":"<today, elided>"/g'
 []
 
 $ dart run bin/migrate.dart --from expenses.txt --to expenses.db
 Running build hooks...Running build hooks...moved 2 expenses and 1 budget into expenses.db
 
-$ curl -s -H 'authorization: Bearer a-shared-key' 'http://localhost:8080/expenses?limit=1'
-[{"day":"2026-09-11","pence":450,"category":"food","note":"tea"}]
+$ curl -s -H 'authorization: Bearer a-shared-key' 'http://localhost:8080/expenses?limit=1' | sed 's/"day":"[0-9][0-9-]*"/"day":"<today, elided>"/g'
+[{"day":"<today, elided>","pence":450,"category":"food","note":"tea"}]
 
 $ dart run bin/migrate.dart --from expenses.txt --to expenses.db
 Running build hooks...Running build hooks...expenses.db already holds expenses, and this move only happens once

@@ -2612,7 +2612,7 @@ existing transcripts and verified to reproduce.
   appends, and what it misses — a rewrite of the same length — is a different sentence
   entirely, and one a test can state on any machine.
 - **A transcript of a program that reads a clock is dated, and three of this book's
-  are.** ADR 0005's rule — *the server logs nothing time-varying* — governs what the
+  were.** *Fixed; the account below is kept because the shape of it is the requirement.* ADR 0005's rule — *the server logs nothing time-varying* — governs what the
   server **prints**, and study 35 amended it once already for HTTP's `date:` header,
   which is on the wire rather than in the log. There is a third kind and it is worse
   than either, because it changes what the program **decides** rather than what it
@@ -2636,14 +2636,44 @@ existing transcripts and verified to reproduce.
   transcript to `capture_server` and `capture_server` compares bytes: it will simply
   go red one morning with no commit having touched anything.
 
-  Study 39's own scenario is built around it — `moved.txt` asks `/expenses` and never
-  `/budgets`, and never `POST`s, so the only date in it is the committed seed. The
-  three are **not** fixed here, because fixing them means recapturing evidence on two
-  published pages and that is its own commit and its own audit. The general form is
-  the part to keep: **a transcript is dated whenever any answer in it is a function
-  of when it was captured**, and a seed with a date in it is not the same thing as a
-  program with a clock in it. Ask of every scenario: *would this answer differently
-  next month?*
+  Study 39's own scenario was built around it — `moved.txt` asks `/expenses` and never
+  `/budgets`, and never `POST`s, so the only date in it was the committed seed. The
+  general form is the part to keep: **a transcript is dated whenever any answer in it
+  is a function of when it was captured**, and a seed with a date in it is not the
+  same thing as a program with a clock in it.
+
+  **Repaired after study 40, and the repair is two halves because the defect was.**
+  The half a rule fixes: the seed is filed under **today** rather than under a fixed
+  day, so nothing the server *decides* can depend on the month — the seeded expenses
+  are always in `Period.of(today())` and the `POST` echo always agrees with them.
+  The half a rule cannot: a printed `day` is then a clock reading, and whether a
+  given command prints one is a judgement somebody makes once and nobody re-makes
+  when a route changes. So `capture_server` refuses to write or pass a transcript
+  containing `"day":"YYYY-MM-DD"`, and the four commands that print one pipe through
+  a `sed` on line 1, the same convention HTTP's `date:` header already had.
+
+  Both halves were proved rather than assumed. Seeding a month away from the server's
+  clock reproduces the October failure exactly — `ch38`'s `fresh.txt` goes from
+  `spent: 910` to `spent: 0` — and removing one `| $_elideDay` makes the new check
+  name the file and the value. Four transcripts changed: `ch36`'s `answers.txt`,
+  `ch37`'s `answers.txt` and `statuses.txt`, and `ch39`'s `moved.txt`. `ch38`'s two
+  are byte-identical, which is the evidence that the decision half was the whole of
+  what was wrong with them.
+
+  **What it cost, said plainly:** three published pages now show a `sed` in their
+  Drill that was not there when they were written, and study 35's Gloss — where the
+  elision convention lives — explains the second one. A reader seeing a day as
+  `<today, elided>` learns less about the day format from these four transcripts than
+  they would have. That is the trade against a book that goes red one morning for
+  nobody, and it is the right way round.
+
+  **And it very nearly did not happen.** The edit that moves the seed to today lives
+  in a script that failed to parse, so it made no change at all, while a second script
+  added the `sed` pipes — which made every transcript *look* repaired while the thing
+  that actually breaks them was untouched. Caught by writing the proof down and finding
+  it vacuous. This is *a search-and-replace that is not asserted is an edit that may
+  not have happened*, third instance, and the new one is sharper: **a fix that only
+  changes the symptom will pass every check you thought to run.**
 
 - **A block quote is a claim about who said it, and both of study 39's were wrong the
   first time.** This book opens studies by quoting the earlier study that promised

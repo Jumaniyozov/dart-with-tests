@@ -199,6 +199,15 @@ port, no timestamps, no elapsed times. And the one clock that is not ours — HT
 header — is elided by the command on line 1 of the transcript, where you can see it and run it
 yourself. A transcript containing a clock reading is a transcript that fails on somebody's
 second run, which is the one thing this book's checkers exist to prevent.
+
+There is a **second** elision from study 36 onward, and finding out why took until study 40.
+The rule above governs what the server *prints*; it says nothing about what the clock makes
+the server **decide**. `GET /budgets` reports over the month it is now and `POST /expenses`
+files an expense under today, so a store seeded on a fixed day answers differently once that
+day is in a previous month — three of this book's transcripts would have stopped reproducing
+on the first of one. The store is seeded under **today** instead, which leaves nothing
+decided by the calendar and makes a printed `day` a clock reading like any other. So it is
+elided the same way, on line 1, and the tool refuses to capture a transcript that keeps one.
 </Gloss>
 
 ## Wrapping up
