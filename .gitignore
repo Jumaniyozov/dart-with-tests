@@ -1,0 +1,7 @@
+.dart_tool/
+.vscode-test/
+node_modules/
+dist/
+out/
+vscode/bin/
+*.vsix

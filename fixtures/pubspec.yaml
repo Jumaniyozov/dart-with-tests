@@ -1,0 +1,13 @@
+name: fixtures
+description: Expected generator output and its behavior tests.
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  collection: ^1.19.1
+
+dev_dependencies:
+  lints: ^6.1.0
+  test: ^1.31.0
