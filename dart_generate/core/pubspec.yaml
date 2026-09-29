@@ -1,0 +1,10 @@
+name: generate_core
+description: Class model, rules and code generators for dart_generate.
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+dev_dependencies:
+  lints: ^6.1.0
+  test: ^1.31.0

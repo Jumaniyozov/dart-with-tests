@@ -1,0 +1,86 @@
+{
+  "name": "dart-generate",
+  "displayName": "Dart Generate",
+  "description": "Generate toString, ==, copyWith, JSON and getters for Dart classes.",
+  "version": "0.1.0",
+  "publisher": "local",
+  "private": true,
+  "engines": {
+    "vscode": "^1.139.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onLanguage:dart"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": false
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "dartGenerate.generate",
+        "title": "Generate…",
+        "category": "Dart Generate"
+      },
+      {
+        "command": "dartGenerate.restartHelper",
+        "title": "Restart Helper",
+        "category": "Dart Generate"
+      },
+      {
+        "command": "dartGenerate.showOutput",
+        "title": "Show Output",
+        "category": "Dart Generate"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "dartGenerate.generate",
+        "key": "cmd+n",
+        "when": "editorTextFocus && editorLangId == dart && resourceScheme == file && !editorReadonly"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "dartGenerate.generate",
+          "when": "editorLangId == dart"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "dartGenerate.generate",
+          "when": "editorLangId == dart",
+          "group": "1_modification"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "compile": "esbuild src/extension.ts --bundle --platform=node --format=cjs --target=node22 --external:vscode --outfile=dist/extension.js",
+    "check": "tsc --noEmit -p . && eslint .",
+    "pretest": "tsc -p .",
+    "test": "node out/test/run.js",
+    "package": "sh scripts/package.sh"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/mocha": "10.0.10",
+    "@types/node": "24.19.0",
+    "@types/vscode": "1.138.0",
+    "@vscode/test-electron": "3.1.0",
+    "@vscode/vsce": "4.0.0",
+    "esbuild": "0.28.2",
+    "eslint": "10.11.0",
+    "mocha": "12.0.2",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.0",
+    "vscode-jsonrpc": "9.0.3"
+  }
+}

@@ -1,0 +1,10 @@
+# The .vsix holds package.json, dist/extension.js and bin/helper.
+.vscode-test/**
+node_modules/**
+out/**
+scripts/**
+src/**
+test/**
+*.vsix
+eslint.config.mjs
+tsconfig.json
