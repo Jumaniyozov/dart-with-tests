@@ -1,0 +1,3 @@
+tags:
+  # Starts the analysis server over LSP. Takes minutes on a cold plugin cache.
+  e2e:

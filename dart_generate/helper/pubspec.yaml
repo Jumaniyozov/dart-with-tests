@@ -1,0 +1,20 @@
+name: dart_generate_helper
+description: The process that runs the dart_generate assists for VS Code.
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+# Pinned exactly, as in the plugin. Move all three together.
+dependencies:
+  analysis_server_plugin: 0.3.23
+  analyzer: 14.4.0
+  analyzer_plugin: 0.14.17
+  dart_generate:
+    path: ../plugin
+  generate_core:
+    path: ../core
+
+dev_dependencies:
+  lints: ^6.1.0
+  test: ^1.31.0

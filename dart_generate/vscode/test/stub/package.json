@@ -1,0 +1,9 @@
+{
+  "name": "stub",
+  "publisher": "test",
+  "version": "0.0.0",
+  "description": "An empty extension. The tests load the modules themselves, so the real extension does not start a helper in the test window.",
+  "engines": {
+    "vscode": "^1.139.0"
+  }
+}

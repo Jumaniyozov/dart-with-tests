@@ -1,0 +1,19 @@
+name: dart_generate
+description: Analyzer plugin that adds Generate actions to the code action menu.
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+# Pinned exactly: the plugin API is young, and analysis_server_plugin pins
+# analyzer and analyzer_plugin itself. Move all three together.
+dependencies:
+  analysis_server_plugin: 0.3.23
+  analyzer: 14.4.0
+  analyzer_plugin: 0.14.17
+  generate_core:
+    path: ../core
+
+dev_dependencies:
+  lints: ^6.1.0
+  test: ^1.31.0
